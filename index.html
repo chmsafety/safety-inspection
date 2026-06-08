@@ -410,37 +410,39 @@ tbody tr:hover { background:var(--surface2); }
 
   <!-- 히어로 배너 -->
   <div class="dashboard-hero">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1">
-      <div>
-        <div class="hero-title">🛡 안전보건점검 현황</div>
-        <div class="hero-sub">실시간 점검 모니터링 대시보드</div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <div class="hero-stat-val" id="kpi-progress">0%</div>
-            <div class="hero-stat-lbl">진행률</div>
-          </div>
-          <div style="width:1px;background:rgba(255,255,255,.2)"></div>
-          <div class="hero-stat">
-            <div class="hero-stat-val" id="kpi-avg">-</div>
-            <div class="hero-stat-lbl">평균점수</div>
-          </div>
-          <div style="width:1px;background:rgba(255,255,255,.2)"></div>
-          <div class="hero-stat">
-            <div class="hero-stat-val" id="kpi-done">0</div>
-            <div class="hero-stat-lbl">완료</div>
-          </div>
+    <div style="position:relative;z-index:1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+        <div>
+          <div class="hero-title">🛡 안전보건점검 현황</div>
+          <div class="hero-sub">실시간 점검 모니터링 대시보드</div>
+        </div>
+        <button class="btn" onclick="goPage('input')" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:.78rem;padding:.45rem .9rem;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0">+ 점검 입력</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="kpi-progress">0%</div>
+          <div class="hero-stat-lbl">진행률</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,.2);align-self:stretch"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="kpi-avg">-</div>
+          <div class="hero-stat-lbl">평균점수</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,.2);align-self:stretch"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="kpi-done">0</div>
+          <div class="hero-stat-lbl">완료</div>
         </div>
       </div>
-      <button class="btn" onclick="goPage('input')" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(8px);font-size:.82rem;padding:.5rem 1.1rem;border-radius:8px;cursor:pointer">+ 점검 입력</button>
-    </div>
-    <!-- 진행률 바 -->
-    <div style="margin-top:1rem;position:relative;z-index:1">
-      <div style="display:flex;justify-content:space-between;font-size:.7rem;color:rgba(255,255,255,.6);margin-bottom:.4rem">
-        <span id="kpi-progress-sub">0 / 10 사업장</span>
-        <span>목표: 10개소</span>
-      </div>
-      <div style="background:rgba(255,255,255,.15);border-radius:6px;height:8px;overflow:hidden">
-        <div id="kpi-prog-bar" style="height:100%;border-radius:6px;background:linear-gradient(90deg,#60a5fa,#a78bfa);width:0%;transition:width .8s ease"></div>
+      <!-- 진행률 바 -->
+      <div style="margin-top:.75rem">
+        <div style="display:flex;justify-content:space-between;font-size:.68rem;color:rgba(255,255,255,.6);margin-bottom:.3rem">
+          <span id="kpi-progress-sub">0 / 10 사업장</span>
+          <span>목표: 10개소</span>
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:6px;height:7px;overflow:hidden">
+          <div id="kpi-prog-bar" style="height:100%;border-radius:6px;background:linear-gradient(90deg,#60a5fa,#a78bfa);width:0%;transition:width .8s ease"></div>
+        </div>
       </div>
     </div>
   </div>
