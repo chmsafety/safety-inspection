@@ -447,36 +447,44 @@ tbody tr:hover { background:var(--surface2); }
   </div>
 
   <!-- KPI 카드 -->
-  <div class="kpi-grid" style="margin-bottom:1.25rem">
-    <div class="kpi-3d accent">
-      <div class="kpi-3d-icon">📊</div>
-      <div class="kpi-3d-val" id="kpi-done2">0</div>
-      <div class="kpi-3d-label">점검 완료</div>
-      <div class="kpi-3d-sub">사업장 수</div>
+  <div style="background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 50%,#2563eb 100%);border-radius:16px;padding:1rem;margin-bottom:1rem;box-shadow:0 8px 32px rgba(30,64,175,.25)">
+    <div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.75rem">현황 요약</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem">
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.75rem;display:flex;align-items:center;gap:.75rem">
+        <div style="width:36px;height:36px;background:rgba(99,179,237,.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📊</div>
+        <div>
+          <div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:'IBM Plex Mono',monospace;line-height:1" id="kpi-done2">0</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.65);margin-top:.15rem">점검 완료</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.75rem;display:flex;align-items:center;gap:.75rem">
+        <div style="width:36px;height:36px;background:rgba(252,129,129,.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">⚠️</div>
+        <div>
+          <div style="font-size:1.3rem;font-weight:900;color:#fca5a5;font-family:'IBM Plex Mono',monospace;line-height:1" id="kpi-bad">0</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.65);margin-top:.15rem">미흡 항목</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.75rem;display:flex;align-items:center;gap:.75rem">
+        <div style="width:36px;height:36px;background:rgba(251,191,36,.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📨</div>
+        <div>
+          <div style="font-size:1.3rem;font-weight:900;color:#fde68a;font-family:'IBM Plex Mono',monospace;line-height:1" id="kpi-nofb">0</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.65);margin-top:.15rem">피드백 미발송</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.75rem;display:flex;align-items:center;gap:.75rem">
+        <div style="width:36px;height:36px;background:rgba(52,211,153,.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">✅</div>
+        <div>
+          <div style="font-size:1.3rem;font-weight:900;color:#6ee7b7;font-family:'IBM Plex Mono',monospace;line-height:1" id="kpi-ok">0</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.65);margin-top:.15rem">전 항목 양호</div>
+        </div>
+      </div>
     </div>
-    <div class="kpi-3d danger">
-      <div class="kpi-3d-icon">⚠️</div>
-      <div class="kpi-3d-val" id="kpi-bad">0</div>
-      <div class="kpi-3d-label">미흡 항목</div>
-      <div class="kpi-3d-sub">전체 건수</div>
-    </div>
-    <div class="kpi-3d warn">
-      <div class="kpi-3d-icon">📨</div>
-      <div class="kpi-3d-val" id="kpi-nofb">0</div>
-      <div class="kpi-3d-label">피드백 미발송</div>
-      <div class="kpi-3d-sub">사업장 수</div>
-    </div>
-    <div class="kpi-3d success">
-      <div class="kpi-3d-icon">✅</div>
-      <div class="kpi-3d-val" id="kpi-ok">0</div>
-      <div class="kpi-3d-label">전 항목 양호</div>
-      <div class="kpi-3d-sub">사업장 수</div>
-    </div>
-    <div class="kpi-3d neutral">
-      <div class="kpi-3d-icon">🏢</div>
-      <div class="kpi-3d-val">10</div>
-      <div class="kpi-3d-label">총 사업장</div>
-      <div class="kpi-3d-sub">관리 대상</div>
+    <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:.75rem;display:flex;align-items:center;gap:.75rem;margin-top:.6rem">
+      <div style="width:36px;height:36px;background:rgba(167,139,250,.25);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏢</div>
+      <div style="flex:1">
+        <div style="font-size:.65rem;color:rgba(255,255,255,.65)">총 관리 사업장</div>
+      </div>
+      <div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:'IBM Plex Mono',monospace">10개소</div>
     </div>
   </div>
 
