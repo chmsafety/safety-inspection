@@ -100,7 +100,12 @@ main { max-width:1300px; margin:0 auto; padding:1.5rem; }
 
 /* KPI Grid */
 .kpi-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:.75rem; margin-bottom:1.25rem; }
-@media (max-width:768px) { .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:768px) { 
+  .kpi-grid { grid-template-columns:repeat(2,1fr); }
+  .kpi-3d-val { font-size:1.5rem; }
+  .kpi-3d-icon { width:28px; height:28px; font-size:14px; }
+  .kpi-3d { padding:.85rem .9rem; }
+}
 .kpi { background:#fff; border:1px solid var(--border); border-radius:10px; padding:1rem 1.1rem; box-shadow:var(--shadow); }
 .kpi-label { font-size:.7rem; color:var(--text2); font-weight:600; margin-bottom:.5rem; }
 .kpi-val { font-size:1.8rem; font-weight:900; font-family:'IBM Plex Mono',monospace; line-height:1; }
@@ -278,187 +283,106 @@ tbody tr:hover { background:var(--surface2); }
   .card { box-shadow:none; border:1px solid #ddd; }
 }
 
-/* ── 모바일 반응형 ── */
+/* ── 모바일 전면 최적화 ── */
 @media (max-width: 768px) {
+  /* 기본 */
+  main { padding: .75rem; }
+  
+  /* 헤더 */
+  header { height:auto; padding:.5rem .75rem; gap:.4rem; flex-direction:column; align-items:stretch; }
   .logo-text { display:none; }
-  header { padding:0 1rem; height:auto; flex-wrap:wrap; gap:.5rem; padding:.6rem 1rem; }
-  .logo { font-size:.9rem; }
-  nav { width:100%; overflow-x:auto; padding-bottom:.3rem; }
-  .nav-btn { padding:.35rem .7rem; font-size:.75rem; white-space:nowrap; }
-  .header-date { display:none; }
+  nav { display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:.2rem; }
+  nav::-webkit-scrollbar { display:none; }
+  .nav-btn { white-space:nowrap; flex-shrink:0; padding:.35rem .75rem; font-size:.78rem; }
 
-  main { padding:1rem; }
+  /* 히어로 배너 */
+  .dashboard-hero { padding:1rem; }
+  .hero-title { font-size:1.1rem; }
+  .hero-sub { font-size:.72rem; }
+  .hero-stats { gap:.75rem; margin-top:.75rem; }
+  .hero-stat-val { font-size:1.4rem; white-space:nowrap; }
+  .hero-stat-lbl { font-size:.6rem; white-space:nowrap; }
+  .dashboard-hero > div:first-child { flex-direction:column; gap:.75rem; }
+  .dashboard-hero button { width:100%; text-align:center; }
 
-  .kpi-grid { grid-template-columns:repeat(2,1fr); gap:.6rem; }
-  .kpi { padding:.8rem; }
-  .kpi-val { font-size:1.4rem; }
-  .kpi-label { font-size:.65rem; }
+  /* KPI 카드 */
+  .kpi-grid { grid-template-columns:1fr 1fr; gap:.6rem; }
+  .kpi-3d { padding:.85rem .9rem; }
+  .kpi-3d-val { font-size:1.5rem; white-space:nowrap; }
+  .kpi-3d-icon { width:28px; height:28px; font-size:13px; margin-bottom:.5rem; }
+  .kpi-3d-label { font-size:.68rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .kpi-3d-sub { font-size:.65rem; white-space:nowrap; }
 
+  /* 그리드 */
   .g2 { grid-template-columns:1fr; }
   .g3 { grid-template-columns:1fr; }
-  .grid2 { grid-template-columns:1fr; }
 
+  /* 사업장 카드 */
   .site-score-grid { grid-template-columns:repeat(2,1fr); gap:.5rem; }
-  .site-score-name { font-size:.7rem; }
-  .site-score-val { font-size:1.1rem; }
+  .site-card-3d { padding:.7rem; }
+  .site-card-3d > div:first-child { font-size:.68rem; }
+  .site-card-3d > div:nth-child(2) { font-size:1.2rem; }
 
-  .page-hd { flex-direction:column; align-items:flex-start; gap:.5rem; }
-  .page-hd h1 { font-size:1.1rem; }
+  /* 랭킹 카드 */
+  .rank-card { padding:.9rem; }
+  .rank-label { font-size:.75rem; }
 
-  .form-row { grid-template-columns:1fr; }
-  .form-row3 { grid-template-columns:1fr; }
+  /* 차트 */
+  .chart-section { padding:.9rem; }
+  .chart-bar-label { width:60px; font-size:.65rem; }
+  .chart-bar-val { font-size:.68rem; width:28px; }
 
+  /* 페이지 헤더 */
+  .page-hd { flex-direction:column; align-items:flex-start; gap:.5rem; margin-bottom:.75rem; }
+  .page-hd h1 { font-size:1rem; }
+  .page-hd p { font-size:.72rem; }
+  .page-hd .btn { width:100%; text-align:center; }
+
+  /* 점검 입력 폼 */
+  .form-row { grid-template-columns:1fr; gap:.6rem; }
+  .form-row3 { grid-template-columns:1fr; gap:.6rem; }
+  .fg label { font-size:.72rem; }
+  .fg input, .fg select, .fg textarea { font-size:.82rem; padding:.45rem .65rem; }
+  .form-section-title { font-size:.7rem; }
+
+  /* 점검 항목 체크 */
+  .check-item-card { padding:.8rem; }
   .check-item-header { flex-direction:column; align-items:flex-start; gap:.5rem; }
-  .radio-group { flex-wrap:wrap; }
+  .check-item-name { font-size:.82rem; }
+  .radio-group { flex-wrap:nowrap; gap:.3rem; width:100%; }
+  .radio-opt label { padding:.25rem .5rem; font-size:.72rem; flex:1; justify-content:center; }
+  .check-item-icon { width:20px; height:20px; font-size:11px; }
+  .fg textarea { min-height:52px; font-size:.75rem; }
 
-  .inner-tabs { overflow-x:auto; }
-  .inner-tab { white-space:nowrap; font-size:.75rem; padding:.4rem .75rem; }
-
+  /* 보고서 */
+  .inner-tabs { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .inner-tab { white-space:nowrap; font-size:.75rem; padding:.4rem .65rem; }
+  .report-header { padding:.85rem; }
+  .report-title { font-size:.95rem; }
+  
+  /* 테이블 */
   table { font-size:.72rem; }
   th { padding:.4rem .5rem; font-size:.65rem; }
   td { padding:.4rem .5rem; }
 
-  .report-header { padding:1rem; }
-  .report-title { font-size:.95rem; }
+  /* 카드 */
+  .card { padding:.9rem; }
+  .card-title { font-size:.68rem; }
 
-  .chart-bar-label { width:70px; font-size:.68rem; }
-  .rank-label { font-size:.72rem; }
-
-  .modal { padding:1rem; width:95vw; }
-
-  .page-hd .btn { width:100%; text-align:center; }
-
-  /* 보고서 요약 카드 */
-  div[style*="grid-template-columns:repeat(3,1fr)"] {
-    display:grid !important;
-    grid-template-columns:repeat(3,1fr) !important;
-    gap:.5rem !important;
-  }
+  /* 모달 */
+  .modal { padding:1rem; width:95vw; max-height:90vh; }
+  
+  /* 저장 버튼 */
+  div[style*="justify-content:flex-end"] { flex-direction:column; }
+  div[style*="justify-content:flex-end"] .btn { width:100%; text-align:center; }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 380px) {
   .kpi-grid { grid-template-columns:1fr 1fr; }
-  .kpi-val { font-size:1.2rem; }
+  .kpi-3d-val { font-size:1.3rem; }
+  .hero-stat-val { font-size:1.2rem; }
+  .nav-btn { font-size:.72rem; padding:.3rem .6rem; }
   .site-score-grid { grid-template-columns:repeat(2,1fr); }
-  .nav-btn { padding:.3rem .55rem; font-size:.7rem; }
-}
-
-/* ── 3D 대시보드 스타일 ── */
-.dashboard-hero {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 40%, #1d4ed8 100%);
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 1.25rem;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(30,64,175,.3), 0 4px 16px rgba(30,64,175,.2);
-}
-.dashboard-hero::before {
-  content: '';
-  position: absolute;
-  top: -40%; right: -10%;
-  width: 300px; height: 300px;
-  background: rgba(255,255,255,.05);
-  border-radius: 50%;
-}
-.dashboard-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -30%; left: 20%;
-  width: 200px; height: 200px;
-  background: rgba(255,255,255,.03);
-  border-radius: 50%;
-}
-.hero-title { font-size:1.5rem; font-weight:900; color:#fff; margin-bottom:.25rem; }
-.hero-sub { font-size:.8rem; color:rgba(255,255,255,.7); }
-.hero-stats { display:flex; gap:1.5rem; margin-top:1rem; }
-.hero-stat { text-align:center; }
-.hero-stat-val { font-size:2rem; font-weight:900; color:#fff; font-family:'IBM Plex Mono',monospace; line-height:1; }
-.hero-stat-lbl { font-size:.68rem; color:rgba(255,255,255,.6); margin-top:.2rem; text-transform:uppercase; letter-spacing:.05em; }
-
-.kpi-3d {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.1rem 1.2rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform .2s, box-shadow .2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-}
-.kpi-3d:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(0,0,0,.1), 0 4px 8px rgba(0,0,0,.06);
-}
-.kpi-3d::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: 14px 14px 0 0;
-}
-.kpi-3d.accent::before { background: linear-gradient(90deg, #1e40af, #3b82f6); }
-.kpi-3d.success::before { background: linear-gradient(90deg, #15803d, #22c55e); }
-.kpi-3d.danger::before { background: linear-gradient(90deg, #b91c1c, #ef4444); }
-.kpi-3d.warn::before { background: linear-gradient(90deg, #b45309, #f59e0b); }
-.kpi-3d.neutral::before { background: linear-gradient(90deg, #475569, #94a3b8); }
-.kpi-3d-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  margin-bottom: .75rem;
-}
-.kpi-3d.accent .kpi-3d-icon { background: rgba(30,64,175,.1); color: #1e40af; }
-.kpi-3d.success .kpi-3d-icon { background: rgba(21,128,61,.1); color: #15803d; }
-.kpi-3d.danger .kpi-3d-icon { background: rgba(185,28,28,.1); color: #b91c1c; }
-.kpi-3d.warn .kpi-3d-icon { background: rgba(180,83,9,.1); color: #b45309; }
-.kpi-3d.neutral .kpi-3d-icon { background: rgba(71,85,105,.1); color: #475569; }
-.kpi-3d-val { font-size:1.9rem; font-weight:900; font-family:'IBM Plex Mono',monospace; line-height:1; margin-bottom:.3rem; }
-.kpi-3d.accent .kpi-3d-val { color: #1e40af; }
-.kpi-3d.success .kpi-3d-val { color: #15803d; }
-.kpi-3d.danger .kpi-3d-val { color: #b91c1c; }
-.kpi-3d.warn .kpi-3d-val { color: #b45309; }
-.kpi-3d.neutral .kpi-3d-val { color: #475569; }
-.kpi-3d-label { font-size:.72rem; color: var(--text2); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
-.kpi-3d-sub { font-size:.7rem; color: var(--muted); margin-top:.2rem; }
-
-.site-card-3d {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: .9rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all .2s;
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
-  position: relative;
-  overflow: hidden;
-}
-.site-card-3d:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 28px rgba(0,0,0,.12);
-  border-color: var(--accent);
-}
-.site-card-3d.done { border-top: 3px solid; }
-.site-card-3d.done.ok { border-top-color: var(--ok); }
-.site-card-3d.done.warn { border-top-color: var(--warn); }
-.site-card-3d.done.bad { border-top-color: var(--danger); }
-
-.chart-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,.05);
-}
-
-.rank-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.1rem 1.2rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,.05);
 }
 </style>
 </head>
