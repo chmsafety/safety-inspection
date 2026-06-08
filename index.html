@@ -704,10 +704,13 @@ async function saveInspection(){
     sign:   scores.sign.value,   sign_note:   scores.sign.note,
   };
   try {
+    // CORS 우회 - form 방식으로 전송
+    const form = new FormData();
+    form.append('payload', JSON.stringify(payload));
     await fetch(SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
+      method: 'POST',
+      mode: 'no-cors',
+      body: form
     });
     document.getElementById('modal-status').textContent = '✅ Google Sheets 저장 + 이메일 발송 완료!';
   } catch(err) {
