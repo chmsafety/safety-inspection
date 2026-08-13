@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안전보건점검 개선결과 제출</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#f4f6f9;--surface:#fff;--border:#e2e8f0;--border2:#cbd5e1;
+  --accent:#1e40af;--accent-light:#eff6ff;
+  --ok:#15803d;--ok-bg:#f0fdf4;--ok-border:#bbf7d0;
+  --danger:#b91c1c;--danger-bg:#fef2f2;--danger-border:#fecaca;
+  --warn:#b45309;--warn-bg:#fffbeb;
+  --text:#0f172a;--text2:#475569;--muted:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--accent);color:#fff;padding:1rem 1.5rem;box-shadow:0 2px 8px rgba(30,64,175,.3)}
+.logo{font-size:1rem;font-weight:800;display:flex;align-items:center;gap:.5rem}
+.logo-icon{width:28px;height:28px;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.sub{font-size:.75rem;opacity:.7;margin-top:.15rem}
+main{max-width:720px;margin:0 auto;padding:1.5rem}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:1rem}
+.card-title{font-size:.72rem;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem}
+.section-title{font-size:.72rem;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.65rem;padding-bottom:.35rem;border-bottom:2px solid var(--accent-light)}
+.fg{display:flex;flex-direction:column;gap:.28rem;margin-bottom:.75rem}
+.fg label{font-size:.72rem;font-weight:600;color:var(--text2)}
+.fg input,.fg select,.fg textarea{background:#fff;border:1px solid var(--border2);border-radius:7px;padding:.5rem .75rem;color:var(--text);font-size:.82rem;font-family:"Noto Sans KR",sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,64,175,.1)}
+.fg textarea{resize:vertical;min-height:70px}
+.btn{padding:.5rem 1.25rem;border-radius:7px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;font-family:"Noto Sans KR",sans-serif;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1e3a8a}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+
+/* 미흡항목 카드 */
+.issue-card{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:.75rem;overflow:hidden}
+.issue-header{background:var(--danger-bg);border-bottom:1px solid var(--danger-border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.issue-num{width:22px;height:22px;background:var(--danger);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0}
+.issue-name{font-weight:700;font-size:.85rem;color:var(--danger)}
+.issue-body{padding:.85rem 1rem}
+.issue-original{background:var(--bg);border-radius:6px;padding:.5rem .75rem;font-size:.75rem;color:var(--text2);margin-bottom:.75rem;border-left:3px solid var(--danger)}
+
+/* 사진 업로드 */
+.photo-upload-zone{border:2px dashed var(--border2);border-radius:8px;padding:1rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)}
+.photo-upload-zone:hover{border-color:var(--accent);background:var(--accent-light)}
+.photo-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem}
+.photo-item{display:flex;gap:.65rem;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem}
+.photo-item img{width:72px;height:72px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.photo-remove{background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* 상태 배지 */
+.status-select{padding:.3rem .65rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:"Noto Sans KR",sans-serif}
+
+/* 완료 화면 */
+.success-screen{display:none;text-align:center;padding:3rem 1.5rem}
+.success-icon{font-size:4rem;margin-bottom:1rem}
+.success-title{font-size:1.3rem;font-weight:900;color:var(--ok);margin-bottom:.5rem}
+.success-sub{font-size:.85rem;color:var(--text2)}
+
+/* 진행률 */
+.progress-bar{background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-bottom:.5rem}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),#3b82f6);transition:width .4s ease}
+
+@media(max-width:600px){
+  main{padding:.85rem}
+  .card{padding:.9rem}
+}
+
+/* 코드 입력 화면 */
+.code-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:1.5rem}
+.code-box{background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:400px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)}
+.code-logo{font-size:3rem;margin-bottom:.75rem}
+.code-title{font-size:1.1rem;font-weight:900;color:var(--accent);margin-bottom:.25rem}
+.code-sub{font-size:.8rem;color:var(--text2);margin-bottom:1.5rem}
+.code-input-wrap{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.25rem}
+.code-digit{width:56px;height:64px;border:2px solid var(--border2);border-radius:10px;font-size:1.8rem;font-weight:900;text-align:center;outline:none;font-family:"IBM Plex Mono",monospace;transition:all .15s;color:var(--accent)}
+.code-digit:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,64,175,.1)}
+.code-error{color:var(--danger);font-size:.78rem;margin-bottom:.75rem;min-height:20px}
+.code-hint{font-size:.72rem;color:var(--muted);margin-top:1rem}
+
+/* 서명 캔버스 */
+.sig-wrap{border:1px solid var(--border2);border-radius:8px;overflow:hidden;background:#fff;position:relative}
+.sig-canvas{display:block;cursor:crosshair;touch-action:none}
+.sig-toolbar{display:flex;gap:.5rem;padding:.5rem;background:var(--bg);border-top:1px solid var(--border)}
+
+/* 출력 */
+@media print{
+  header,.no-print,#form-section > div:last-child{display:none!important}
+  body{background:#fff}
+  .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+  .issue-card{break-inside:avoid}
+  main{padding:0;max-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- 코드 입력 화면 -->
+<div class="code-screen" id="code-screen">
+  <div class="code-box">
+    <div class="code-logo">🛡</div>
+    <div class="code-title">안전보건점검</div>
+    <div class="code-sub">개선결과 제출 시스템</div>
+    <div class="fg" style="margin-bottom:1rem;text-align:left">
+      <label style="font-size:.78rem;font-weight:600;color:var(--text2)">사업장 선택</label>
+      <select id="code-site" style="width:100%;background:#fff;border:1px solid var(--border2);border-radius:7px;padding:.5rem .75rem;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;outline:none;color:var(--text)">
+        <option value="">— 사업장을 선택하세요 —</option>
+      </select>
+    </div>
+    <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:.5rem;text-align:left">4자리 인증코드 입력</div>
+    <div class="code-input-wrap">
+      <input class="code-digit" id="d1" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d2')" onkeydown="movePrev(event,this,'')">
+      <input class="code-digit" id="d2" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d3')" onkeydown="movePrev(event,this,'d1')">
+      <input class="code-digit" id="d3" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d4')" onkeydown="movePrev(event,this,'d2')">
+      <input class="code-digit" id="d4" maxlength="1" type="password" inputmode="numeric" oninput="checkCode()" onkeydown="movePrev(event,this,'d3')">
+    </div>
+    <div class="code-error" id="code-error"></div>
+    <button class="btn btn-primary" onclick="verifyCode()" style="width:100%;padding:.6rem">확인</button>
+    <div class="code-hint">※ 인증코드는 사업장 담당자에게 별도 안내됩니다</div>
+  </div>
+</div>
+
+<!-- 메인 화면 (코드 인증 후 표시) -->
+<div id="main-screen" style="display:none">
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡</div>
+    안전보건점검 개선결과 제출
+  </div>
+  <div class="sub">점검 지적사항 개선결과를 입력해주세요</div>
+</header>
+
+<main>
+
+<!-- 입력 폼 -->
+<div id="form-section">
+
+  <!-- 기본정보 -->
+  <div class="card">
+    <div class="section-title">기본 정보</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+      <div class="fg">
+        <label>사업장명</label>
+        <input type="text" id="fb-site" readonly style="background:var(--surface2);font-weight:700;color:var(--accent)">
+      </div>
+      <div class="fg">
+        <label>담당자명 *</label>
+        <input type="text" id="fb-manager" placeholder="홍길동">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+      <div class="fg">
+        <label>연락처</label>
+        <input type="tel" id="fb-tel" placeholder="010-0000-0000">
+      </div>
+      <div class="fg">
+        <label>개선완료일 *</label>
+        <input type="date" id="fb-date">
+      </div>
+    </div>
+    <div class="fg">
+      <label>종합 의견</label>
+      <textarea id="fb-memo" placeholder="개선 조치 전반에 대한 의견을 입력하세요"></textarea>
+    </div>
+  </div>
+
+  <!-- 서명 -->
+  <div class="card">
+    <div class="section-title">관리자 서명</div>
+    <div style="font-size:.75rem;color:var(--text2);margin-bottom:.65rem">아래 서명란에 서명해주세요 (마우스 또는 터치)</div>
+    <div class="sig-wrap">
+      <canvas id="sig-canvas" class="sig-canvas" width="680" height="160"></canvas>
+      <div class="sig-toolbar">
+        <button class="btn btn-outline btn-sm" onclick="clearSig()">서명 지우기</button>
+        <span style="font-size:.72rem;color:var(--muted);display:flex;align-items:center">손가락 또는 마우스로 서명하세요</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 미흡항목 개선결과 -->
+  <div class="card">
+    <div class="section-title">미흡항목 개선결과</div>
+    <div style="background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent);margin-bottom:1rem">
+      📋 사업장명을 선택하면 해당 점검의 미흡 항목이 자동으로 표시됩니다.
+    </div>
+    <div id="issue-list">
+      <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:.5rem flex-wrap:wrap" class="no-print">
+    <button class="btn btn-outline" onclick="resetForm()">초기화</button>
+    <button class="btn btn-outline" onclick="printResult()">🖨 출력/PDF</button>
+    <button class="btn btn-primary" onclick="submitFeedback()">📤 개선결과 제출</button>
+  </div>
+</div>
+
+<!-- 완료 화면 -->
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">개선결과 제출 완료!</div>
+  <div class="success-sub" id="success-msg"></div>
+  <button class="btn btn-primary" style="margin-top:1.5rem" onclick="location.reload()">추가 제출</button>
+</div>
+
+</main>
+
+<script>
+// ══ 사업장별 인증코드 ══
+const SITE_CODES = {
+  "T-타워":"2951","서린":"6234","둔산":"9233","보라매":"9385","분당":"2681",
+  "인재개발원":"4658","종로타워":"7891","부암":"9975","성수":"9042","테크원":"8226",
+  "판교":"4931","우산":"1041","KT&G":"2322","관훈":"2814","태평":"5706",
+  "유타워":"2606","삼화타워":"8367","전주":"1188","무의연수원":"9032","청주":"6148",
+  "서산공장":"4444","원주":"7508","본리":"5120","부사":"6696","L7호텔":"6843",
+  "데이터":"7166","제주":"9414","ICN10":"2250","인천":"6577","안락":"2469",
+  "장안":"9815","모비언트 광주":"5786","수유":"5712","신천":"8494","송정":"3308",
+  "센터원 서울사무소":"6062","용인":"1405","영시티":"7043","현대위아 평택":"6956",
+  "행복나눔":"8554","넥실리스":"7917","인천석유화학":"2485","11번가":"7533",
+  "중동":"9166","센트로시티":"2907","오토에버 광주":"7970","오리온용암수":"9296",
+  "고려대 거점오피스":"9045","서강대":"7523","스타크빌딩":"9595","명륜":"5237","분당N타워":"7880"
+};
+
+let verifiedSite = "";
+
+// 코드 입력 화면 초기화
+(function initCodeScreen(){
+  const sel = document.getElementById("code-site");
+  Object.keys(SITE_CODES).forEach(s=>{
+    const o = document.createElement("option");
+    o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
+})();
+
+function moveNext(el, nextId){
+  if(el.value.length===1 && nextId){
+    document.getElementById(nextId).focus();
+  }
+}
+
+function movePrev(e, el, prevId){
+  if(e.key==="Backspace" && el.value==="" && prevId){
+    document.getElementById(prevId).focus();
+  }
+}
+
+function checkCode(){
+  const code = ["d1","d2","d3","d4"].map(id=>document.getElementById(id).value).join("");
+  if(code.length===4) verifyCode();
+}
+
+function verifyCode(){
+  const site = document.getElementById("code-site").value;
+  const code = ["d1","d2","d3","d4"].map(id=>document.getElementById(id).value).join("");
+  const errEl = document.getElementById("code-error");
+
+  if(!site){ errEl.textContent="사업장을 선택해주세요."; return; }
+  if(code.length<4){ errEl.textContent="4자리 코드를 모두 입력해주세요."; return; }
+
+  if(SITE_CODES[site]===code){
+    verifiedSite = site;
+    document.getElementById("code-screen").style.display="none";
+    document.getElementById("main-screen").style.display="block";
+    // 사업장 자동 선택
+    document.getElementById("fb-site").value = site;
+    loadSiteIssues();
+    errEl.textContent="";
+  } else {
+    errEl.textContent="❌ 인증코드가 올바르지 않습니다.";
+    ["d1","d2","d3","d4"].forEach(id=>{ document.getElementById(id).value=""; });
+    document.getElementById("d1").focus();
+  }
+}
+
+const SITES = ["T-타워","서린","둔산","보라매","분당","인재개발원","종로타워","부암","성수","테크원","판교","우산","KT&G","관훈","태평","유타워","삼화타워","전주","무의연수원","청주","서산공장","원주","본리","부사","L7호텔","데이터","제주","ICN10","인천","안락","장안","모비언트 광주","수유","신천","송정","센터원 서울사무소","용인","영시티","현대위아 평택","행복나눔","넥실리스","인천석유화학","11번가","중동","센트로시티","오토에버 광주","오리온용암수","고려대 거점오피스","서강대","스타크빌딩","명륜","분당N타워"];
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+
+let photoData = {}; // {issueIndex: [{src, note}]}
+let currentIssues = [];
+
+// 초기화
+(function(){
+  document.getElementById("fb-date").value = new Date().toISOString().split("T")[0];
+  const sel = document.getElementById("fb-site");
+  SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; sel.appendChild(o); });
+  sel.addEventListener("change", loadSiteIssues);
+})();
+
+function loadSiteIssues(){
+  const site = document.getElementById("fb-site").value;
+  if(!site){ document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>`; return; }
+
+  // 로컬스토리지에서 점검 데이터 로드
+  const inspections = JSON.parse(localStorage.getItem("shi_v3")||"[]");
+  const ins = inspections.find(i=>i.site===site);
+
+  if(!ins){ document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">해당 사업장의 점검 데이터가 없습니다</div>`; return; }
+
+  // 미흡/보통 항목 + 현장점검 미흡
+  const CHECK_ITEMS = [
+    {key:"c01",name:"관리감독자 지정"},{key:"c02",name:"관리감독자 업무 일지"},
+    {key:"c03",name:"법적 게시물"},{key:"c04",name:"정기안전 교육"},
+    {key:"c05",name:"채용시 교육"},{key:"c06",name:"특별교육"},
+    {key:"c07",name:"관리감독자 교육"},{key:"c08",name:"MSDS 교육"},
+    {key:"c09",name:"MSDS 관리"},{key:"c10",name:"위험성평가"},
+    {key:"c11",name:"TBM"},{key:"c12",name:"유해/위험기구 안전관리"},
+    {key:"c13",name:"보호구 안전인증대상 관리"},{key:"c14",name:"보호구 지급대장 관리"},
+    {key:"c15",name:"건강검진 관리"},{key:"c16",name:"유소견자 면담일지 작성"},
+    {key:"c17",name:"근골격계유해요인조사"},{key:"c18",name:"감정노동 근로자 보호"},
+    {key:"c19",name:"산업재해 발생 및 현황 관리"},{key:"c20",name:"휴게시설 관리"},
+    {key:"c21",name:"중대재해대응 매뉴얼"},{key:"c22",name:"중대재해대응 훈련"},
+    {key:"c23",name:"적격수급업체 관리"},{key:"c24",name:"공사업체 출입관리"},
+    {key:"c25",name:"안전보건표지 부착/관리 상태"}
+  ];
+
+  currentIssues = CHECK_ITEMS
+    .filter(item=>ins.scores[item.key]?.value==="bad"||ins.scores[item.key]?.value==="normal")
+    .map(item=>({...item, originalNote:ins.scores[item.key]?.note||"", result:ins.scores[item.key]?.value}));
+
+  // 현장점검 미흡사항 추가
+  if(ins.deductItems&&ins.deductItems.length>0){
+    ins.deductItems.forEach((d,i)=>{
+      currentIssues.push({key:`deduct_${i}`, name:`현장점검 미흡사항 ${i+1}`, originalNote:d.note||"", result:"deduct", src:d.src});
+    });
+  }
+
+  photoData = {};
+  currentIssues.forEach((_,i)=>{ photoData[i]=[]; });
+
+  if(currentIssues.length===0){
+    document.getElementById("issue-list").innerHTML=`<div style="padding:1rem;background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:8px;font-size:.85rem;color:var(--ok)">✅ 해당 사업장은 미흡 항목이 없습니다!</div>`;
+    return;
+  }
+
+  renderIssues(ins);
+}
+
+function renderIssues(ins){
+  const list = document.getElementById("issue-list");
+  const total = currentIssues.length;
+
+  list.innerHTML = `
+    <div style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text2);margin-bottom:.3rem">
+        <span>개선 진행률</span><span id="progress-text">0 / ${total}건 완료</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  ` + currentIssues.map((issue,i)=>`
+    <div class="issue-card" id="issue-card-${i}">
+      <div class="issue-header">
+        <div style="display:flex;align-items:center;gap:.65rem">
+          <div class="issue-num">${i+1}</div>
+          <div class="issue-name">${issue.name}</div>
+        </div>
+        <select class="status-select" id="status-${i}" onchange="updateProgress()"
+          style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
+          <option value="pending">⏳ 미완료</option>
+          <option value="done">✅ 개선완료</option>
+          <option value="inprogress">🔄 진행중</option>
+        </select>
+      </div>
+      <div class="issue-body">
+        ${issue.src?`<div style="margin-bottom:.65rem"><img src="${issue.src}" style="width:100%;max-width:200px;border-radius:6px;border:1px solid var(--border)"></div>`:""}
+        ${issue.originalNote?`<div class="issue-original">📋 지적내용: ${issue.originalNote}</div>`:""}
+        <div class="fg">
+          <label>개선 조치 내용 *</label>
+          <textarea id="imp-text-${i}" placeholder="어떻게 개선했는지 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
+        </div>
+        <div class="fg">
+          <label>개선 사진 첨부</label>
+          <div class="photo-upload-zone" onclick="document.getElementById('photo-${i}').click()">
+            <div style="font-size:.82rem;color:var(--accent)">📷 개선 후 사진 첨부</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">카메라 촬영 또는 갤러리에서 선택</div>
+            <input type="file" id="photo-${i}" multiple accept="image/*" style="display:none" onchange="handlePhoto(${i},this)">
+          </div>
+          <div id="photo-list-${i}" class="photo-list"></div>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+function handlePhoto(idx, input){
+  Array.from(input.files).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const pIdx = photoData[idx].length;
+      photoData[idx].push({src:e.target.result, note:""});
+      renderPhotoList(idx);
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value="";
+}
+
+function renderPhotoList(idx){
+  const list = document.getElementById(`photo-list-${idx}`);
+  list.innerHTML = photoData[idx].map((p,pi)=>`
+    <div class="photo-item">
+      <img src="${p.src}">
+      <div style="flex:1">
+        <textarea placeholder="이 사진에 대한 설명" style="width:100%;min-height:55px;border:1px solid var(--border2);border-radius:6px;padding:.35rem .6rem;font-size:.75rem;font-family:'Noto Sans KR',sans-serif;resize:vertical;outline:none" onchange="photoData[${idx}][${pi}].note=this.value">${p.note}</textarea>
+      </div>
+      <button class="photo-remove" onclick="removeImpPhoto(${idx},${pi})">✕</button>
+    </div>`).join("");
+}
+
+function removeImpPhoto(idx, pi){
+  photoData[idx].splice(pi,1);
+  renderPhotoList(idx);
+}
+
+function updateProgress(){
+  const total = currentIssues.length;
+  if(total===0) return;
+  let done = 0;
+  currentIssues.forEach((_,i)=>{
+    const status = document.getElementById(`status-${i}`)?.value;
+    const text = document.getElementById(`imp-text-${i}`)?.value.trim();
+    if(status==="done"&&text) done++;
+    // 카드 테두리 색상
+    const card = document.getElementById(`issue-card-${i}`);
+    if(card){
+      card.style.borderColor = status==="done"?"var(--ok-border)":status==="inprogress"?"var(--warn-border)":"var(--border)";
+    }
+  });
+  const pct = Math.round(done/total*100);
+  document.getElementById("progress-fill").style.width = pct+"%";
+  document.getElementById("progress-text").textContent = `${done} / ${total}건 완료`;
+}
+
+async function submitFeedback(){
+  const site = document.getElementById("fb-site").value;
+  const manager = document.getElementById("fb-manager").value.trim();
+  const date = document.getElementById("fb-date").value;
+  if(!site||!manager||!date){ alert("사업장, 담당자명, 개선완료일을 입력하세요."); return; }
+  if(currentIssues.length===0){ alert("미흡 항목이 없습니다."); return; }
+
+  const results = currentIssues.map((issue,i)=>({
+    key: issue.key,
+    name: issue.name,
+    originalNote: issue.originalNote,
+    status: document.getElementById(`status-${i}`)?.value||"pending",
+    improvementText: document.getElementById(`imp-text-${i}`)?.value.trim()||"",
+    photos: photoData[i]||[]
+  }));
+
+  const doneCount = results.filter(r=>r.status==="done").length;
+  const sigData = isSigEmpty() ? "" : getSigDataUrl();
+  const payload = {
+    type: "feedback_result",
+    site, manager,
+    tel: document.getElementById("fb-tel").value.trim(),
+    date,
+    memo: document.getElementById("fb-memo").value.trim(),
+    totalIssues: currentIssues.length,
+    doneCount,
+    signature: sigData,
+    results
+  };
+
+  // Google Sheets에 저장 + 관리자 이메일 발송
+  try {
+    const form = new FormData();
+    form.append("payload", JSON.stringify(payload));
+    await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", body:form });
+  } catch(e) { console.log("전송 오류:", e); }
+
+  // 로컬에도 저장 (대시보드 연동)
+  const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
+  feedbacks[site] = { ...payload, signature: sigData, submittedAt: new Date().toISOString() };
+  localStorage.setItem("shi_feedbacks", JSON.stringify(feedbacks));
+
+  // 완료 화면
+  document.getElementById("form-section").style.display="none";
+  document.getElementById("success-screen").style.display="block";
+  document.getElementById("success-msg").textContent = `${site} - ${doneCount}/${currentIssues.length}건 개선완료 제출됨`;
+}
+
+// ══ 서명 ══
+let sigCanvas, sigCtx, isSigning=false, lastX=0, lastY=0;
+
+(function initSig(){
+  sigCanvas = document.getElementById("sig-canvas");
+  sigCtx = sigCanvas.getContext("2d");
+  sigCtx.strokeStyle = "#0f172a";
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = "round";
+  sigCtx.lineJoin = "round";
+
+  // 캔버스 크기 반응형
+  function resizeCanvas(){
+    const w = sigCanvas.parentElement.clientWidth;
+    const ratio = window.devicePixelRatio||1;
+    sigCanvas.width = w * ratio;
+    sigCanvas.height = 160 * ratio;
+    sigCanvas.style.width = w+"px";
+    sigCanvas.style.height = "160px";
+    sigCtx.scale(ratio, ratio);
+    sigCtx.strokeStyle="#0f172a"; sigCtx.lineWidth=2.5; sigCtx.lineCap="round"; sigCtx.lineJoin="round";
+  }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  function getPos(e){
+    const rect = sigCanvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio||1;
+    if(e.touches){ return {x:(e.touches[0].clientX-rect.left), y:(e.touches[0].clientY-rect.top)}; }
+    return {x:e.clientX-rect.left, y:e.clientY-rect.top};
+  }
+
+  sigCanvas.addEventListener("mousedown", e=>{ isSigning=true; const p=getPos(e); lastX=p.x; lastY=p.y; sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  sigCanvas.addEventListener("mousemove", e=>{ if(!isSigning) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); lastX=p.x; lastY=p.y; });
+  sigCanvas.addEventListener("mouseup", ()=>isSigning=false);
+  sigCanvas.addEventListener("mouseleave", ()=>isSigning=false);
+
+  sigCanvas.addEventListener("touchstart", e=>{ e.preventDefault(); isSigning=true; const p=getPos(e); lastX=p.x; lastY=p.y; sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  sigCanvas.addEventListener("touchmove", e=>{ e.preventDefault(); if(!isSigning) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); });
+  sigCanvas.addEventListener("touchend", ()=>isSigning=false);
+})();
+
+function clearSig(){ sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); }
+
+function isSigEmpty(){
+  const data = sigCtx.getImageData(0,0,sigCanvas.width,sigCanvas.height).data;
+  return !data.some(v=>v!==0);
+}
+
+function getSigDataUrl(){ return sigCanvas.toDataURL("image/png"); }
+
+// ══ 출력 ══
+function printResult(){
+  const site = document.getElementById("fb-site").value;
+  const manager = document.getElementById("fb-manager").value.trim();
+  const date = document.getElementById("fb-date").value;
+  if(!site){ alert("사업장을 선택하세요."); return; }
+  if(currentIssues.length===0){ alert("미흡 항목 데이터가 없습니다."); return; }
+
+  const sigImg = isSigEmpty() ? "" : getSigDataUrl();
+  const results = currentIssues.map((issue,i)=>({
+    name: issue.name,
+    originalNote: issue.originalNote,
+    status: document.getElementById(`status-${i}`)?.value||"pending",
+    text: document.getElementById(`imp-text-${i}`)?.value.trim()||"",
+    photos: photoData[i]||[]
+  }));
+
+  const printWin = window.open("","_blank","width=900,height=700");
+  const statusLabel = {done:"✅ 개선완료", inprogress:"🔄 진행중", pending:"⏳ 미완료"};
+  const statusColor = {done:"#15803d", inprogress:"#b45309", pending:"#b91c1c"};
+
+  printWin.document.write(`<!DOCTYPE html><html lang="ko"><head>
+<meta charset="UTF-8">
+<title>개선결과 보고서 - ${site}</title>
+<style>
+  body{font-family:"Noto Sans KR",Arial,sans-serif;color:#0f172a;margin:0;padding:24px;font-size:13px}
+  table{width:100%;border-collapse:collapse}
+  th{background:#1e40af;color:#fff;padding:8px 10px;font-size:11px;text-align:left}
+  td{padding:8px 10px;border:1px solid #e2e8f0;vertical-align:top}
+  .header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:20px 24px;border-radius:10px;margin-bottom:16px}
+  .issue{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px;overflow:hidden;page-break-inside:avoid}
+  .issue-hd{background:#fef2f2;padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #fecaca}
+  .issue-body{padding:10px 12px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+  .photo-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .photo-grid img{width:120px;height:120px;object-fit:cover;border-radius:5px;border:1px solid #e2e8f0}
+  .sig-section{margin-top:24px;border-top:1px solid #e2e8f0;padding-top:16px;display:flex;justify-content:flex-end;gap:32px}
+  .sig-box{text-align:center}
+  .sig-line{border-bottom:1px solid #0f172a;width:180px;margin-bottom:4px;height:60px;display:flex;align-items:flex-end;justify-content:center}
+  @media print{body{padding:0}}
+</style>
+</head><body>
+
+<div class="header">
+  <div style="font-size:11px;opacity:.7;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">안전보건점검 개선결과 보고서</div>
+  <div style="font-size:18px;font-weight:900">${site}</div>
+  <div style="font-size:12px;opacity:.8;margin-top:4px">담당자: ${manager} · 개선완료일: ${date}</div>
+</div>
+
+<table style="margin-bottom:16px;font-size:12px">
+  <tr>
+    <td style="background:#f8fafc;font-weight:700;width:100px">사업장명</td><td>${site}</td>
+    <td style="background:#f8fafc;font-weight:700;width:100px">담당자</td><td>${manager}</td>
+  </tr>
+  <tr>
+    <td style="background:#f8fafc;font-weight:700">연락처</td><td>${document.getElementById("fb-tel").value||"-"}</td>
+    <td style="background:#f8fafc;font-weight:700">개선완료일</td><td>${date}</td>
+  </tr>
+  <tr>
+    <td style="background:#f8fafc;font-weight:700">총 미흡항목</td><td>${currentIssues.length}건</td>
+    <td style="background:#f8fafc;font-weight:700">개선완료</td><td>${results.filter(r=>r.status==="done").length}건</td>
+  </tr>
+</table>
+
+${results.map((r,i)=>`
+<div class="issue">
+  <div class="issue-hd">
+    <span style="background:#b91c1c;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${i+1}</span>
+    <span style="font-weight:700;font-size:13px;flex:1">${r.name}</span>
+    <span class="badge" style="background:${r.status==="done"?"#f0fdf4":r.status==="inprogress"?"#fffbeb":"#fef2f2"};color:${statusColor[r.status]};border:1px solid currentColor">${statusLabel[r.status]}</span>
+  </div>
+  <div class="issue-body">
+    ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:6px 10px;margin-bottom:8px;font-size:12px;color:#475569">📋 지적내용: ${r.originalNote}</div>`:""}
+    <div style="margin-bottom:6px"><strong style="font-size:12px">개선 조치 내용:</strong></div>
+    <div style="background:#f8fafc;border-radius:6px;padding:8px;font-size:12px;min-height:40px;color:${r.text?"#0f172a":"#94a3b8"}">${r.text||"미입력"}</div>
+    ${r.photos.length>0?`
+    <div style="margin-top:8px"><strong style="font-size:12px">개선 사진:</strong></div>
+    <div class="photo-grid">${r.photos.map(p=>`
+      <div style="text-align:center">
+        <img src="${p.src}">
+        ${p.note?`<div style="font-size:10px;color:#475569;margin-top:3px;max-width:120px">${p.note}</div>`:""}
+      </div>`).join("")}
+    </div>`:""}
+  </div>
+</div>`).join("")}
+
+${document.getElementById("fb-memo").value?`
+<div style="margin-top:12px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px">
+  <strong style="font-size:12px;color:#1e40af">종합 의견:</strong>
+  <div style="font-size:12px;margin-top:4px;color:#475569">${document.getElementById("fb-memo").value}</div>
+</div>`:""}
+
+<div class="sig-section">
+  <div class="sig-box">
+    <div style="font-size:11px;color:#64748b;margin-bottom:4px">작성일: ${date}</div>
+    <div class="sig-line"></div>
+    <div style="font-size:11px;color:#64748b">년   월   일</div>
+  </div>
+  <div class="sig-box">
+    <div style="font-size:11px;color:#64748b;margin-bottom:4px">사업장 관리자 (서명)</div>
+    <div class="sig-line">${sigImg?`<img src="${sigImg}" style="max-height:55px;max-width:170px">`:""}</div>
+    <div style="font-size:11px;color:#64748b">${manager} (서명)</div>
+  </div>
+</div>
+
+<div style="margin-top:20px;text-align:center;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px">
+  본 문서는 안전보건점검 관리시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
+</div>
+
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
+  printWin.document.close();
+}
+
+function resetForm(){
+  document.getElementById("fb-site").value="";
+  document.getElementById("fb-manager").value="";
+  document.getElementById("fb-tel").value="";
+  document.getElementById("fb-memo").value="";
+  document.getElementById("fb-date").value=new Date().toISOString().split("T")[0];
+  document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>`;
+  currentIssues=[];
+  photoData={};
+  clearSig();
+}
+</script>
+</div><!-- main-screen -->
+</body>
+</html>
