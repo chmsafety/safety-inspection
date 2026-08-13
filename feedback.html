@@ -529,12 +529,12 @@ async function submitFeedback(){
 
   // Google Sheets에 저장 + 관리자 이메일 발송
   try {
-    const encodedPayload = "payload=" + encodeURIComponent(JSON.stringify(payload));
+    // 사진/서명(base64)이 포함되면 payload가 커져 x-www-form-urlencoded 방식(e.parameter)에서 누락/손상될 수 있으므로, JSON 원문을 그대로 e.postData.contents로 전송한다.
     await fetch(SCRIPT_URL, {
       method:"POST",
       mode:"no-cors",
-      headers:{"Content-Type":"application/x-www-form-urlencoded"},
-      body:encodedPayload
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
     });
   } catch(e) { console.log("전송 오류:", e); }
 
