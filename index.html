@@ -457,6 +457,39 @@ let currentRptId = null;
 let deductPhotos = []; // base64 사진 배열
 let deductCount = 0;
 
+// ══ 서버(Google Sheets) 동기화 ══
+// 대시보드가 이 브라우저의 localStorage만 보던 문제를 해결하기 위해,
+// 페이지를 열 때마다 Apps Script에서 전체 점검현황/개선현황을 받아와 화면을 갱신한다.
+// (로컬 저장은 오프라인 대비 백업 용도로 계속 유지)
+const DASHBOARD_SYNC_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+async function syncFromServer(){
+  try {
+    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=list");
+    const data = await res.json();
+    if(!data || !Array.isArray(data.inspections)) return;
+    const feedbacks = data.feedbacks || {};
+    try { localStorage.setItem("shi_feedbacks", JSON.stringify(feedbacks)); } catch(e) {}
+
+    const bySite = {};
+    inspections.forEach(ins=>{ bySite[ins.site] = ins; }); // 로컬에만 있는 항목(사진 등 상세정보) 보존용 기반
+    data.inspections.forEach(srv=>{
+      const local = bySite[srv.site];
+      bySite[srv.site] = {
+        ...(local||{}),
+        ...srv,
+        id: (local && local.id) || new Date(srv.createdAt||srv.date).getTime() || Date.now(),
+        feedbackSent: !!feedbacks[srv.site]
+      };
+    });
+    inspections = Object.values(bySite).sort((a,b)=>(b.id||0)-(a.id||0));
+    try { localStorage.setItem("shi_v3", JSON.stringify(inspections)); } catch(e) {}
+    updateDashboard();
+    updateReportSel();
+  } catch(e) {
+    console.error("서버 동기화 실패 (로컬 데이터로 표시):", e);
+  }
+}
+
 // ══ Init ══
 (function(){
   document.getElementById("hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
@@ -466,6 +499,7 @@ let deductCount = 0;
   renderCheckItems();
   updateDashboard();
   updateReportSel();
+  syncFromServer(); // 서버 데이터로 대시보드 재갱신 (다른 기기에서 저장한 결과 포함)
 })();
 
 // ══ 점검 항목 렌더링 ══
