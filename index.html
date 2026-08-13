@@ -686,12 +686,12 @@ async function saveInspection(){
     scores: Object.fromEntries(CHECK_ITEMS.map(item=>[item.key, {name:item.name, value:scores[item.key].value, note:scores[item.key].note}]))
   };
   try {
-    const encodedPayload = "payload=" + encodeURIComponent(JSON.stringify(payload));
+    // 사진(base64) 포함 시 x-www-form-urlencoded(e.parameter)에서 누락될 수 있어 JSON 원문을 그대로 e.postData.contents로 전송한다.
     await fetch(SCRIPT_URL, {
       method:"POST",
       mode:"no-cors",
-      headers:{"Content-Type":"application/x-www-form-urlencoded"},
-      body:encodedPayload
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
     });
     document.getElementById("modal-status").textContent = "✅ Google Sheets 저장 + 이메일 + 카카오톡 발송 완료!";
   } catch(e) {
