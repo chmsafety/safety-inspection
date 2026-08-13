@@ -1118,7 +1118,7 @@ function buildReportHtml(ins, feedbacks) {
         <div style="padding:8px 10px">
           ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:4px 8px;margin-bottom:6px;font-size:10px;color:#475569">지적: ${r.originalNote}</div>`:""}
           <div style="font-size:11px;color:#0f172a">${r.improvementText||"<span style='color:#94a3b8'>미입력</span>"}</div>
-          ${r.photos&&r.photos.length>0?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${r.photos.slice(0,4).map(p=>`<img src="${p.src}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0">`).join("")}</div>`:""}
+          ${r.photos&&r.photos.length>0?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${r.photos.slice(0,4).map(p=>`<img src="${p.url||p.src}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0">`).join("")}</div>`:""}
         </div>
       </div>`).join("")}
       ${fb.signature?`
