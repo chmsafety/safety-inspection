@@ -193,7 +193,7 @@ main{max-width:720px;margin:0 auto;padding:1.5rem}
     </div>
   </div>
 
-  <div style="display:flex;justify-content:flex-end;gap:.5rem flex-wrap:wrap" class="no-print">
+  <div style="display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap" class="no-print">
     <button class="btn btn-outline" onclick="resetForm()">초기화</button>
     <button class="btn btn-outline" onclick="printResult()">🖨 출력/PDF</button>
     <button class="btn btn-primary" onclick="submitFeedback()">📤 개선결과 제출</button>
@@ -320,9 +320,9 @@ async function loadSiteIssues(){
       return;
     }
 
-    // 미흡(bad) 항목만 필터링
+    // 미흡(bad)+보통(normal) 항목 필터링 — 사업장용 보고서(통보서)에 개선 요청으로 표시되는 항목과 동일한 기준
     currentIssues = data.issueItems
-      .filter(item=>item.result==='bad'||item.result==='미흡')
+      .filter(item=>item.result==='bad'||item.result==='미흡'||item.result==='normal'||item.result==='보통')
       .map(item=>({
         key: item.key,
         name: item.name,
@@ -516,9 +516,13 @@ async function submitFeedback(){
 
   // Google Sheets에 저장 + 관리자 이메일 발송
   try {
-    const form = new FormData();
-    form.append("payload", JSON.stringify(payload));
-    await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", body:form });
+    const encodedPayload = "payload=" + encodeURIComponent(JSON.stringify(payload));
+    await fetch(SCRIPT_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body:encodedPayload
+    });
   } catch(e) { console.log("전송 오류:", e); }
 
   // 로컬에도 저장 (대시보드 연동)
