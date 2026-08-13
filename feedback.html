@@ -285,6 +285,10 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhG
 let photoData = {}; // {issueIndex: [{src, note}]}
 let currentIssues = [];
 
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
 // 초기화
 (function(){
   document.getElementById("fb-date").value = new Date().toISOString().split("T")[0];
@@ -336,7 +340,8 @@ async function loadSiteIssues(){
         key:'deduct_0',
         name:`현장점검 미흡사항 (${data.deductCount}건)`,
         originalNote: data.deductNote||'',
-        result:'deduct'
+        result:'deduct',
+        originalPhotos: Array.isArray(data.photoUrls) ? data.photoUrls : []
       });
     }
 
@@ -394,7 +399,15 @@ function renderIssues(data){
         </div>
         <div class="issue-body">
           ${issue.originalNote?`<div class="issue-original" style="border-color:var(--danger)">📋 지적내용: ${issue.originalNote}</div>`:""}
-          <div style="font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">📷 개선 전→후 사진 첨부</div>
+          ${issue.originalPhotos && issue.originalPhotos.length>0?`
+          <div style="font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">📷 점검 당시 사진 (개선 전)</div>
+          <div class="photo-list" style="margin-bottom:.75rem">
+            ${issue.originalPhotos.map(p=>`
+              <div class="photo-item">
+                <img src="${p.url}" style="cursor:zoom-in" onclick="window.open('${p.url}','_blank')">
+                <div style="flex:1;font-size:.75rem;color:var(--text2);align-self:center">${p.note?escapeHtml(p.note):'<span style="color:var(--muted)">(설명 없음)</span>'}</div>
+              </div>`).join("")}
+          </div>`:""}
           <div class="photo-upload-zone" onclick="document.getElementById('photo-${i}').click()" style="border-color:var(--danger-border)">
             <div style="font-size:.82rem;color:var(--danger)">📷 개선 후 사진 첨부</div>
             <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">카메라 촬영 또는 갤러리에서 선택</div>
