@@ -289,56 +289,73 @@ let currentIssues = [];
   sel.addEventListener("change", loadSiteIssues);
 })();
 
-function loadSiteIssues(){
+async function loadSiteIssues(){
   const site = document.getElementById("fb-site").value;
-  if(!site){ document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>`; return; }
-
-  // 로컬스토리지에서 점검 데이터 로드
-  const inspections = JSON.parse(localStorage.getItem("shi_v3")||"[]");
-  const ins = inspections.find(i=>i.site===site);
-
-  if(!ins){ document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">해당 사업장의 점검 데이터가 없습니다</div>`; return; }
-
-  // 미흡/보통 항목 + 현장점검 미흡
-  const CHECK_ITEMS = [
-    {key:"c01",name:"관리감독자 지정"},{key:"c02",name:"관리감독자 업무 일지"},
-    {key:"c03",name:"법적 게시물"},{key:"c04",name:"정기안전 교육"},
-    {key:"c05",name:"채용시 교육"},{key:"c06",name:"특별교육"},
-    {key:"c07",name:"관리감독자 교육"},{key:"c08",name:"MSDS 교육"},
-    {key:"c09",name:"MSDS 관리"},{key:"c10",name:"위험성평가"},
-    {key:"c11",name:"TBM"},{key:"c12",name:"유해/위험기구 안전관리"},
-    {key:"c13",name:"보호구 안전인증대상 관리"},{key:"c14",name:"보호구 지급대장 관리"},
-    {key:"c15",name:"건강검진 관리"},{key:"c16",name:"유소견자 면담일지 작성"},
-    {key:"c17",name:"근골격계유해요인조사"},{key:"c18",name:"감정노동 근로자 보호"},
-    {key:"c19",name:"산업재해 발생 및 현황 관리"},{key:"c20",name:"휴게시설 관리"},
-    {key:"c21",name:"중대재해대응 매뉴얼"},{key:"c22",name:"중대재해대응 훈련"},
-    {key:"c23",name:"적격수급업체 관리"},{key:"c24",name:"공사업체 출입관리"},
-    {key:"c25",name:"안전보건표지 부착/관리 상태"}
-  ];
-
-  currentIssues = CHECK_ITEMS
-    .filter(item=>ins.scores[item.key]?.value==="bad"||ins.scores[item.key]?.value==="normal")
-    .map(item=>({...item, originalNote:ins.scores[item.key]?.note||"", result:ins.scores[item.key]?.value}));
-
-  // 현장점검 미흡사항 추가
-  if(ins.deductItems&&ins.deductItems.length>0){
-    ins.deductItems.forEach((d,i)=>{
-      currentIssues.push({key:`deduct_${i}`, name:`현장점검 미흡사항 ${i+1}`, originalNote:d.note||"", result:"deduct", src:d.src});
-    });
-  }
-
-  photoData = {};
-  currentIssues.forEach((_,i)=>{ photoData[i]=[]; });
-
-  if(currentIssues.length===0){
-    document.getElementById("issue-list").innerHTML=`<div style="padding:1rem;background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:8px;font-size:.85rem;color:var(--ok)">✅ 해당 사업장은 미흡 항목이 없습니다!</div>`;
+  if(!site){
+    document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>`;
     return;
   }
 
-  renderIssues(ins);
+  // 로딩 표시
+  document.getElementById("issue-list").innerHTML=`
+    <div style="text-align:center;padding:2rem;color:var(--muted)">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">⏳</div>
+      <div style="font-size:.85rem">점검 데이터 불러오는 중...</div>
+    </div>`;
+
+  try {
+    // Google Sheets에서 미흡항목 조회
+    const res = await fetch(`${SCRIPT_URL}?site=${encodeURIComponent(site)}`);
+    const data = await res.json();
+
+    if(data.error){
+      document.getElementById("issue-list").innerHTML=`
+        <div style="padding:1rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;font-size:.85rem;color:var(--danger)">
+          ❌ ${data.error}<br><small>점검이 완료된 사업장만 개선결과를 제출할 수 있습니다.</small>
+        </div>`;
+      return;
+    }
+
+    currentIssues = data.issueItems.map(item=>({
+      key: item.key,
+      name: item.name,
+      originalNote: item.note||'',
+      result: item.result
+    }));
+
+    // 현장점검 미흡사항 추가
+    if(data.deductCount > 0){
+      currentIssues.push({
+        key:'deduct_0',
+        name:`현장점검 미흡사항 (${data.deductCount}건)`,
+        originalNote: data.deductNote||'',
+        result:'deduct'
+      });
+    }
+
+    photoData = {};
+    currentIssues.forEach((_,i)=>{ photoData[i]=[]; });
+
+    if(currentIssues.length===0){
+      document.getElementById("issue-list").innerHTML=`
+        <div style="padding:1rem;background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:8px;font-size:.85rem;color:var(--ok)">
+          ✅ 해당 사업장은 미흡 항목이 없습니다!
+        </div>`;
+      return;
+    }
+
+    renderIssues(data);
+
+  } catch(e) {
+    console.log('오류:', e);
+    document.getElementById("issue-list").innerHTML=`
+      <div style="padding:1rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;font-size:.85rem;color:var(--danger)">
+        ❌ 데이터 로드 실패. 네트워크 연결을 확인해주세요.
+      </div>`;
+  }
 }
 
-function renderIssues(ins){
+function renderIssues(data){
   const list = document.getElementById("issue-list");
   const total = currentIssues.length;
 
