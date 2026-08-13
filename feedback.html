@@ -3,1240 +3,722 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>안전보건점검 관리시스템 v3</title>
+<title>안전보건점검 개선결과 제출</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap');
-:root {
-  --bg:#f4f6f9; --surface:#fff; --surface2:#f8fafc; --border:#e2e8f0; --border2:#cbd5e1;
-  --accent:#1e40af; --accent-light:#eff6ff;
-  --ok:#15803d; --ok-bg:#f0fdf4; --ok-border:#bbf7d0;
-  --warn:#b45309; --warn-bg:#fffbeb; --warn-border:#fde68a;
-  --danger:#b91c1c; --danger-bg:#fef2f2; --danger-border:#fecaca;
-  --text:#0f172a; --text2:#475569; --muted:#94a3b8;
-  --shadow:0 1px 3px rgba(0,0,0,.08);
-  --shadow-md:0 4px 12px rgba(0,0,0,.1);
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#f4f6f9;--surface:#fff;--border:#e2e8f0;--border2:#cbd5e1;
+  --accent:#1e40af;--accent-light:#eff6ff;
+  --ok:#15803d;--ok-bg:#f0fdf4;--ok-border:#bbf7d0;
+  --danger:#b91c1c;--danger-bg:#fef2f2;--danger-border:#fecaca;
+  --warn:#b45309;--warn-bg:#fffbeb;
+  --text:#0f172a;--text2:#475569;--muted:#94a3b8;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
-
-/* Header */
-header{background:var(--accent);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(30,64,175,.3)}
-.hd-top{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1.5rem;height:52px}
-.logo{font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:.5rem}
-.logo-icon{width:26px;height:26px;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
-nav{display:flex;gap:.2rem}
-.nav-btn{padding:.35rem .9rem;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:rgba(255,255,255,.15);color:#fff;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}
-.nav-btn:hover{background:rgba(255,255,255,.25)}
-.nav-btn.active{background:#fff;color:var(--accent)}
-.hd-date{font-size:.72rem;opacity:.7;font-family:"IBM Plex Mono",monospace}
-
-/* Layout */
-main{max-width:1400px;margin:0 auto;padding:1.25rem}
-.page{display:none}.page.active{display:block;animation:fadeUp .25s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-/* Buttons */
-.btn{padding:.45rem 1rem;border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:"Noto Sans KR",sans-serif}
+body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--accent);color:#fff;padding:1rem 1.5rem;box-shadow:0 2px 8px rgba(30,64,175,.3)}
+.logo{font-size:1rem;font-weight:800;display:flex;align-items:center;gap:.5rem}
+.logo-icon{width:28px;height:28px;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.sub{font-size:.75rem;opacity:.7;margin-top:.15rem}
+main{max-width:720px;margin:0 auto;padding:1.5rem}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:1rem}
+.card-title{font-size:.72rem;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem}
+.section-title{font-size:.72rem;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.65rem;padding-bottom:.35rem;border-bottom:2px solid var(--accent-light)}
+.fg{display:flex;flex-direction:column;gap:.28rem;margin-bottom:.75rem}
+.fg label{font-size:.72rem;font-weight:600;color:var(--text2)}
+.fg input,.fg select,.fg textarea{background:#fff;border:1px solid var(--border2);border-radius:7px;padding:.5rem .75rem;color:var(--text);font-size:.82rem;font-family:"Noto Sans KR",sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,64,175,.1)}
+.fg textarea{resize:vertical;min-height:70px}
+.btn{padding:.5rem 1.25rem;border-radius:7px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;font-family:"Noto Sans KR",sans-serif;transition:all .15s}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1e3a8a}
 .btn-outline{background:#fff;color:var(--text);border:1px solid var(--border2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-sm{padding:.28rem .65rem;font-size:.73rem}
 
-/* Cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;box-shadow:var(--shadow)}
-.card-title{font-size:.7rem;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem}
+/* 미흡항목 카드 */
+.issue-card{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:.75rem;overflow:hidden}
+.issue-header{background:var(--danger-bg);border-bottom:1px solid var(--danger-border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.issue-num{width:22px;height:22px;background:var(--danger);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0}
+.issue-name{font-weight:700;font-size:.85rem;color:var(--danger)}
+.issue-body{padding:.85rem 1rem}
+.issue-original{background:var(--bg);border-radius:6px;padding:.5rem .75rem;font-size:.75rem;color:var(--text2);margin-bottom:.75rem;border-left:3px solid var(--danger)}
 
-/* Grid */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
-.g3{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1rem}
+/* 사진 업로드 */
+.photo-upload-zone{border:2px dashed var(--border2);border-radius:8px;padding:1rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)}
+.photo-upload-zone:hover{border-color:var(--accent);background:var(--accent-light)}
+.photo-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem}
+.photo-item{display:flex;gap:.65rem;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem}
+.photo-item img{width:72px;height:72px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.photo-remove{background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-/* Hero */
-.hero{background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 50%,#2563eb 100%);border-radius:16px;padding:1.25rem;margin-bottom:1rem;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(30,64,175,.25)}
-.hero::before{content:"";position:absolute;top:-30px;right:-20px;width:120px;height:120px;background:rgba(255,255,255,.05);border-radius:50%}
-.hero-inner{position:relative;z-index:1}
-.hero-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
-.hero-title{font-size:1rem;font-weight:800;color:#fff}
-.hero-sub{font-size:.72rem;color:rgba(255,255,255,.65);margin-top:.1rem}
-.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.75rem}
-.hero-stat{background:rgba(255,255,255,.12);border-radius:10px;padding:.6rem .75rem;text-align:center}
-.hero-stat-val{font-size:1.4rem;font-weight:900;color:#fff;font-family:"IBM Plex Mono",monospace;line-height:1}
-.hero-stat-lbl{font-size:.6rem;color:rgba(255,255,255,.65);margin-top:.2rem;font-weight:600;text-transform:uppercase}
-.hero-prog-wrap{background:rgba(255,255,255,.15);border-radius:6px;height:6px;overflow:hidden}
-.hero-prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#60a5fa,#a78bfa);transition:width .8s ease}
+/* 상태 배지 */
+.status-select{padding:.3rem .65rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:"Noto Sans KR",sans-serif}
 
-/* KPI Section */
-.kpi-section{background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 50%,#2563eb 100%);border-radius:16px;padding:1rem;margin-bottom:1rem;box-shadow:0 8px 32px rgba(30,64,175,.2)}
-.kpi-section-title{font-size:.68rem;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.75rem}
-.kpi-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.6rem}
-.kpi-card{background:rgba(255,255,255,.12);border-radius:10px;padding:.75rem;display:flex;align-items:center;gap:.65rem}
-.kpi-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.kpi-val{font-size:1.25rem;font-weight:900;font-family:"IBM Plex Mono",monospace;line-height:1}
-.kpi-lbl{font-size:.62rem;color:rgba(255,255,255,.65);margin-top:.15rem}
-.kpi-full{display:flex;align-items:center;gap:.65rem;background:rgba(255,255,255,.08);border-radius:10px;padding:.65rem .85rem}
+/* 완료 화면 */
+.success-screen{display:none;text-align:center;padding:3rem 1.5rem}
+.success-icon{font-size:4rem;margin-bottom:1rem}
+.success-title{font-size:1.3rem;font-weight:900;color:var(--ok);margin-bottom:.5rem}
+.success-sub{font-size:.85rem;color:var(--text2)}
 
-/* Site grid */
-.site-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem}
-.site-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:.65rem;text-align:center;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
-.site-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--accent)}
-.site-card.done-ok{border-top:3px solid var(--ok)}
-.site-card.done-warn{border-top:3px solid var(--warn)}
-.site-card.done-bad{border-top:3px solid var(--danger)}
-.site-card .grade-badge{font-size:.6rem;font-weight:800;padding:.1rem .4rem;border-radius:4px;color:#fff}
-.site-name{font-size:.68rem;font-weight:600;color:var(--text2);margin-bottom:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.site-score{font-size:1.2rem;font-weight:900;font-family:"IBM Plex Mono",monospace;line-height:1}
-.site-date{font-size:.58rem;color:var(--muted);margin-top:.2rem}
+/* 진행률 */
+.progress-bar{background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-bottom:.5rem}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),#3b82f6);transition:width .4s ease}
 
-/* Rank */
-.rank-item{display:flex;align-items:center;gap:.65rem;padding:.45rem 0;border-bottom:1px solid var(--border)}
-.rank-item:last-child{border-bottom:none}
-.rank-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0}
-.rank-top{background:var(--ok-bg);color:var(--ok)}
-.rank-bot{background:var(--danger-bg);color:var(--danger)}
-.rank-lbl{flex:1;font-size:.78rem}
-.rank-val{font-family:"IBM Plex Mono",monospace;font-size:.75rem;font-weight:700}
-
-/* Chart */
-.chart-row{display:flex;align-items:center;gap:.65rem;margin-bottom:.5rem}
-.chart-lbl{width:120px;font-size:.7rem;color:var(--text2);text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chart-wrap{flex:1;background:var(--border);border-radius:4px;height:18px;overflow:hidden;position:relative}
-.chart-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:.35rem;font-size:.65rem;font-weight:700;color:#fff;transition:width .8s ease}
-.chart-val{margin-left:.4rem;font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--text2);flex-shrink:0;width:35px}
-
-/* Page header */
-.page-hd{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1rem}
-.page-hd h1{font-size:1.2rem;font-weight:800}
-.page-hd p{font-size:.75rem;color:var(--text2);margin-top:.15rem}
-
-/* Form */
-.form-section-title{font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.65rem;padding-bottom:.35rem;border-bottom:2px solid var(--accent-light)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
-.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem}
-.fg{display:flex;flex-direction:column;gap:.28rem}
-.fg label{font-size:.7rem;font-weight:600;color:var(--text2)}
-.fg input,.fg select,.fg textarea{background:#fff;border:1px solid var(--border2);border-radius:7px;padding:.45rem .7rem;color:var(--text);font-size:.8rem;font-family:"Noto Sans KR",sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,64,175,.1)}
-.fg textarea{resize:vertical;min-height:60px}
-
-/* Check items */
-.check-items-wrap{max-height:600px;overflow-y:auto;padding-right:.25rem}
-.check-item-card{background:#fff;border:1px solid var(--border);border-radius:9px;padding:.8rem 1rem;margin-bottom:.5rem;box-shadow:var(--shadow)}
-.check-item-card.deduct{border-color:var(--danger-border);background:var(--danger-bg)}
-.check-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
-.check-name{font-weight:700;font-size:.82rem;display:flex;align-items:center;gap:.4rem}
-.check-icon{width:22px;height:22px;border-radius:5px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-.radio-group{display:flex;gap:.35rem}
-.radio-opt{position:relative}
-.radio-opt input{position:absolute;opacity:0;width:0;height:0}
-.radio-opt label{display:flex;align-items:center;gap:.25rem;padding:.25rem .65rem;border-radius:6px;border:1px solid var(--border2);font-size:.73rem;font-weight:600;cursor:pointer;transition:all .15s;user-select:none;white-space:nowrap}
-.radio-opt.good input:checked+label{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
-.radio-opt.normal input:checked+label{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
-.radio-opt.bad input:checked+label{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
-
-/* Photo upload */
-.photo-zone{border:2px dashed var(--danger-border);border-radius:8px;padding:1rem;text-align:center;cursor:pointer;transition:all .15s;background:rgba(185,28,28,.03);margin-top:.5rem}
-.photo-zone:hover{background:rgba(185,28,28,.06)}
-.photo-preview{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
-.photo-thumb{width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
-
-/* Score display */
-.score-display{background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:10px;padding:.85rem 1rem;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-top:.75rem}
-.score-label{font-size:.75rem;opacity:.8}
-.score-value{font-size:1.6rem;font-weight:900;font-family:"IBM Plex Mono",monospace}
-
-/* Table */
-table{width:100%;border-collapse:collapse;font-size:.78rem}
-th{text-align:left;padding:.45rem .7rem;font-size:.65rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--border);background:var(--surface2)}
-td{padding:.55rem .7rem;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tbody tr:hover{background:var(--surface2)}
-
-/* Badge */
-.badge{display:inline-flex;align-items:center;font-size:.65rem;font-weight:700;padding:.12rem .5rem;border-radius:20px}
-.badge-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border)}
-.badge-warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)}
-.badge-danger{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
-.badge-blue{background:var(--accent-light);color:var(--accent);border:1px solid #bfdbfe}
-
-/* Report */
-.report-hero{background:var(--accent);color:#fff;border-radius:10px;padding:1.25rem;margin-bottom:1rem}
-.inner-tabs{display:flex;gap:.2rem;margin-bottom:1rem;border-bottom:2px solid var(--border);padding-bottom:0}
-.inner-tab{padding:.45rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}
-.inner-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.inner-page{display:none}.inner-page.active{display:block}
-
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:#fff;border-radius:14px;padding:1.5rem;width:680px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
-.modal-title{font-size:1rem;font-weight:700}
-.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)}
-.modal-ft{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
-
-/* Deduct counter */
-.deduct-counter{display:flex;align-items:center;gap:.5rem;margin-top:.5rem}
-.deduct-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:#fff;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.deduct-btn:hover{border-color:var(--danger);color:var(--danger)}
-.deduct-count{font-size:1.1rem;font-weight:900;font-family:"IBM Plex Mono",monospace;min-width:30px;text-align:center;color:var(--danger)}
-
-/* Mobile */
-@media(max-width:768px){
-  .hd-top{padding:.5rem .75rem;height:auto;flex-wrap:wrap;gap:.4rem}
-  .logo-text{display:none}
-  nav{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  nav::-webkit-scrollbar{display:none}
-  main{padding:.75rem}
-  .g2,.g3{grid-template-columns:1fr}
-  .kpi-grid4{grid-template-columns:1fr 1fr}
-  .kpi-section > div:last-child{grid-template-columns:repeat(3,1fr)!important}
-  .site-grid{grid-template-columns:repeat(3,1fr)}
-  .form-row,.form-row3{grid-template-columns:1fr}
-  .check-header{flex-direction:column;align-items:flex-start;gap:.4rem}
-  .radio-group{width:100%}
-  .radio-opt label{flex:1;justify-content:center}
-  .page-hd{flex-direction:column;align-items:flex-start;gap:.5rem}
-  .page-hd .btn{width:100%;text-align:center}
+@media(max-width:600px){
+  main{padding:.85rem}
+  .card{padding:.9rem}
 }
-@media(max-width:480px){
-  .site-grid{grid-template-columns:repeat(2,1fr)}
-  .kpi-grid4{grid-template-columns:1fr 1fr}
-  .kpi-section > div:last-child{grid-template-columns:repeat(3,1fr)!important}
+
+/* 코드 입력 화면 */
+.code-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:1.5rem}
+.code-box{background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:400px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)}
+.code-logo{font-size:3rem;margin-bottom:.75rem}
+.code-title{font-size:1.1rem;font-weight:900;color:var(--accent);margin-bottom:.25rem}
+.code-sub{font-size:.8rem;color:var(--text2);margin-bottom:1.5rem}
+.code-input-wrap{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.25rem}
+.code-digit{width:56px;height:64px;border:2px solid var(--border2);border-radius:10px;font-size:1.8rem;font-weight:900;text-align:center;outline:none;font-family:"IBM Plex Mono",monospace;transition:all .15s;color:var(--accent)}
+.code-digit:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,64,175,.1)}
+.code-error{color:var(--danger);font-size:.78rem;margin-bottom:.75rem;min-height:20px}
+.code-hint{font-size:.72rem;color:var(--muted);margin-top:1rem}
+
+/* 서명 캔버스 */
+.sig-wrap{border:1px solid var(--border2);border-radius:8px;overflow:hidden;background:#fff;position:relative}
+.sig-canvas{display:block;cursor:crosshair;touch-action:none}
+.sig-toolbar{display:flex;gap:.5rem;padding:.5rem;background:var(--bg);border-top:1px solid var(--border)}
+
+/* 출력 */
+@media print{
+  header,.no-print,#form-section > div:last-child{display:none!important}
+  body{background:#fff}
+  .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+  .issue-card{break-inside:avoid}
+  main{padding:0;max-width:100%}
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
-<header>
-  <div class="hd-top">
-    <div class="logo">
-      <div class="logo-icon">🛡</div>
-      <span class="logo-text">안전보건점검 관리시스템</span>
+<!-- 코드 입력 화면 -->
+<div class="code-screen" id="code-screen">
+  <div class="code-box">
+    <div class="code-logo">🛡</div>
+    <div class="code-title">안전보건점검</div>
+    <div class="code-sub">개선결과 제출 시스템</div>
+    <div class="fg" style="margin-bottom:1rem;text-align:left">
+      <label style="font-size:.78rem;font-weight:600;color:var(--text2)">사업장 선택</label>
+      <select id="code-site" style="width:100%;background:#fff;border:1px solid var(--border2);border-radius:7px;padding:.5rem .75rem;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;outline:none;color:var(--text)">
+        <option value="">— 사업장을 선택하세요 —</option>
+      </select>
     </div>
-    <nav>
-      <button class="nav-btn active" onclick="goPage('dashboard')">대시보드</button>
-      <button class="nav-btn" onclick="goPage('input')">점검 입력</button>
-      <button class="nav-btn" onclick="goPage('report')">결과보고서</button>
-    </nav>
-    <div class="hd-date" id="hd-date"></div>
+    <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:.5rem;text-align:left">4자리 인증코드 입력</div>
+    <div class="code-input-wrap">
+      <input class="code-digit" id="d1" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d2')" onkeydown="movePrev(event,this,'')">
+      <input class="code-digit" id="d2" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d3')" onkeydown="movePrev(event,this,'d1')">
+      <input class="code-digit" id="d3" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d4')" onkeydown="movePrev(event,this,'d2')">
+      <input class="code-digit" id="d4" maxlength="1" type="password" inputmode="numeric" oninput="checkCode()" onkeydown="movePrev(event,this,'d3')">
+    </div>
+    <div class="code-error" id="code-error"></div>
+    <button class="btn btn-primary" onclick="verifyCode()" style="width:100%;padding:.6rem">확인</button>
+    <div class="code-hint">※ 인증코드는 사업장 담당자에게 별도 안내됩니다</div>
   </div>
+</div>
+
+<!-- 메인 화면 (코드 인증 후 표시) -->
+<div id="main-screen" style="display:none">
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡</div>
+    안전보건점검 개선결과 제출
+  </div>
+  <div class="sub">점검 지적사항 개선결과를 입력해주세요</div>
 </header>
 
 <main>
 
-<!-- ════ 대시보드 ════ -->
-<div class="page active" id="page-dashboard">
-  <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.75rem" class="no-print">
-    <button class="btn btn-outline btn-sm" onclick="downloadAllPdf()">⬇ 전체 PDF 다운로드</button>
-    <button class="btn btn-outline btn-sm" onclick="downloadBulkPdf()">📦 사업장별 개별 PDF</button>
-  </div>
-  <div class="hero">
-    <div class="hero-inner">
-      <div class="hero-top">
-        <div>
-          <div class="hero-title">🛡 안전보건점검 현황</div>
-          <div class="hero-sub">실시간 점검 모니터링 대시보드</div>
-        </div>
-        <button class="btn" onclick="goPage('input')" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:.75rem;padding:.4rem .85rem;border-radius:20px">+ 입력</button>
+<!-- 입력 폼 -->
+<div id="form-section">
+
+  <!-- 기본정보 -->
+  <div class="card">
+    <div class="section-title">기본 정보</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+      <div class="fg">
+        <label>사업장명</label>
+        <input type="text" id="fb-site" readonly style="background:var(--surface2);font-weight:700;color:var(--accent)">
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-val" id="kpi-progress">0%</div>
-          <div class="hero-stat-lbl">진행률</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-val" id="kpi-avg">-</div>
-          <div class="hero-stat-lbl">평균점수</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-val" id="kpi-done">0</div>
-          <div class="hero-stat-lbl">완료</div>
-        </div>
+      <div class="fg">
+        <label>담당자명 *</label>
+        <input type="text" id="fb-manager" placeholder="홍길동">
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:.62rem;color:rgba(255,255,255,.55);margin-bottom:.3rem">
-        <span id="kpi-progress-sub">0 / 52 사업장</span>
-        <span>목표 52개소</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+      <div class="fg">
+        <label>연락처</label>
+        <input type="tel" id="fb-tel" placeholder="010-0000-0000">
       </div>
-      <div class="hero-prog-wrap"><div class="hero-prog-fill" id="kpi-prog-bar" style="width:0%"></div></div>
+      <div class="fg">
+        <label>개선완료일 *</label>
+        <input type="date" id="fb-date">
+      </div>
+    </div>
+    <div class="fg">
+      <label>종합 의견</label>
+      <textarea id="fb-memo" placeholder="개선 조치 전반에 대한 의견을 입력하세요"></textarea>
     </div>
   </div>
 
-  <div class="kpi-section">
-    <div class="kpi-section-title">현황 요약</div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem">
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(167,139,250,.25);margin-bottom:.4rem">🏢</div>
-        <div class="kpi-val" style="color:#fff;font-size:1.3rem">52</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">총 관리사업장</div>
-      </div>
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(99,179,237,.25);margin-bottom:.4rem">📊</div>
-        <div class="kpi-val" id="kpi-done2" style="color:#93c5fd;font-size:1.3rem">0</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">점검완료</div>
-      </div>
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(252,129,129,.25);margin-bottom:.4rem">⚠️</div>
-        <div class="kpi-val" id="kpi-bad" style="color:#fca5a5;font-size:1.3rem">0</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">미흡항목</div>
-      </div>
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(52,211,153,.25);margin-bottom:.4rem">🔧</div>
-        <div class="kpi-val" id="kpi-improved" style="color:#6ee7b7;font-size:1.3rem">0</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">개선완료</div>
-      </div>
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(251,191,36,.25);margin-bottom:.4rem">📈</div>
-        <div class="kpi-val" id="kpi-improve-rate" style="color:#fde68a;font-size:1.3rem">0%</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">개선율</div>
+  <!-- 서명 -->
+  <div class="card">
+    <div class="section-title">관리자 서명</div>
+    <div style="background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px;padding:.85rem 1rem;font-size:.82rem;color:var(--accent);margin-bottom:.85rem;line-height:1.7">
+      본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며,<br>
+      개선결과를 안전관리팀에 제출합니다.
+    </div>
+    <div style="font-size:.75rem;color:var(--text2);margin-bottom:.65rem">아래 서명란에 서명해주세요 (마우스 또는 터치)</div>
+    <div class="sig-wrap">
+      <canvas id="sig-canvas" class="sig-canvas" width="680" height="160"></canvas>
+      <div class="sig-toolbar">
+        <button class="btn btn-outline btn-sm" onclick="clearSig()">서명 지우기</button>
+        <span style="font-size:.72rem;color:var(--muted);display:flex;align-items:center">손가락 또는 마우스로 서명하세요</span>
       </div>
     </div>
   </div>
 
-  <div class="g3">
-    <div class="card">
-      <div class="card-title">사업장별 점검 현황</div>
-      <div class="site-grid" id="site-grid"></div>
+  <!-- 미흡항목 개선결과 -->
+  <div class="card">
+    <div class="section-title">미흡항목 개선결과</div>
+    <div style="background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent);margin-bottom:1rem">
+      📋 사업장명을 선택하면 해당 점검의 미흡 항목이 자동으로 표시됩니다.
     </div>
-    <div style="display:flex;flex-direction:column;gap:.85rem">
-      <div class="card">
-        <div class="card-title">🏆 상위 항목 TOP 3</div>
-        <div id="top3"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.8rem">데이터 없음</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">⚠ 하위 항목 BOTTOM 3</div>
-        <div id="bot3"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.8rem">데이터 없음</div></div>
-      </div>
+    <div id="issue-list">
+      <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:.85rem">
-    <div class="card-title">항목별 평균 점수</div>
-    <div id="item-chart"></div>
-  </div>
-
-  <!-- 개선현황 -->
-  <div class="card" style="margin-top:.85rem">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-      <div class="card-title" style="margin-bottom:0">사업장별 개선현황</div>
-      <a href="feedback.html" target="_blank" class="btn btn-primary btn-sm">+ 개선결과 입력</a>
-    </div>
-    <div id="improvement-list">
-      <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.8rem">개선결과 데이터가 없습니다</div>
-    </div>
+  <div style="display:flex;justify-content:flex-end;gap:.5rem flex-wrap:wrap" class="no-print">
+    <button class="btn btn-outline" onclick="resetForm()">초기화</button>
+    <button class="btn btn-outline" onclick="printResult()">🖨 출력/PDF</button>
+    <button class="btn btn-primary" onclick="submitFeedback()">📤 개선결과 제출</button>
   </div>
 </div>
 
-<!-- ════ 점검 입력 ════ -->
-<div class="page" id="page-input">
-  <div class="page-hd">
-    <div><h1>점검 입력</h1><p>25개 항목 점검 결과 입력 (우수4/보통3/미흡2점, 현장점검 미흡 감점)</p></div>
-  </div>
-  <div class="g2">
-    <div>
-      <div class="card" style="margin-bottom:.85rem">
-        <div class="form-section-title">기본 정보</div>
-        <div class="form-row">
-          <div class="fg"><label>점검 사업장 *</label>
-            <select id="inp-site"><option value="">— 선택 —</option></select>
-          </div>
-          <div class="fg"><label>점검일자 *</label><input type="date" id="inp-date"></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>점검자 *</label><input type="text" id="inp-inspector" placeholder="성명"></div>
-          <div class="fg"><label>점검 유형</label>
-            <select id="inp-type"><option>정기점검</option><option>수시점검</option><option>특별점검</option></select>
-          </div>
-        </div>
-        <div class="fg"><label>종합 의견</label><textarea id="inp-memo" placeholder="전반적인 현장 상태 및 특이사항"></textarea></div>
-      </div>
-      <div class="card">
-        <div class="form-section-title">사업장 관리자 정보</div>
-        <div class="form-row">
-          <div class="fg"><label>담당자 성명</label><input type="text" id="inp-mgr-name" placeholder="홍길동"></div>
-          <div class="fg"><label>이메일</label><input type="email" id="inp-mgr-email" placeholder="manager@company.com"></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>연락처 (문자 수신용)</label><input type="tel" id="inp-mgr-tel" placeholder="010-0000-0000"></div>
-        </div>
-      </div>
-      <!-- 점수 표시 -->
-      <div class="score-display" style="margin-top:.85rem">
-        <div><div class="score-label">현재 점수</div><div style="font-size:.68rem;color:rgba(255,255,255,.6);margin-top:.1rem" id="score-detail">항목을 선택하세요</div></div>
-        <div class="score-value" id="score-display">-</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="form-section-title">점검 항목 (25개 × 4점 = 100점 만점)</div>
-      <div class="check-items-wrap" id="check-items-wrap"></div>
-    </div>
-  </div>
-  <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.5rem">
-    <button class="btn btn-outline" onclick="resetInput()">초기화</button>
-    <button class="btn btn-primary" onclick="saveInspection()">💾 저장 및 보고서 생성</button>
-  </div>
-</div>
-
-<!-- ════ 결과보고서 ════ -->
-<div class="page" id="page-report">
-  <div class="page-hd">
-    <div><h1>결과보고서</h1><p>점검 완료 후 자동 생성</p></div>
-    <div style="display:flex;gap:.5rem;align-items:center">
-      <select id="report-sel" class="btn btn-outline" style="cursor:pointer" onchange="loadReport()">
-        <option value="">— 사업장 선택 —</option>
-      </select>
-      <button class="btn btn-outline" onclick="window.print()">🖨 인쇄</button>
-      <button class="btn btn-outline" onclick="downloadSinglePdf()" id="dl-single-btn" style="display:none">⬇ PDF 저장</button>
-      <button class="btn btn-primary" onclick="openFbModal()" id="fb-btn" style="display:none">📨 피드백 발송</button>
-    </div>
-  </div>
-  <div class="inner-tabs">
-    <button class="inner-tab active" onclick="switchRpt('exec',this)">보고서① 임원용</button>
-    <button class="inner-tab" onclick="switchRpt('site',this)">보고서② 사업장용</button>
-  </div>
-  <div class="inner-page active" id="rpt-exec"><div style="text-align:center;padding:4rem;color:var(--muted)">사업장을 선택하세요</div></div>
-  <div class="inner-page" id="rpt-site"><div style="text-align:center;padding:4rem;color:var(--muted)">사업장을 선택하세요</div></div>
+<!-- 완료 화면 -->
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">개선결과 제출 완료!</div>
+  <div class="success-sub" id="success-msg"></div>
+  <button class="btn btn-primary" style="margin-top:1.5rem" onclick="location.reload()">추가 제출</button>
 </div>
 
 </main>
 
-<!-- 저장 완료 모달 -->
-<div class="modal-overlay" id="modal-saved">
-  <div class="modal">
-    <div class="modal-hd"><div class="modal-title">✅ 점검 결과 저장 완료</div><button class="modal-close" onclick="closeModal('modal-saved')">✕</button></div>
-    <div id="modal-status" style="font-size:.82rem;color:var(--ok);font-weight:600;margin-bottom:.75rem;padding:.75rem;background:var(--ok-bg);border-radius:8px;border:1px solid var(--ok-border)"></div>
-    <div style="background:var(--surface2);border-radius:8px;padding:1rem;font-size:.8rem;line-height:2;color:var(--text2)">
-      🔴 결과보고서 PDF 자동 생성<br>
-      📧 임원 이메일 자동 발송<br>
-      📄 사업장 피드백 + 개선확인서(PDF+엑셀) 발송<br>
-      💬 카카오톡 요약 전송
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-outline" onclick="closeModal('modal-saved')">닫기</button>
-      <button class="btn btn-primary" onclick="closeModal('modal-saved');goPage('report')">보고서 확인 →</button>
-    </div>
-  </div>
-</div>
-
 <script>
-// ══ 데이터 ══
-const SITES = ["T-타워","서린","둔산","보라매","분당","인재개발원","종로타워","부암","성수","테크원","판교","우산","KT&G","관훈","태평","유타워","삼화타워","전주","무의연수원","청주","서산공장","원주","본리","부사","L7호텔","데이터","제주","ICN10","인천","안락","장안","모비언트 광주","수유","신천","송정","센터원 서울사무소","용인","영시티","현대위아 평택","행복나눔","넥실리스","인천석유화학","11번가","중동","센트로시티","오토에버 광주","오리온용암수","고려대 거점오피스","서강대","스타크빌딩","명륜","분당N타워"];
+// ══ 사업장별 인증코드 ══
+const SITE_CODES = {
+  "T-타워":"2951","서린":"6234","둔산":"9233","보라매":"9385","분당":"2681",
+  "인재개발원":"4658","종로타워":"7891","부암":"9975","성수":"9042","테크원":"8226",
+  "판교":"4931","우산":"1041","KT&G":"2322","관훈":"2814","태평":"5706",
+  "유타워":"2606","삼화타워":"8367","전주":"1188","무의연수원":"9032","청주":"6148",
+  "서산공장":"4444","원주":"7508","본리":"5120","부사":"6696","L7호텔":"6843",
+  "데이터":"7166","제주":"9414","ICN10":"2250","인천":"6577","안락":"2469",
+  "장안":"9815","모비언트 광주":"5786","수유":"5712","신천":"8494","송정":"3308",
+  "센터원 서울사무소":"6062","용인":"1405","영시티":"7043","현대위아 평택":"6956",
+  "행복나눔":"8554","넥실리스":"7917","인천석유화학":"2485","11번가":"7533",
+  "중동":"9166","센트로시티":"2907","오토에버 광주":"7970","오리온용암수":"9296",
+  "고려대 거점오피스":"9045","서강대":"7523","스타크빌딩":"9595","명륜":"5237","분당N타워":"7880"
+};
 
-const CHECK_ITEMS = [
-  {key:"c01",name:"관리감독자 지정"},
-  {key:"c02",name:"관리감독자 업무 일지"},
-  {key:"c03",name:"법적 게시물"},
-  {key:"c04",name:"정기안전 교육"},
-  {key:"c05",name:"채용시 교육"},
-  {key:"c06",name:"특별교육"},
-  {key:"c07",name:"관리감독자 교육"},
-  {key:"c08",name:"MSDS 교육"},
-  {key:"c09",name:"MSDS 관리"},
-  {key:"c10",name:"위험성평가"},
-  {key:"c11",name:"TBM"},
-  {key:"c12",name:"유해/위험기구 안전관리"},
-  {key:"c13",name:"보호구 안전인증대상 관리"},
-  {key:"c14",name:"보호구 지급대장 관리"},
-  {key:"c15",name:"건강검진 관리"},
-  {key:"c16",name:"유소견자 면담일지 작성"},
-  {key:"c17",name:"근골격계유해요인조사"},
-  {key:"c18",name:"감정노동 근로자 보호"},
-  {key:"c19",name:"산업재해 발생 및 현황 관리"},
-  {key:"c20",name:"휴게시설 관리"},
-  {key:"c21",name:"중대재해대응 매뉴얼"},
-  {key:"c22",name:"중대재해대응 훈련"},
-  {key:"c23",name:"적격수급업체 관리"},
-  {key:"c24",name:"공사업체 출입관리"},
-  {key:"c25",name:"안전보건표지 부착/관리 상태"},
-];
+let verifiedSite = "";
 
-const SCORE_MAP = {good:4, normal:3, bad:2};
-const SCORE_LABEL = {good:"우수", normal:"보통", bad:"미흡"};
-
-let inspections = JSON.parse(localStorage.getItem("shi_v3")||"[]");
-let currentRptId = null;
-let deductPhotos = []; // base64 사진 배열
-let deductCount = 0;
-
-// ══ Init ══
-(function(){
-  document.getElementById("hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
-  document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
-  const sel = document.getElementById("inp-site");
-  SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; sel.appendChild(o); });
-  renderCheckItems();
-  updateDashboard();
-  updateReportSel();
+// 코드 입력 화면 초기화
+(function initCodeScreen(){
+  const sel = document.getElementById("code-site");
+  Object.keys(SITE_CODES).forEach(s=>{
+    const o = document.createElement("option");
+    o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
 })();
 
-// ══ 점검 항목 렌더링 ══
-function renderCheckItems(){
-  const wrap = document.getElementById("check-items-wrap");
-  let html = CHECK_ITEMS.map((item,i)=>`
-    <div class="check-item-card">
-      <div class="check-header">
-        <div class="check-name">
-          <div class="check-icon">${i+1}</div>
-          ${item.name}
-        </div>
-        <div class="radio-group">
-          ${["good","normal","bad"].map(v=>`
-            <div class="radio-opt ${v}">
-              <input type="radio" name="${item.key}" id="${item.key}-${v}" value="${v}" onchange="updateScore()">
-              <label for="${item.key}-${v}">${SCORE_LABEL[v]}(${SCORE_MAP[v]})</label>
-            </div>`).join("")}
-        </div>
-      </div>
-      <div class="fg">
-        <textarea id="note-${item.key}" placeholder="기타사항" style="min-height:44px;font-size:.75rem"></textarea>
-      </div>
-    </div>`).join("");
-
-  // 감점 항목
-  html += `
-    <div class="check-item-card deduct">
-      <div class="check-header">
-        <div class="check-name" style="color:var(--danger)">
-          <div class="check-icon" style="background:var(--danger-bg);color:var(--danger)">📷</div>
-          현장점검 미흡사항 (감점)
-        </div>
-      </div>
-      <div style="font-size:.75rem;color:var(--danger);margin-bottom:.5rem">미흡사항 1개당 -1점 감점</div>
-      <div class="deduct-counter">
-        <span style="font-size:.78rem;font-weight:600;color:var(--text2)">미흡 건수:</span>
-        <button class="deduct-btn" onclick="changeDeduct(-1)">−</button>
-        <div class="deduct-count" id="deduct-count">0</div>
-        <button class="deduct-btn" onclick="changeDeduct(1)">+</button>
-        <span style="font-size:.72rem;color:var(--muted)">건</span>
-      </div>
-      <div class="fg" style="margin-top:.5rem">
-        <textarea id="note-deduct" placeholder="미흡사항 내용 기재" style="min-height:52px;font-size:.75rem"></textarea>
-      </div>
-      <div class="photo-zone" onclick="document.getElementById('photo-input').click()">
-        <div style="font-size:.8rem;color:var(--danger)">📷 미흡사항 사진 첨부</div>
-        <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">클릭하여 사진 선택 (카메라/갤러리)</div>
-        <input type="file" id="photo-input" multiple accept="image/*" capture="environment" style="display:none" onchange="handlePhotos(this)">
-      </div>
-      <div class="photo-preview" id="photo-preview"></div>
-    </div>`;
-
-  wrap.innerHTML = html;
-  updateScore();
-}
-
-function changeDeduct(n){
-  deductCount = Math.max(0, deductCount + n);
-  document.getElementById("deduct-count").textContent = deductCount;
-  updateScore();
-}
-
-function handlePhotos(input){
-  Array.from(input.files).forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = e => {
-      const idx = deductPhotos.length;
-      deductPhotos.push({src: e.target.result, note: ""});
-      renderPhotoPreview();
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value = ""; // 같은 파일 재선택 가능하게
-}
-
-function renderPhotoPreview(){
-  const preview = document.getElementById("photo-preview");
-  preview.innerHTML = deductPhotos.map((p, i) => `
-    <div style="background:#fff;border:1px solid var(--danger-border);border-radius:8px;padding:.65rem;position:relative;width:100%">
-      <div style="display:flex;gap:.75rem;align-items:flex-start">
-        <div style="position:relative;flex-shrink:0">
-          <img src="${p.src}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
-          <button onclick="removePhoto(${i})" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--danger);color:#fff;border:none;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:900">✕</button>
-        </div>
-        <div style="flex:1">
-          <div style="font-size:.7rem;font-weight:600;color:var(--danger);margin-bottom:.3rem">미흡사항 ${i+1}</div>
-          <textarea onchange="updatePhotoNote(${i}, this.value)" placeholder="이 사진의 미흡 내용을 입력하세요" style="width:100%;min-height:70px;border:1px solid var(--border2);border-radius:6px;padding:.4rem .6rem;font-size:.75rem;font-family:'Noto Sans KR',sans-serif;resize:vertical;outline:none">${p.note}</textarea>
-        </div>
-      </div>
-    </div>`).join("");
-  // 건수 자동 업데이트
-  deductCount = deductPhotos.length;
-  document.getElementById("deduct-count").textContent = deductCount;
-  updateScore();
-}
-
-function removePhoto(idx){
-  deductPhotos.splice(idx, 1);
-  renderPhotoPreview();
-}
-
-function updatePhotoNote(idx, val){
-  deductPhotos[idx].note = val;
-}
-
-function updateScore(){
-  let total = 0, selected = 0;
-  CHECK_ITEMS.forEach(item=>{
-    const sel = document.querySelector(`input[name="${item.key}"]:checked`);
-    if(sel){ total += SCORE_MAP[sel.value]; selected++; }
-  });
-  const maxScore = CHECK_ITEMS.length * 4; // 100점
-  const baseScore = selected > 0 ? Math.round(total / maxScore * 100) : 0;
-  const finalScore = Math.max(0, baseScore - deductCount);
-  if(selected === 0){
-    document.getElementById("score-display").textContent = "-";
-    document.getElementById("score-detail").textContent = "항목을 선택하세요";
-  } else {
-    document.getElementById("score-display").textContent = finalScore + "점";
-    document.getElementById("score-detail").textContent = `기본 ${baseScore}점 - 감점 ${deductCount}점 = ${finalScore}점`;
+function moveNext(el, nextId){
+  if(el.value.length===1 && nextId){
+    document.getElementById(nextId).focus();
   }
 }
 
-// ══ 저장 ══
-async function saveInspection(){
-  const site = document.getElementById("inp-site").value;
-  const date = document.getElementById("inp-date").value;
-  const inspector = document.getElementById("inp-inspector").value.trim();
-  if(!site||!date||!inspector){ alert("사업장, 점검일자, 점검자를 입력하세요."); return; }
+function movePrev(e, el, prevId){
+  if(e.key==="Backspace" && el.value==="" && prevId){
+    document.getElementById(prevId).focus();
+  }
+}
 
-  const scores = {};
-  let allSelected = true;
-  let totalScore = 0;
-  let badCount = 0;
+function checkCode(){
+  const code = ["d1","d2","d3","d4"].map(id=>document.getElementById(id).value).join("");
+  if(code.length===4) verifyCode();
+}
 
-  CHECK_ITEMS.forEach(item=>{
-    const sel = document.querySelector(`input[name="${item.key}"]:checked`);
-    if(!sel) allSelected = false;
-    const val = sel ? sel.value : null;
-    const score = sel ? SCORE_MAP[val] : 0;
-    if(val==="bad") badCount++;
-    scores[item.key] = { value:val, score, note:document.getElementById("note-"+item.key).value.trim() };
-    totalScore += score;
+function verifyCode(){
+  const site = document.getElementById("code-site").value;
+  const code = ["d1","d2","d3","d4"].map(id=>document.getElementById(id).value).join("");
+  const errEl = document.getElementById("code-error");
+
+  if(!site){ errEl.textContent="사업장을 선택해주세요."; return; }
+  if(code.length<4){ errEl.textContent="4자리 코드를 모두 입력해주세요."; return; }
+
+  if(SITE_CODES[site]===code){
+    verifiedSite = site;
+    document.getElementById("code-screen").style.display="none";
+    document.getElementById("main-screen").style.display="block";
+    // 사업장 자동 선택
+    document.getElementById("fb-site").value = site;
+    loadSiteIssues();
+    errEl.textContent="";
+  } else {
+    errEl.textContent="❌ 인증코드가 올바르지 않습니다.";
+    ["d1","d2","d3","d4"].forEach(id=>{ document.getElementById(id).value=""; });
+    document.getElementById("d1").focus();
+  }
+}
+
+const SITES = ["T-타워","서린","둔산","보라매","분당","인재개발원","종로타워","부암","성수","테크원","판교","우산","KT&G","관훈","태평","유타워","삼화타워","전주","무의연수원","청주","서산공장","원주","본리","부사","L7호텔","데이터","제주","ICN10","인천","안락","장안","모비언트 광주","수유","신천","송정","센터원 서울사무소","용인","영시티","현대위아 평택","행복나눔","넥실리스","인천석유화학","11번가","중동","센트로시티","오토에버 광주","오리온용암수","고려대 거점오피스","서강대","스타크빌딩","명륜","분당N타워"];
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+
+let photoData = {}; // {issueIndex: [{src, note}]}
+let currentIssues = [];
+
+// 초기화
+(function(){
+  document.getElementById("fb-date").value = new Date().toISOString().split("T")[0];
+  const sel = document.getElementById("fb-site");
+  SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; sel.appendChild(o); });
+  sel.addEventListener("change", loadSiteIssues);
+})();
+
+async function loadSiteIssues(){
+  const site = document.getElementById("fb-site").value;
+  if(!site){
+    document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>`;
+    return;
+  }
+
+  // 로딩 표시
+  document.getElementById("issue-list").innerHTML=`
+    <div style="text-align:center;padding:2rem;color:var(--muted)">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">⏳</div>
+      <div style="font-size:.85rem">점검 데이터 불러오는 중...</div>
+    </div>`;
+
+  try {
+    // Google Sheets에서 미흡항목 조회
+    const res = await fetch(`${SCRIPT_URL}?site=${encodeURIComponent(site)}`);
+    const data = await res.json();
+
+    if(data.error){
+      document.getElementById("issue-list").innerHTML=`
+        <div style="padding:1rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;font-size:.85rem;color:var(--danger)">
+          ❌ ${data.error}<br><small>점검이 완료된 사업장만 개선결과를 제출할 수 있습니다.</small>
+        </div>`;
+      return;
+    }
+
+    // 미흡(bad) 항목만 필터링
+    currentIssues = data.issueItems
+      .filter(item=>item.result==='bad'||item.result==='미흡')
+      .map(item=>({
+        key: item.key,
+        name: item.name,
+        originalNote: item.note||'',
+        result: item.result
+      }));
+
+    // 현장점검 미흡사항 추가
+    if(data.deductCount > 0){
+      currentIssues.push({
+        key:'deduct_0',
+        name:`현장점검 미흡사항 (${data.deductCount}건)`,
+        originalNote: data.deductNote||'',
+        result:'deduct'
+      });
+    }
+
+    photoData = {};
+    currentIssues.forEach((_,i)=>{ photoData[i]=[]; });
+
+    if(currentIssues.length===0){
+      document.getElementById("issue-list").innerHTML=`
+        <div style="padding:1rem;background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:8px;font-size:.85rem;color:var(--ok)">
+          ✅ 해당 사업장은 미흡 항목이 없습니다!
+        </div>`;
+      return;
+    }
+
+    renderIssues(data);
+
+  } catch(e) {
+    console.log('오류:', e);
+    document.getElementById("issue-list").innerHTML=`
+      <div style="padding:1rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;font-size:.85rem;color:var(--danger)">
+        ❌ 데이터 로드 실패. 네트워크 연결을 확인해주세요.
+      </div>`;
+  }
+}
+
+function renderIssues(data){
+  const list = document.getElementById("issue-list");
+  const total = currentIssues.length;
+
+  list.innerHTML = `
+    <div style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text2);margin-bottom:.3rem">
+        <span>개선 진행률</span><span id="progress-text">0 / ${total}건 완료</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  ` + currentIssues.map((issue,i)=>{
+    const isDeduct = issue.key && issue.key.startsWith('deduct');
+
+    if(isDeduct) {
+      // 현장점검 감점항목 - 기존 미흡사진 + 개선사진 + 내용
+      return `
+      <div class="issue-card" id="issue-card-${i}" style="border-color:var(--danger-border)">
+        <div class="issue-header" style="background:var(--danger-bg)">
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div class="issue-num" style="background:var(--danger)">${i+1}</div>
+            <div class="issue-name" style="color:var(--danger)">${issue.name}</div>
+          </div>
+          <select class="status-select" id="status-${i}" onchange="updateProgress()"
+            style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
+            <option value="pending">⏳ 미완료</option>
+            <option value="done">✅ 개선완료</option>
+            <option value="inprogress">🔄 진행중</option>
+          </select>
+        </div>
+        <div class="issue-body">
+          ${issue.originalNote?`<div class="issue-original" style="border-color:var(--danger)">📋 지적내용: ${issue.originalNote}</div>`:""}
+          <div style="font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">📷 개선 전→후 사진 첨부</div>
+          <div class="photo-upload-zone" onclick="document.getElementById('photo-${i}').click()" style="border-color:var(--danger-border)">
+            <div style="font-size:.82rem;color:var(--danger)">📷 개선 후 사진 첨부</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">카메라 촬영 또는 갤러리에서 선택</div>
+            <input type="file" id="photo-${i}" multiple accept="image/*" style="display:none" onchange="handlePhoto(${i},this)">
+          </div>
+          <div id="photo-list-${i}" class="photo-list"></div>
+          <div class="fg" style="margin-top:.65rem">
+            <label>개선 조치 내용 *</label>
+            <textarea id="imp-text-${i}" placeholder="현장점검 미흡사항에 대한 개선 조치 내용을 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
+          </div>
+        </div>
+      </div>`;
+    } else {
+      // 일반 미흡항목 - 텍스트만 (사진 없음)
+      return `
+      <div class="issue-card" id="issue-card-${i}">
+        <div class="issue-header">
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div class="issue-num">${i+1}</div>
+            <div class="issue-name">${issue.name}</div>
+          </div>
+          <select class="status-select" id="status-${i}" onchange="updateProgress()"
+            style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
+            <option value="pending">⏳ 미완료</option>
+            <option value="done">✅ 개선완료</option>
+            <option value="inprogress">🔄 진행중</option>
+          </select>
+        </div>
+        <div class="issue-body">
+          ${issue.originalNote?`<div class="issue-original">📋 지적내용: ${issue.originalNote}</div>`:""}
+          <div class="fg">
+            <label>개선 조치 내용 *</label>
+            <textarea id="imp-text-${i}" placeholder="어떻게 개선했는지 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
+          </div>
+        </div>
+      </div>`;
+    }
+  }).join("");
+}
+
+function handlePhoto(idx, input){
+  Array.from(input.files).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const pIdx = photoData[idx].length;
+      photoData[idx].push({src:e.target.result, note:""});
+      renderPhotoList(idx);
+    };
+    reader.readAsDataURL(file);
   });
-  if(!allSelected){ alert("모든 점검 항목(25개)을 선택해주세요."); return; }
+  input.value="";
+}
 
-  const maxScore = CHECK_ITEMS.length * 4;
-  const baseScore = Math.round(totalScore / maxScore * 100);
-  const finalScore = Math.max(0, baseScore - deductCount);
+function renderPhotoList(idx){
+  const list = document.getElementById(`photo-list-${idx}`);
+  list.innerHTML = photoData[idx].map((p,pi)=>`
+    <div class="photo-item">
+      <img src="${p.src}">
+      <div style="flex:1">
+        <textarea placeholder="이 사진에 대한 설명" style="width:100%;min-height:55px;border:1px solid var(--border2);border-radius:6px;padding:.35rem .6rem;font-size:.75rem;font-family:'Noto Sans KR',sans-serif;resize:vertical;outline:none" onchange="photoData[${idx}][${pi}].note=this.value">${p.note}</textarea>
+      </div>
+      <button class="photo-remove" onclick="removeImpPhoto(${idx},${pi})">✕</button>
+    </div>`).join("");
+}
 
-  const ins = {
-    id: Date.now(),
-    site, date, inspector,
-    type: document.getElementById("inp-type").value,
-    memo: document.getElementById("inp-memo").value.trim(),
-    mgrName: document.getElementById("inp-mgr-name").value.trim(),
-    mgrEmail: document.getElementById("inp-mgr-email").value.trim(),
-    mgrTel: document.getElementById("inp-mgr-tel").value.trim(),
-    scores, totalScore, baseScore, finalScore,
-    badCount, deductCount,
-    deductNote: deductPhotos.map((p,i)=>`미흡${i+1}: ${p.note||"내용없음"}`).join(" / "),
-    deductItems: deductPhotos.map((p,i)=>({note:p.note, src:p.src})),
-    photos: deductPhotos.map(p=>p.src),
-    feedbackSent: false,
-    createdAt: new Date().toISOString()
-  };
+function removeImpPhoto(idx, pi){
+  photoData[idx].splice(pi,1);
+  renderPhotoList(idx);
+}
 
-  inspections = inspections.filter(i=>i.site!==site);
-  inspections.unshift(ins);
-  localStorage.setItem("shi_v3", JSON.stringify(inspections));
-  currentRptId = ins.id;
-  updateDashboard();
-  updateReportSel();
+function updateProgress(){
+  const total = currentIssues.length;
+  if(total===0) return;
+  let done = 0;
+  currentIssues.forEach((_,i)=>{
+    const status = document.getElementById(`status-${i}`)?.value;
+    const text = document.getElementById(`imp-text-${i}`)?.value.trim();
+    if(status==="done"&&text) done++;
+    // 카드 테두리 색상
+    const card = document.getElementById(`issue-card-${i}`);
+    if(card){
+      card.style.borderColor = status==="done"?"var(--ok-border)":status==="inprogress"?"var(--warn-border)":"var(--border)";
+    }
+  });
+  const pct = Math.round(done/total*100);
+  document.getElementById("progress-fill").style.width = pct+"%";
+  document.getElementById("progress-text").textContent = `${done} / ${total}건 완료`;
+}
 
-  // Apps Script 전송
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+async function submitFeedback(){
+  const site = document.getElementById("fb-site").value;
+  const manager = document.getElementById("fb-manager").value.trim();
+  const date = document.getElementById("fb-date").value;
+  if(!site||!manager||!date){ alert("사업장, 담당자명, 개선완료일을 입력하세요."); return; }
+  if(currentIssues.length===0){ alert("미흡 항목이 없습니다."); return; }
+
+  const results = currentIssues.map((issue,i)=>({
+    key: issue.key,
+    name: issue.name,
+    originalNote: issue.originalNote,
+    status: document.getElementById(`status-${i}`)?.value||"pending",
+    improvementText: document.getElementById(`imp-text-${i}`)?.value.trim()||"",
+    photos: photoData[i]||[]
+  }));
+
+  const doneCount = results.filter(r=>r.status==="done").length;
+  const sigData = isSigEmpty() ? "" : getSigDataUrl();
   const payload = {
-    site, date, inspector, type:ins.type, memo:ins.memo,
-    mgrName:ins.mgrName, mgrEmail:ins.mgrEmail,
-    baseScore, finalScore, deductCount,
-    deductNote:ins.deductNote,
-    deductItems:ins.deductItems,
-    scores: Object.fromEntries(CHECK_ITEMS.map(item=>[item.key, {name:item.name, value:scores[item.key].value, note:scores[item.key].note}]))
+    type: "feedback_result",
+    site, manager,
+    tel: document.getElementById("fb-tel").value.trim(),
+    date,
+    memo: document.getElementById("fb-memo").value.trim(),
+    totalIssues: currentIssues.length,
+    doneCount,
+    signature: sigData,
+    results
   };
+
+  // Google Sheets에 저장 + 관리자 이메일 발송
   try {
     const form = new FormData();
     form.append("payload", JSON.stringify(payload));
     await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", body:form });
-    document.getElementById("modal-status").textContent = "✅ Google Sheets 저장 + 이메일 + 카카오톡 발송 완료!";
-  } catch(e) {
-    document.getElementById("modal-status").textContent = "⚠ 네트워크 오류 (로컬 저장 완료)";
-  }
-  document.getElementById("modal-saved").classList.add("open");
-}
+  } catch(e) { console.log("전송 오류:", e); }
 
-function resetInput(){
-  document.getElementById("inp-site").value="";
-  document.getElementById("inp-inspector").value="";
-  document.getElementById("inp-memo").value="";
-  document.getElementById("inp-mgr-name").value="";
-  document.getElementById("inp-mgr-email").value="";
-  document.getElementById("inp-mgr-tel").value="";
-  document.getElementById("inp-date").value=new Date().toISOString().split("T")[0];
-  document.querySelectorAll(".check-items-wrap input[type=radio]").forEach(r=>r.checked=false);
-  CHECK_ITEMS.forEach(item=>{ const n=document.getElementById("note-"+item.key); if(n) n.value=""; });
-  document.getElementById("note-deduct").value="";
-  deductCount=0; deductPhotos=[];
-  document.getElementById("deduct-count").textContent="0";
-  document.getElementById("photo-preview").innerHTML="";
-  const noteDeduct = document.getElementById("note-deduct");
-  if(noteDeduct) noteDeduct.value="";
-  updateScore();
-}
-
-// ══ 네비게이션 ══
-function goPage(name){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  document.getElementById("page-"+name).classList.add("active");
-  const idx=["dashboard","input","report"].indexOf(name);
-  document.querySelectorAll(".nav-btn")[idx].classList.add("active");
-  if(name==="dashboard") updateDashboard();
-  if(name==="report") updateReportSel();
-}
-
-function closeModal(id){ document.getElementById(id).classList.remove("open"); }
-function switchRpt(tab,el){
-  document.querySelectorAll(".inner-tab").forEach(t=>t.classList.remove("active"));
-  document.querySelectorAll(".inner-page").forEach(p=>p.classList.remove("active"));
-  document.getElementById("rpt-"+tab).classList.add("active");
-  el.classList.add("active");
-  if(currentRptId) renderReports(currentRptId);
-}
-
-// ══ 대시보드 ══
-function updateDashboard(){
-  const done = inspections.length;
-  const pct = Math.round(done/52*100);
-  document.getElementById("kpi-progress").textContent = pct+"%";
-  document.getElementById("kpi-progress-sub").textContent = done+" / 52 사업장";
-  document.getElementById("kpi-prog-bar").style.width = pct+"%";
-  document.getElementById("kpi-done").textContent = done;
-  document.getElementById("kpi-done2").textContent = done;
-  const okCount = inspections.filter(i=>i.badCount===0&&i.deductCount===0).length;
-  const kpiOk = document.getElementById("kpi-ok"); if(kpiOk) kpiOk.textContent = okCount;
-  const badTotal = inspections.reduce((s,i)=>s+(i.badCount||0)+(i.deductCount||0),0);
-  document.getElementById("kpi-bad").textContent = badTotal;
-  const noFb = inspections.filter(i=>!i.feedbackSent).length;
-  const kpiNofb = document.getElementById("kpi-nofb"); if(kpiNofb) kpiNofb.textContent = noFb;
-  const avgSum = inspections.reduce((s,i)=>s+i.finalScore,0);
-  document.getElementById("kpi-avg").textContent = done ? Math.round(avgSum/done)+"점" : "-";
-
-  // Site grid
+  // 로컬에도 저장 (대시보드 연동)
   const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
-  const grid = document.getElementById("site-grid");
-  grid.innerHTML = SITES.map(site=>{
-    const ins = inspections.find(i=>i.site===site);
-    let cls="", color="var(--muted)", grade="";
-    if(ins){
-      const [g,c] = gradeInfo(ins.finalScore);
-      grade=g; color=c;
-      cls = ins.finalScore>=90?"done-ok":ins.finalScore>=80?"done-ok":ins.finalScore>=70?"done-warn":"done-bad";
-    }
-    const fb = feedbacks[site];
-    const fbStatus = !ins ? "" : fb ? "개선완료" : "미입력";
-    const fbColor = fb ? "var(--ok)" : "var(--danger)";
-    const fbBg = fb ? "var(--ok-bg)" : "var(--danger-bg)";
-    return `<div class="site-card ${cls}" onclick="${ins?`loadRptById(${ins.id})`:"goPage('input')"}">
-      <div class="site-name">${site}</div>
-      ${ins?`
-      <div style="display:flex;align-items:center;justify-content:center;gap:.3rem;margin:.25rem 0">
-        <span style="background:${color};color:#fff;font-size:.6rem;font-weight:800;padding:.1rem .4rem;border-radius:4px">${grade}</span>
-        <span class="site-score" style="color:${color}">${ins.finalScore}점</span>
-      </div>
-      <div style="font-size:.58rem;font-weight:700;color:${fbColor};background:${fbBg};padding:.1rem .4rem;border-radius:4px;display:inline-block;margin-top:.1rem">${fbStatus}</div>
-      `:`<div class="site-score" style="color:var(--muted)">—</div>`}
-      <div class="site-date">${ins?ins.date:"미점검"}</div>
-    </div>`;
-  }).join("");
+  feedbacks[site] = { ...payload, signature: sigData, submittedAt: new Date().toISOString() };
+  localStorage.setItem("shi_feedbacks", JSON.stringify(feedbacks));
 
-  // 개선현황
-  let totalImproved = 0;
-  let totalIssuesAll = 0;
-  const impList = document.getElementById("improvement-list");
-  const fbEntries = Object.values(feedbacks);
-  if(fbEntries.length>0){
-    fbEntries.forEach(fb=>{ totalImproved += (fb.doneCount||0); totalIssuesAll += (fb.totalIssues||0); });
-    document.getElementById("kpi-improved").textContent = totalImproved;
-    const improveRate = totalIssuesAll>0 ? Math.round(totalImproved/totalIssuesAll*100) : 0;
-    document.getElementById("kpi-improve-rate").textContent = improveRate+"%";
-    impList.innerHTML = `
-      <table>
-        <thead><tr><th>사업장</th><th>담당자</th><th style="text-align:center">미흡</th><th style="text-align:center">개선완료</th><th style="text-align:center">진행률</th><th>제출일</th></tr></thead>
-        <tbody>${fbEntries.map(fb=>{
-          const pct = fb.totalIssues>0?Math.round(fb.doneCount/fb.totalIssues*100):0;
-          const col = pct>=100?"var(--ok)":pct>=50?"var(--warn)":"var(--danger)";
-          return `<tr>
-            <td style="font-weight:600">${fb.site}</td>
-            <td style="font-size:.75rem">${fb.manager||"-"}</td>
-            <td style="text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--danger)">${fb.totalIssues}</td>
-            <td style="text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--ok)">${fb.doneCount}</td>
-            <td style="text-align:center">
-              <div style="display:flex;align-items:center;gap:.4rem">
-                <div style="flex:1;background:var(--border);border-radius:3px;height:6px;overflow:hidden">
-                  <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
-                </div>
-                <span style="font-size:.72rem;font-family:'IBM Plex Mono',monospace;color:${col};flex-shrink:0">${pct}%</span>
-              </div>
-            </td>
-            <td style="font-size:.72rem;color:var(--muted)">${fb.date||"-"}</td>
-          </tr>`;
-        }).join("")}</tbody>
-      </table>`;
-  } else {
-    document.getElementById("kpi-improved").textContent = "0";
-    document.getElementById("kpi-improve-rate").textContent = "0%";
+  // 완료 화면
+  document.getElementById("form-section").style.display="none";
+  document.getElementById("success-screen").style.display="block";
+  document.getElementById("success-msg").textContent = `${site} - ${doneCount}/${currentIssues.length}건 개선완료 제출됨`;
+}
+
+// ══ 서명 ══
+let sigCanvas, sigCtx, isSigning=false, lastX=0, lastY=0;
+
+(function initSig(){
+  sigCanvas = document.getElementById("sig-canvas");
+  sigCtx = sigCanvas.getContext("2d");
+
+  // 캔버스 크기 반응형
+  function resizeCanvas(){
+    const w = sigCanvas.parentElement.clientWidth || 680;
+    const ratio = window.devicePixelRatio||1;
+    const prevData = sigCtx ? sigCanvas.toDataURL() : null;
+    sigCanvas.width = w * ratio;
+    sigCanvas.height = 160 * ratio;
+    sigCanvas.style.width = w+"px";
+    sigCanvas.style.height = "160px";
+    sigCtx = sigCanvas.getContext("2d");
+    sigCtx.scale(ratio, ratio);
+    sigCtx.strokeStyle="#0f172a";
+    sigCtx.lineWidth=2.5;
+    sigCtx.lineCap="round";
+    sigCtx.lineJoin="round";
+  }
+  // DOM 로드 후 초기화
+  setTimeout(resizeCanvas, 100);
+  window.addEventListener("resize", resizeCanvas);
+
+  function getPos(e){
+    const rect = sigCanvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio||1;
+    if(e.touches){ return {x:(e.touches[0].clientX-rect.left), y:(e.touches[0].clientY-rect.top)}; }
+    return {x:e.clientX-rect.left, y:e.clientY-rect.top};
   }
 
-  // Item avgs
-  if(done>0){
-    const itemAvgs = CHECK_ITEMS.map(item=>{
-      const sum = inspections.reduce((s,ins)=>s+(ins.scores[item.key]?.score||0),0);
-      return {...item, avg: Math.round(sum/done/4*100)};
-    });
-    itemAvgs.sort((a,b)=>b.avg-a.avg);
-    document.getElementById("top3").innerHTML = itemAvgs.slice(0,3).map((item,i)=>`
-      <div class="rank-item">
-        <div class="rank-num rank-top">${i+1}</div>
-        <div class="rank-lbl">${item.name}</div>
-        <div class="rank-val" style="color:var(--ok)">${item.avg}점</div>
-      </div>`).join("");
-    document.getElementById("bot3").innerHTML = [...itemAvgs].reverse().slice(0,3).map((item,i)=>`
-      <div class="rank-item">
-        <div class="rank-num rank-bot">${i+1}</div>
-        <div class="rank-lbl">${item.name}</div>
-        <div class="rank-val" style="color:var(--danger)">${item.avg}점</div>
-      </div>`).join("");
-    document.getElementById("item-chart").innerHTML = itemAvgs.map(item=>{
-      const col = item.avg>=80?"#15803d":item.avg>=60?"#b45309":"#b91c1c";
-      return `<div class="chart-row">
-        <div class="chart-lbl">${item.name}</div>
-        <div class="chart-wrap"><div class="chart-fill" style="width:${item.avg}%;background:${col}">${item.avg}점</div></div>
-        <div class="chart-val">${item.avg}점</div>
-      </div>`;
-    }).join("");
-  }
+  sigCanvas.addEventListener("mousedown", e=>{ isSigning=true; const p=getPos(e); lastX=p.x; lastY=p.y; sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  sigCanvas.addEventListener("mousemove", e=>{ if(!isSigning) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); lastX=p.x; lastY=p.y; });
+  sigCanvas.addEventListener("mouseup", ()=>isSigning=false);
+  sigCanvas.addEventListener("mouseleave", ()=>isSigning=false);
+
+  sigCanvas.addEventListener("touchstart", e=>{ e.preventDefault(); isSigning=true; const p=getPos(e); lastX=p.x; lastY=p.y; sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  sigCanvas.addEventListener("touchmove", e=>{ e.preventDefault(); if(!isSigning) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); });
+  sigCanvas.addEventListener("touchend", ()=>isSigning=false);
+})();
+
+function clearSig(){ sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); }
+
+function isSigEmpty(){
+  const data = sigCtx.getImageData(0,0,sigCanvas.width,sigCanvas.height).data;
+  return !data.some(v=>v!==0);
 }
 
-// ══ 보고서 ══
-function updateReportSel(){
-  const sel = document.getElementById("report-sel");
-  sel.innerHTML = '<option value="">— 사업장 선택 —</option>' +
-    inspections.map(ins=>`<option value="${ins.id}">${ins.site} (${ins.date}) ${ins.finalScore}점</option>`).join("");
-  if(currentRptId){ sel.value=currentRptId; renderReports(currentRptId); }
-}
+function getSigDataUrl(){ return sigCanvas.toDataURL("image/png"); }
 
-function loadReport(){
-  const id = parseInt(document.getElementById("report-sel").value);
-  if(!id) return;
-  currentRptId=id; renderReports(id);
-}
+// ══ 출력 ══
+function printResult(){
+  const site = document.getElementById("fb-site").value;
+  const manager = document.getElementById("fb-manager").value.trim();
+  const date = document.getElementById("fb-date").value;
+  if(!site){ alert("사업장을 선택하세요."); return; }
+  if(currentIssues.length===0){ alert("미흡 항목 데이터가 없습니다."); return; }
 
-function loadRptById(id){
-  currentRptId=id; goPage("report");
-  setTimeout(()=>{ updateReportSel(); },100);
-}
+  const sigImg = isSigEmpty() ? "" : getSigDataUrl();
+  const results = currentIssues.map((issue,i)=>({
+    name: issue.name,
+    originalNote: issue.originalNote,
+    status: document.getElementById(`status-${i}`)?.value||"pending",
+    text: document.getElementById(`imp-text-${i}`)?.value.trim()||"",
+    photos: photoData[i]||[]
+  }));
 
-function renderReports(id){
-  const ins = inspections.find(i=>i.id===id);
-  if(!ins) return;
-  document.getElementById("fb-btn").style.display = ins.feedbackSent?"none":"block";
-  document.getElementById("dl-single-btn").style.display = "block";
-  renderExecRpt(ins);
-  renderSiteRpt(ins);
-}
-
-function gradeInfo(score){
-  if(score>=90) return ["A","#15803d"];
-  if(score>=80) return ["B","#1e40af"];
-  if(score>=70) return ["C","#b45309"];
-  return ["D","#b91c1c"];
-}
-
-function renderExecRpt(ins){
-  const [grade,col] = gradeInfo(ins.finalScore);
-  const badItems = CHECK_ITEMS.filter(item=>ins.scores[item.key]?.value==="bad");
-  const normalItems = CHECK_ITEMS.filter(item=>ins.scores[item.key]?.value==="normal");
-  const goodItems = CHECK_ITEMS.filter(item=>ins.scores[item.key]?.value==="good");
-
-  const rows = CHECK_ITEMS.map(item=>{
-    const s = ins.scores[item.key];
-    const val = s?.value||"-";
-    const score = s?.score||0;
-    const scoreVal = Math.round(score/4*100);
-    const cls = val==="good"?"badge-ok":val==="normal"?"badge-warn":"badge-danger";
-    return `<tr>
-      <td style="font-size:.75rem">${item.name}</td>
-      <td><span class="badge ${cls}">${SCORE_LABEL[val]||val}</span></td>
-      <td style="font-family:'IBM Plex Mono',monospace;font-weight:700;text-align:center">${scoreVal}점</td>
-      <td style="font-size:.72rem;color:var(--text2)">${s?.note||"-"}</td>
-    </tr>`;
-  }).join("");
-
-  document.getElementById("rpt-exec").innerHTML = `
-    <div style="max-width:860px;margin:0 auto">
-      <div class="report-hero" style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <div style="font-size:.7rem;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem">안전보건점검 결과보고서 (임원용)</div>
-          <div style="font-size:1.3rem;font-weight:900">${ins.site}</div>
-          <div style="font-size:.78rem;opacity:.8;margin-top:.3rem">${ins.type} · ${ins.date} · 점검자: ${ins.inspector}</div>
-        </div>
-        <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:10px;padding:.85rem 1.2rem">
-          <div style="font-size:.65rem;opacity:.8;margin-bottom:.2rem">종합등급</div>
-          <div style="font-size:2rem;font-weight:900;font-family:'IBM Plex Mono',monospace">${grade}</div>
-          <div style="font-size:.7rem;opacity:.8">${ins.finalScore}점 / 100점</div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1rem">
-        <div style="text-align:center;padding:.85rem;background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:8px">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--ok)">${goodItems.length}</div>
-          <div style="font-size:.72rem;color:var(--ok)">우수</div>
-        </div>
-        <div style="text-align:center;padding:.85rem;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--warn)">${normalItems.length}</div>
-          <div style="font-size:.72rem;color:var(--warn)">보통</div>
-        </div>
-        <div style="text-align:center;padding:.85rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--danger)">${badItems.length}</div>
-          <div style="font-size:.72rem;color:var(--danger)">미흡</div>
-        </div>
-        <div style="text-align:center;padding:.85rem;background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--accent)">-${ins.deductCount}</div>
-          <div style="font-size:.72rem;color:var(--accent)">감점</div>
-        </div>
-      </div>
-
-      <div style="background:var(--surface2);border-radius:8px;padding:.85rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:.82rem;color:var(--text2)">기본점수 <strong>${ins.baseScore}점</strong> − 감점 <strong>${ins.deductCount}점</strong> = 최종점수</div>
-        <div style="font-size:1.5rem;font-weight:900;color:${col};font-family:'IBM Plex Mono',monospace">${ins.finalScore}점</div>
-      </div>
-
-      <div class="card" style="margin-bottom:.75rem">
-        <div style="font-weight:700;color:var(--accent);border-left:3px solid var(--accent);padding-left:.6rem;margin-bottom:.75rem;font-size:.82rem">점검 항목별 결과</div>
-        <table>
-          <thead><tr><th>점검 항목</th><th>결과</th><th style="text-align:center">점수</th><th>비고</th></tr></thead>
-          <tbody>${rows}
-            <tr style="background:var(--surface2)">
-              <td colspan="2" style="font-weight:700">합계 / 최종점수</td>
-              <td style="font-family:'IBM Plex Mono',monospace;font-weight:900;color:${col};font-size:1rem;text-align:center">${ins.finalScore}점</td>
-              <td style="font-size:.72rem;color:var(--muted)">감점 ${ins.deductCount}건 반영</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      ${ins.deductCount>0?`
-      <div class="card" style="margin-bottom:.75rem;border-color:var(--danger-border)">
-        <div style="font-weight:700;color:var(--danger);border-left:3px solid var(--danger);padding-left:.6rem;margin-bottom:.75rem;font-size:.82rem">현장점검 미흡사항 (감점 ${ins.deductCount}건)</div>
-        ${ins.deductItems&&ins.deductItems.length>0?
-          ins.deductItems.map((item,i)=>`
-            <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.65rem;padding:.65rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px">
-              <img src="${item.src}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;flex-shrink:0">
-              <div>
-                <div style="font-size:.72rem;font-weight:700;color:var(--danger);margin-bottom:.25rem">미흡사항 ${i+1}</div>
-                <div style="font-size:.8rem;color:var(--text2)">${item.note||"내용 없음"}</div>
-              </div>
-            </div>`).join("")
-          :`<div style="font-size:.82rem;color:var(--text2)">${ins.deductNote||"미흡사항 내용 없음"}</div>`}
-      </div>`:""}
-
-      ${ins.memo?`
-      <div class="card" style="margin-bottom:.75rem">
-        <div style="font-weight:700;color:var(--accent);border-left:3px solid var(--accent);padding-left:.6rem;margin-bottom:.6rem;font-size:.82rem">종합 의견</div>
-        <div style="font-size:.82rem;line-height:1.8;color:var(--text2)">${ins.memo}</div>
-      </div>`:""}
-
-      <div style="text-align:center;font-size:.7rem;color:var(--muted);padding:.75rem;border-top:1px solid var(--border)">
-        본 보고서는 안전보건점검 관리시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
-      </div>
-    </div>`;
-}
-
-function renderSiteRpt(ins){
-  const issueItems = CHECK_ITEMS.filter(item=>ins.scores[item.key]?.value==="bad"||ins.scores[item.key]?.value==="normal");
-  document.getElementById("rpt-site").innerHTML = `
-    <div style="max-width:860px;margin:0 auto">
-      <div style="background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent);margin-bottom:1rem">
-        📌 사업장 공유용 — 점수 미포함, 보통/미흡 항목 및 감점 사항만 표시
-      </div>
-      <div class="card">
-        <div style="border-bottom:2px solid var(--accent);padding-bottom:.75rem;margin-bottom:1rem">
-          <div style="font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem">안전보건점검 결과 통보</div>
-          <div style="font-size:1.1rem;font-weight:800">${ins.site} 귀중</div>
-          <div style="font-size:.75rem;color:var(--text2);margin-top:.2rem">점검일: ${ins.date} · 점검자: ${ins.inspector} · ${ins.type}</div>
-        </div>
-        <p style="font-size:.82rem;line-height:1.9;color:var(--text2);margin-bottom:1rem">
-          귀사의 무궁한 발전을 기원합니다.<br>
-          상기 일자에 실시한 안전보건점검 결과를 아래와 같이 통보하오니, 해당 사항에 대한 개선 조치 후 결과를 회신하여 주시기 바랍니다.
-        </p>
-        ${issueItems.length>0?`
-        <div style="font-weight:700;color:var(--accent);border-left:3px solid var(--accent);padding-left:.6rem;margin-bottom:.75rem;font-size:.82rem">▶ 개선 요청 사항 (${issueItems.length}건)</div>
-        <table>
-          <thead><tr><th>No.</th><th>점검 항목</th><th>결과</th><th>내용 및 요청사항</th></tr></thead>
-          <tbody>${issueItems.map((item,i)=>{
-            const s=ins.scores[item.key];
-            const cls=s.value==="normal"?"badge-warn":"badge-danger";
-            return `<tr>
-              <td style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--muted)">${String(i+1).padStart(2,"0")}</td>
-              <td style="font-weight:600">${item.name}</td>
-              <td><span class="badge ${cls}">${SCORE_LABEL[s.value]}</span></td>
-              <td style="font-size:.75rem;color:var(--text2)">${s.note||"관련 법령 기준에 따라 개선 바랍니다."}</td>
-            </tr>`;
-          }).join("")}</tbody>
-        </table>`:`
-        <div style="padding:1rem;background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:7px;font-size:.82rem;color:var(--ok)">
-          ✅ 보통/미흡 항목 없음
-        </div>`}
-        ${ins.deductCount>0?`
-        <div style="margin-top:1rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;padding:.85rem">
-          <div style="font-weight:700;color:var(--danger);margin-bottom:.65rem;font-size:.82rem">⚠ 현장점검 미흡사항 (${ins.deductCount}건)</div>
-          ${ins.deductItems&&ins.deductItems.length>0?
-            ins.deductItems.map((item,i)=>`
-              <div style="display:flex;gap:.65rem;align-items:flex-start;margin-bottom:.5rem;padding:.5rem;background:rgba(185,28,28,.06);border-radius:6px">
-                <img src="${item.src}" style="width:80px;height:80px;object-fit:cover;border-radius:5px;flex-shrink:0">
-                <div>
-                  <div style="font-size:.68rem;font-weight:700;color:var(--danger);margin-bottom:.2rem">미흡사항 ${i+1}</div>
-                  <div style="font-size:.78rem;color:var(--text2)">${item.note||"내용 없음"}</div>
-                </div>
-              </div>`).join("")
-            :""}
-        </div>`:""}
-        <div style="margin-top:1rem;background:var(--accent-light);border:1px solid #bfdbfe;border-radius:7px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent2)">
-          📅 개선 완료 기한: ${new Date(Date.now()+14*864e5).toLocaleDateString("ko-KR")} 까지<br>
-          📧 개선 결과를 이메일로 회신 부탁드립니다.
-        </div>
-      </div>
-      <div style="text-align:center;font-size:.7rem;color:var(--muted);padding:.75rem;margin-top:.5rem">
-        본 문서는 안전보건점검 관리시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
-      </div>
-    </div>`;
-}
-
-function openFbModal(){ alert("피드백 발송 기능 — Apps Script 연동 시 자동 발송됩니다."); }
-
-// ══ PDF 생성 공통 ══
-function buildReportHtml(ins, feedbacks) {
-  const CHECK_ITEMS_LOCAL = [
-    {key:"c01",name:"관리감독자 지정"},{key:"c02",name:"관리감독자 업무 일지"},
-    {key:"c03",name:"법적 게시물"},{key:"c04",name:"정기안전 교육"},
-    {key:"c05",name:"채용시 교육"},{key:"c06",name:"특별교육"},
-    {key:"c07",name:"관리감독자 교육"},{key:"c08",name:"MSDS 교육"},
-    {key:"c09",name:"MSDS 관리"},{key:"c10",name:"위험성평가"},
-    {key:"c11",name:"TBM"},{key:"c12",name:"유해/위험기구 안전관리"},
-    {key:"c13",name:"보호구 안전인증대상 관리"},{key:"c14",name:"보호구 지급대장 관리"},
-    {key:"c15",name:"건강검진 관리"},{key:"c16",name:"유소견자 면담일지 작성"},
-    {key:"c17",name:"근골격계유해요인조사"},{key:"c18",name:"감정노동 근로자 보호"},
-    {key:"c19",name:"산업재해 발생 및 현황 관리"},{key:"c20",name:"휴게시설 관리"},
-    {key:"c21",name:"중대재해대응 매뉴얼"},{key:"c22",name:"중대재해대응 훈련"},
-    {key:"c23",name:"적격수급업체 관리"},{key:"c24",name:"공사업체 출입관리"},
-    {key:"c25",name:"안전보건표지 부착/관리 상태"}
-  ];
-  const SCORE_LABEL_L = {good:"우수",normal:"보통",bad:"미흡"};
-  const [grade,col] = ins.finalScore>=90?["A","#15803d"]:ins.finalScore>=80?["B","#1e40af"]:ins.finalScore>=70?["C","#b45309"]:["D","#b91c1c"];
-  const fb = feedbacks ? feedbacks[ins.site] : null;
+  const printWin = window.open("","_blank","width=900,height=700");
   const statusLabel = {done:"✅ 개선완료", inprogress:"🔄 진행중", pending:"⏳ 미완료"};
   const statusColor = {done:"#15803d", inprogress:"#b45309", pending:"#b91c1c"};
 
-  const scoreRows = CHECK_ITEMS_LOCAL.map(item=>{
-    const s = ins.scores[item.key];
-    const val = s?.value||"-";
-    const scoreVal = val==="good"?100:val==="normal"?75:val==="bad"?50:0;
-    const bg = val==="good"?"#f0fdf4":val==="normal"?"#fffbeb":val==="bad"?"#fef2f2":"#f8fafc";
-    const color = val==="good"?"#15803d":val==="normal"?"#b45309":val==="bad"?"#b91c1c":"#94a3b8";
-    return `<tr>
-      <td style="padding:6px 8px;border:1px solid #e2e8f0;font-size:11px">${item.name}</td>
-      <td style="padding:6px 8px;border:1px solid #e2e8f0;text-align:center"><span style="background:${bg};color:${color};padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700">${SCORE_LABEL_L[val]||val}</span></td>
-      <td style="padding:6px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:11px;color:#1e40af">${scoreVal>0?scoreVal+"점":"-"}</td>
-      <td style="padding:6px 8px;border:1px solid #e2e8f0;font-size:10px;color:#475569">${s?.note||"-"}</td>
-    </tr>`;
-  }).join("");
-
-  const issueItems = CHECK_ITEMS_LOCAL.filter(item=>ins.scores[item.key]?.value==="bad"||ins.scores[item.key]?.value==="normal");
-
-  // 개선결과 섹션
-  let fbSection = "";
-  if(fb && fb.results && fb.results.length>0){
-    fbSection = `
-    <div style="margin-top:16px;border-top:2px solid #1e40af;padding-top:12px">
-      <div style="font-size:13px;font-weight:900;color:#1e40af;margin-bottom:8px">개선결과 보고</div>
-      <table style="margin-bottom:8px;font-size:11px;width:100%;border-collapse:collapse">
-        <tr>
-          <td style="background:#f8fafc;font-weight:700;padding:5px 8px;border:1px solid #e2e8f0;width:90px">담당자</td>
-          <td style="padding:5px 8px;border:1px solid #e2e8f0">${fb.manager||"-"}</td>
-          <td style="background:#f8fafc;font-weight:700;padding:5px 8px;border:1px solid #e2e8f0;width:90px">개선완료일</td>
-          <td style="padding:5px 8px;border:1px solid #e2e8f0">${fb.date||"-"}</td>
-        </tr>
-        <tr>
-          <td style="background:#f8fafc;font-weight:700;padding:5px 8px;border:1px solid #e2e8f0">미흡항목</td>
-          <td style="padding:5px 8px;border:1px solid #e2e8f0">${fb.totalIssues}건</td>
-          <td style="background:#f8fafc;font-weight:700;padding:5px 8px;border:1px solid #e2e8f0">개선완료</td>
-          <td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#15803d">${fb.doneCount}건</td>
-        </tr>
-      </table>
-      ${fb.results.map((r,i)=>`
-      <div style="border:1px solid #e2e8f0;border-radius:6px;margin-bottom:8px;overflow:hidden;page-break-inside:avoid">
-        <div style="background:#fef2f2;padding:6px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #fecaca">
-          <span style="background:#b91c1c;color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">${i+1}</span>
-          <span style="font-weight:700;font-size:12px;flex:1">${r.name}</span>
-          <span style="font-size:10px;font-weight:700;color:${statusColor[r.status]||"#94a3b8"}">${statusLabel[r.status]||r.status}</span>
-        </div>
-        <div style="padding:8px 10px">
-          ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:4px 8px;margin-bottom:6px;font-size:10px;color:#475569">지적: ${r.originalNote}</div>`:""}
-          <div style="font-size:11px;color:#0f172a">${r.improvementText||"<span style='color:#94a3b8'>미입력</span>"}</div>
-          ${r.photos&&r.photos.length>0?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${r.photos.slice(0,4).map(p=>`<img src="${p.src}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0">`).join("")}</div>`:""}
-        </div>
-      </div>`).join("")}
-      ${fb.signature?`
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <div style="text-align:center">
-          <div style="font-size:10px;color:#64748b;margin-bottom:4px">사업장 관리자 서명</div>
-          <div style="border:1px solid #e2e8f0;border-radius:6px;padding:4px;display:inline-block">
-            <img src="${fb.signature}" style="height:50px;max-width:160px">
-          </div>
-          <div style="font-size:10px;color:#64748b;margin-top:2px">${fb.manager}</div>
-        </div>
-      </div>`:""}
-    </div>`;
-  }
-
-  return `<!DOCTYPE html><html lang="ko"><head>
+  printWin.document.write(`<!DOCTYPE html><html lang="ko"><head>
 <meta charset="UTF-8">
+<title>개선결과 보고서 - ${site}</title>
 <style>
-  body{font-family:"Noto Sans KR",Arial,sans-serif;color:#0f172a;margin:0;padding:20px;font-size:12px}
+  body{font-family:"Noto Sans KR",Arial,sans-serif;color:#0f172a;margin:0;padding:24px;font-size:13px}
   table{width:100%;border-collapse:collapse}
+  th{background:#1e40af;color:#fff;padding:8px 10px;font-size:11px;text-align:left}
+  td{padding:8px 10px;border:1px solid #e2e8f0;vertical-align:top}
+  .header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:20px 24px;border-radius:10px;margin-bottom:16px}
+  .issue{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px;overflow:hidden;page-break-inside:avoid}
+  .issue-hd{background:#fef2f2;padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #fecaca}
+  .issue-body{padding:10px 12px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+  .photo-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .photo-grid img{width:120px;height:120px;object-fit:cover;border-radius:5px;border:1px solid #e2e8f0}
+  .sig-section{margin-top:24px;border-top:1px solid #e2e8f0;padding-top:16px;display:flex;justify-content:flex-end;gap:32px}
+  .sig-box{text-align:center}
+  .sig-line{border-bottom:1px solid #0f172a;width:180px;margin-bottom:4px;height:60px;display:flex;align-items:flex-end;justify-content:center}
   @media print{body{padding:0}}
 </style>
 </head><body>
 
-<div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:16px 20px;border-radius:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start">
-  <div>
-    <div style="font-size:10px;opacity:.7;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">안전보건점검 결과보고서</div>
-    <div style="font-size:17px;font-weight:900">${ins.site}</div>
-    <div style="font-size:11px;opacity:.8;margin-top:3px">${ins.type} · ${ins.date} · 점검자: ${ins.inspector}</div>
-  </div>
-  <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 14px">
-    <div style="font-size:9px;opacity:.8;margin-bottom:2px">종합등급</div>
-    <div style="font-size:24px;font-weight:900">${grade}</div>
-    <div style="font-size:10px;opacity:.8">${ins.finalScore}점 / 100점</div>
-  </div>
+<div class="header">
+  <div style="font-size:11px;opacity:.7;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">안전보건점검 개선결과 보고서</div>
+  <div style="font-size:18px;font-weight:900">${site}</div>
+  <div style="font-size:12px;opacity:.8;margin-top:4px">담당자: ${manager} · 개선완료일: ${date}</div>
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
-  <div style="text-align:center;padding:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px">
-    <div style="font-size:16px;font-weight:900;color:#15803d">${ins.scores?Object.values(ins.scores).filter(s=>s.value==="good").length:0}</div>
-    <div style="font-size:10px;color:#15803d">우수</div>
-  </div>
-  <div style="text-align:center;padding:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px">
-    <div style="font-size:16px;font-weight:900;color:#b45309">${ins.scores?Object.values(ins.scores).filter(s=>s.value==="normal").length:0}</div>
-    <div style="font-size:10px;color:#b45309">보통</div>
-  </div>
-  <div style="text-align:center;padding:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px">
-    <div style="font-size:16px;font-weight:900;color:#b91c1c">${ins.badCount||0}</div>
-    <div style="font-size:10px;color:#b91c1c">미흡</div>
-  </div>
-  <div style="text-align:center;padding:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px">
-    <div style="font-size:16px;font-weight:900;color:#1e40af">-${ins.deductCount||0}</div>
-    <div style="font-size:10px;color:#1e40af">감점</div>
-  </div>
-</div>
-
-<div style="background:#f8fafc;border-radius:6px;padding:8px 12px;margin-bottom:12px;display:flex;justify-content:space-between">
-  <span style="font-size:11px;color:#475569">기본점수 ${ins.baseScore}점 − 감점 ${ins.deductCount||0}점 = 최종점수</span>
-  <span style="font-size:15px;font-weight:900;color:${col}">${ins.finalScore}점</span>
-</div>
-
-<table style="margin-bottom:12px">
-  <thead><tr style="background:#1e40af">
-    <th style="color:#fff;padding:6px 8px;font-size:11px">점검 항목</th>
-    <th style="color:#fff;padding:6px 8px;font-size:11px;text-align:center">결과</th>
-    <th style="color:#fff;padding:6px 8px;font-size:11px;text-align:center">점수</th>
-    <th style="color:#fff;padding:6px 8px;font-size:11px">비고</th>
-  </tr></thead>
-  <tbody>${scoreRows}</tbody>
+<table style="margin-bottom:16px;font-size:12px">
+  <tr>
+    <td style="background:#f8fafc;font-weight:700;width:100px">사업장명</td><td>${site}</td>
+    <td style="background:#f8fafc;font-weight:700;width:100px">담당자</td><td>${manager}</td>
+  </tr>
+  <tr>
+    <td style="background:#f8fafc;font-weight:700">연락처</td><td>${document.getElementById("fb-tel").value||"-"}</td>
+    <td style="background:#f8fafc;font-weight:700">개선완료일</td><td>${date}</td>
+  </tr>
+  <tr>
+    <td style="background:#f8fafc;font-weight:700">총 미흡항목</td><td>${currentIssues.length}건</td>
+    <td style="background:#f8fafc;font-weight:700">개선완료</td><td>${results.filter(r=>r.status==="done").length}건</td>
+  </tr>
 </table>
 
-${ins.deductCount>0&&ins.deductItems?`
-<div style="border:1px solid #fecaca;border-radius:6px;margin-bottom:12px;overflow:hidden">
-  <div style="background:#fef2f2;padding:6px 10px;font-weight:700;font-size:11px;color:#b91c1c;border-bottom:1px solid #fecaca">현장점검 미흡사항 (감점 ${ins.deductCount}건)</div>
-  <div style="padding:8px 10px">
-    ${ins.deductItems.map((d,i)=>`
-    <div style="display:flex;gap:8px;margin-bottom:6px;padding:6px;background:#fef2f2;border-radius:4px">
-      ${d.src?`<img src="${d.src}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0">`:""}
-      <div><div style="font-size:10px;font-weight:700;color:#b91c1c">미흡 ${i+1}</div><div style="font-size:11px;color:#475569">${d.note||"내용 없음"}</div></div>
-    </div>`).join("")}
+${results.map((r,i)=>`
+<div class="issue">
+  <div class="issue-hd">
+    <span style="background:#b91c1c;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${i+1}</span>
+    <span style="font-weight:700;font-size:13px;flex:1">${r.name}</span>
+    <span class="badge" style="background:${r.status==="done"?"#f0fdf4":r.status==="inprogress"?"#fffbeb":"#fef2f2"};color:${statusColor[r.status]};border:1px solid currentColor">${statusLabel[r.status]}</span>
   </div>
+  <div class="issue-body">
+    ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:6px 10px;margin-bottom:8px;font-size:12px;color:#475569">📋 지적내용: ${r.originalNote}</div>`:""}
+    <div style="margin-bottom:6px"><strong style="font-size:12px">개선 조치 내용:</strong></div>
+    <div style="background:#f8fafc;border-radius:6px;padding:8px;font-size:12px;min-height:40px;color:${r.text?"#0f172a":"#94a3b8"}">${r.text||"미입력"}</div>
+    ${r.photos.length>0?`
+    <div style="margin-top:8px"><strong style="font-size:12px">개선 사진:</strong></div>
+    <div class="photo-grid">${r.photos.map(p=>`
+      <div style="text-align:center">
+        <img src="${p.src}">
+        ${p.note?`<div style="font-size:10px;color:#475569;margin-top:3px;max-width:120px">${p.note}</div>`:""}
+      </div>`).join("")}
+    </div>`:""}
+  </div>
+</div>`).join("")}
+
+${document.getElementById("fb-memo").value?`
+<div style="margin-top:12px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px">
+  <strong style="font-size:12px;color:#1e40af">종합 의견:</strong>
+  <div style="font-size:12px;margin-top:4px;color:#475569">${document.getElementById("fb-memo").value}</div>
 </div>`:""}
 
-${ins.memo?`<div style="border-left:3px solid #1e40af;padding:8px 10px;background:#eff6ff;border-radius:0 6px 6px 0;margin-bottom:12px;font-size:11px;color:#1e40af"><strong>종합의견:</strong> ${ins.memo}</div>`:""}
-
-${fbSection}
-
-<div style="margin-top:16px;text-align:center;font-size:9px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px">
-  안전보건점검 관리시스템 자동 생성 · ${new Date().toLocaleString("ko-KR")}
+<div style="margin-top:20px;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:11px;color:#1e40af;line-height:1.8;text-align:center">
+  본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며,<br>
+  개선결과를 안전관리팀에 제출합니다.
 </div>
-</body></html>`;
+<div style="margin-top:16px;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:11px;color:#1e40af;line-height:1.8;text-align:center">
+  본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며,<br>
+  개선결과를 안전관리팀에 제출합니다.
+</div>
+<div class="sig-section">
+  <div class="sig-box">
+    <div style="font-size:11px;color:#64748b;margin-bottom:4px">작성일: ${date}</div>
+    <div class="sig-line"></div>
+    <div style="font-size:11px;color:#64748b">년   월   일</div>
+  </div>
+  <div class="sig-box">
+    <div style="font-size:11px;color:#64748b;margin-bottom:4px">사업장 관리자 (서명)</div>
+    <div class="sig-line">${sigImg?`<img src="${sigImg}" style="max-height:55px;max-width:170px">`:""}</div>
+    <div style="font-size:11px;color:#64748b">${manager} (서명)</div>
+  </div>
+</div>
+
+<div style="margin-top:20px;text-align:center;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px">
+  본 문서는 안전보건점검 관리시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
+</div>
+
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
+  printWin.document.close();
 }
 
-// ══ 단일 PDF 다운로드 ══
-async function downloadSinglePdf(){
-  if(!currentRptId){ alert("보고서를 선택하세요."); return; }
-  const ins = inspections.find(i=>i.id===currentRptId);
-  if(!ins) return;
-  const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
-  const html = buildReportHtml(ins, feedbacks);
-  openPrintWindow(html, `안전보건점검_${ins.site}_${ins.date}.pdf`);
-}
-
-// ══ 전체 합본 PDF ══
-async function downloadAllPdf(){
-  if(inspections.length===0){ alert("점검 데이터가 없습니다."); return; }
-  const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
-  const allHtml = inspections.map(ins=>buildReportHtml(ins, feedbacks)).join(`<div style="page-break-before:always"></div>`);
-  const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:'Noto Sans KR',Arial,sans-serif;margin:0;padding:0}</style></head><body>${allHtml}</body></html>`;
-  openPrintWindow(fullHtml, `안전보건점검_전체합본_${new Date().toLocaleDateString("ko-KR")}.pdf`);
-}
-
-// ══ 사업장별 개별 PDF ══
-async function downloadBulkPdf(){
-  if(inspections.length===0){ alert("점검 데이터가 없습니다."); return; }
-  const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
-
-  // 진행 상황 표시
-  const overlay = document.createElement("div");
-  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center";
-  overlay.innerHTML = `<div style="background:#fff;border-radius:12px;padding:2rem;text-align:center;min-width:280px">
-    <div style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem">PDF 생성 중...</div>
-    <div style="font-size:.82rem;color:#475569" id="pdf-progress-text">준비 중...</div>
-    <div style="background:#e2e8f0;border-radius:4px;height:6px;margin-top:.75rem;overflow:hidden">
-      <div id="pdf-progress-bar" style="height:100%;background:#1e40af;border-radius:4px;transition:width .3s;width:0%"></div>
-    </div>
-  </div>`;
-  document.body.appendChild(overlay);
-
-  for(let i=0; i<inspections.length; i++){
-    const ins = inspections[i];
-    document.getElementById("pdf-progress-text").textContent = `${ins.site} (${i+1}/${inspections.length})`;
-    document.getElementById("pdf-progress-bar").style.width = Math.round((i+1)/inspections.length*100)+"%";
-    const html = buildReportHtml(ins, feedbacks);
-    await new Promise(resolve=>{
-      const win = window.open("","_blank");
-      win.document.write(html);
-      win.document.close();
-      win.onload = ()=>{ win.print(); resolve(); };
-      setTimeout(resolve, 2000);
-    });
-  }
-  document.body.removeChild(overlay);
-  alert(`${inspections.length}개 사업장 PDF 생성 완료!`);
-}
-
-function openPrintWindow(html, filename){
-  const win = window.open("","_blank","width=1000,height=800");
-  win.document.write(html);
-  win.document.close();
-  win.onload = ()=>{
-    win.document.title = filename;
-    win.print();
-  };
+function resetForm(){
+  document.getElementById("fb-site").value="";
+  document.getElementById("fb-manager").value="";
+  document.getElementById("fb-tel").value="";
+  document.getElementById("fb-memo").value="";
+  document.getElementById("fb-date").value=new Date().toISOString().split("T")[0];
+  document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>`;
+  currentIssues=[];
+  photoData={};
+  clearSig();
 }
 </script>
+</div><!-- main-screen -->
 </body>
 </html>
