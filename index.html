@@ -470,18 +470,18 @@ async function syncFromServer(){
     const feedbacks = data.feedbacks || {};
     try { localStorage.setItem("shi_feedbacks", JSON.stringify(feedbacks)); } catch(e) {}
 
-    const bySite = {};
-    inspections.forEach(ins=>{ bySite[ins.site] = ins; }); // 로컬에만 있는 항목(사진 등 상세정보) 보존용 기반
-    data.inspections.forEach(srv=>{
-      const local = bySite[srv.site];
-      bySite[srv.site] = {
+    const localBySite = {};
+    inspections.forEach(ins=>{ localBySite[ins.site] = ins; }); // 로컬 상세정보(사진 등) 보존용 기반
+    // 서버 목록을 기준으로 다시 구성한다 (서버에서 지워진 사업장은 화면/캐시에서도 함께 사라져야 함)
+    inspections = data.inspections.map(srv=>{
+      const local = localBySite[srv.site];
+      return {
         ...(local||{}),
         ...srv,
         id: (local && local.id) || new Date(srv.createdAt||srv.date).getTime() || Date.now(),
         feedbackSent: !!feedbacks[srv.site]
       };
-    });
-    inspections = Object.values(bySite).sort((a,b)=>(b.id||0)-(a.id||0));
+    }).sort((a,b)=>(b.id||0)-(a.id||0));
     try { localStorage.setItem("shi_v3", JSON.stringify(inspections)); } catch(e) {}
     updateDashboard();
     updateReportSel();
