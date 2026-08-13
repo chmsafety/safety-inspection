@@ -324,9 +324,9 @@ async function loadSiteIssues(){
       return;
     }
 
-    // 미흡(bad)+보통(normal) 항목 필터링 — 사업장용 보고서(통보서)에 개선 요청으로 표시되는 항목과 동일한 기준
+    // 미흡(bad) 항목만 필터링 — 우수/보통 항목은 개선 조치가 필요하지 않음
     currentIssues = data.issueItems
-      .filter(item=>item.result==='bad'||item.result==='미흡'||item.result==='normal'||item.result==='보통')
+      .filter(item=>item.result==='bad'||item.result==='미흡')
       .map(item=>({
         key: item.key,
         name: item.name,
