@@ -316,12 +316,15 @@ async function loadSiteIssues(){
       return;
     }
 
-    currentIssues = data.issueItems.map(item=>({
-      key: item.key,
-      name: item.name,
-      originalNote: item.note||'',
-      result: item.result
-    }));
+    // 미흡(bad) 항목만 필터링
+    currentIssues = data.issueItems
+      .filter(item=>item.result==='bad'||item.result==='미흡')
+      .map(item=>({
+        key: item.key,
+        name: item.name,
+        originalNote: item.note||'',
+        result: item.result
+      }));
 
     // 현장점검 미흡사항 추가
     if(data.deductCount > 0){
@@ -366,38 +369,66 @@ function renderIssues(data){
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     </div>
-  ` + currentIssues.map((issue,i)=>`
-    <div class="issue-card" id="issue-card-${i}">
-      <div class="issue-header">
-        <div style="display:flex;align-items:center;gap:.65rem">
-          <div class="issue-num">${i+1}</div>
-          <div class="issue-name">${issue.name}</div>
+  ` + currentIssues.map((issue,i)=>{
+    const isDeduct = issue.key && issue.key.startsWith('deduct');
+
+    if(isDeduct) {
+      // 현장점검 감점항목 - 기존 미흡사진 + 개선사진 + 내용
+      return `
+      <div class="issue-card" id="issue-card-${i}" style="border-color:var(--danger-border)">
+        <div class="issue-header" style="background:var(--danger-bg)">
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div class="issue-num" style="background:var(--danger)">${i+1}</div>
+            <div class="issue-name" style="color:var(--danger)">${issue.name}</div>
+          </div>
+          <select class="status-select" id="status-${i}" onchange="updateProgress()"
+            style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
+            <option value="pending">⏳ 미완료</option>
+            <option value="done">✅ 개선완료</option>
+            <option value="inprogress">🔄 진행중</option>
+          </select>
         </div>
-        <select class="status-select" id="status-${i}" onchange="updateProgress()"
-          style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
-          <option value="pending">⏳ 미완료</option>
-          <option value="done">✅ 개선완료</option>
-          <option value="inprogress">🔄 진행중</option>
-        </select>
-      </div>
-      <div class="issue-body">
-        ${issue.src?`<div style="margin-bottom:.65rem"><img src="${issue.src}" style="width:100%;max-width:200px;border-radius:6px;border:1px solid var(--border)"></div>`:""}
-        ${issue.originalNote?`<div class="issue-original">📋 지적내용: ${issue.originalNote}</div>`:""}
-        <div class="fg">
-          <label>개선 조치 내용 *</label>
-          <textarea id="imp-text-${i}" placeholder="어떻게 개선했는지 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
-        </div>
-        <div class="fg">
-          <label>개선 사진 첨부</label>
-          <div class="photo-upload-zone" onclick="document.getElementById('photo-${i}').click()">
-            <div style="font-size:.82rem;color:var(--accent)">📷 개선 후 사진 첨부</div>
+        <div class="issue-body">
+          ${issue.originalNote?`<div class="issue-original" style="border-color:var(--danger)">📋 지적내용: ${issue.originalNote}</div>`:""}
+          <div style="font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">📷 개선 전→후 사진 첨부</div>
+          <div class="photo-upload-zone" onclick="document.getElementById('photo-${i}').click()" style="border-color:var(--danger-border)">
+            <div style="font-size:.82rem;color:var(--danger)">📷 개선 후 사진 첨부</div>
             <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">카메라 촬영 또는 갤러리에서 선택</div>
             <input type="file" id="photo-${i}" multiple accept="image/*" style="display:none" onchange="handlePhoto(${i},this)">
           </div>
           <div id="photo-list-${i}" class="photo-list"></div>
+          <div class="fg" style="margin-top:.65rem">
+            <label>개선 조치 내용 *</label>
+            <textarea id="imp-text-${i}" placeholder="현장점검 미흡사항에 대한 개선 조치 내용을 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
+          </div>
         </div>
-      </div>
-    </div>`).join("");
+      </div>`;
+    } else {
+      // 일반 미흡항목 - 텍스트만 (사진 없음)
+      return `
+      <div class="issue-card" id="issue-card-${i}">
+        <div class="issue-header">
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div class="issue-num">${i+1}</div>
+            <div class="issue-name">${issue.name}</div>
+          </div>
+          <select class="status-select" id="status-${i}" onchange="updateProgress()"
+            style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
+            <option value="pending">⏳ 미완료</option>
+            <option value="done">✅ 개선완료</option>
+            <option value="inprogress">🔄 진행중</option>
+          </select>
+        </div>
+        <div class="issue-body">
+          ${issue.originalNote?`<div class="issue-original">📋 지적내용: ${issue.originalNote}</div>`:""}
+          <div class="fg">
+            <label>개선 조치 내용 *</label>
+            <textarea id="imp-text-${i}" placeholder="어떻게 개선했는지 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
+          </div>
+        </div>
+      </div>`;
+    }
+  }).join("");
 }
 
 function handlePhoto(idx, input){
@@ -503,23 +534,25 @@ let sigCanvas, sigCtx, isSigning=false, lastX=0, lastY=0;
 (function initSig(){
   sigCanvas = document.getElementById("sig-canvas");
   sigCtx = sigCanvas.getContext("2d");
-  sigCtx.strokeStyle = "#0f172a";
-  sigCtx.lineWidth = 2.5;
-  sigCtx.lineCap = "round";
-  sigCtx.lineJoin = "round";
 
   // 캔버스 크기 반응형
   function resizeCanvas(){
-    const w = sigCanvas.parentElement.clientWidth;
+    const w = sigCanvas.parentElement.clientWidth || 680;
     const ratio = window.devicePixelRatio||1;
+    const prevData = sigCtx ? sigCanvas.toDataURL() : null;
     sigCanvas.width = w * ratio;
     sigCanvas.height = 160 * ratio;
     sigCanvas.style.width = w+"px";
     sigCanvas.style.height = "160px";
+    sigCtx = sigCanvas.getContext("2d");
     sigCtx.scale(ratio, ratio);
-    sigCtx.strokeStyle="#0f172a"; sigCtx.lineWidth=2.5; sigCtx.lineCap="round"; sigCtx.lineJoin="round";
+    sigCtx.strokeStyle="#0f172a";
+    sigCtx.lineWidth=2.5;
+    sigCtx.lineCap="round";
+    sigCtx.lineJoin="round";
   }
-  resizeCanvas();
+  // DOM 로드 후 초기화
+  setTimeout(resizeCanvas, 100);
   window.addEventListener("resize", resizeCanvas);
 
   function getPos(e){
