@@ -712,7 +712,7 @@ function updateDashboard(){
   document.getElementById("kpi-done2").textContent = done;
   const okCount = inspections.filter(i=>i.badCount===0&&i.deductCount===0).length;
   const kpiOk = document.getElementById("kpi-ok"); if(kpiOk) kpiOk.textContent = okCount;
-  const badTotal = inspections.reduce((s,i)=>s+i.badCount,0);
+  const badTotal = inspections.reduce((s,i)=>s+(i.badCount||0)+(i.deductCount||0),0);
   document.getElementById("kpi-bad").textContent = badTotal;
   const noFb = inspections.filter(i=>!i.feedbackSent).length;
   const kpiNofb = document.getElementById("kpi-nofb"); if(kpiNofb) kpiNofb.textContent = noFb;
