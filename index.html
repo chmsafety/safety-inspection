@@ -213,9 +213,14 @@ tbody tr:hover{background:var(--surface2)}
   .kpi-grid4{grid-template-columns:1fr 1fr}
   .kpi-section > div:last-child{grid-template-columns:repeat(2,1fr)!important}
 }
+.acc-page{display:none}
+.acc-page.active{display:block;animation:fadeUp .25s ease}
+.acc-nav-btn{padding:.35rem .9rem;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:rgba(255,255,255,.15);color:#fff;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}
+.acc-nav-btn.active{background:#fff;color:var(--accent)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="login-gate" id="login-gate" style="display:none">
@@ -239,7 +244,7 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
-<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOoAAABkCAYAAACILqzmAAAACXBIWXMAAC4jAAAuIwF4pT92AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAACJxJREFUeNrsnb9yGkkQxkcUgTNUzq+Ey3Ux3BMIP4BK3BNoHTswLkeOtIocuYyDi4WewLj0AFqe4FDschnK+Z2UXabrlnrllQQGxHTPsPt9VVNgGXZnh/5N9/zfurq6chBURf3z2+8deulR2r/3X+eUBpye/vh6EUNetwAqVEFAt+llSGl3wUcvKXUJ1ix0nmv42aAKQpotASmrQemMvpMAVAiyFXvS1orf6ROsTYAKQTbeNFnSk87yrH2ACkE26q7x3f2QXhWgQlXS/prf7wBUCNINe31ABo8KQRBAhaALgApBkevpj69jD5cZA1QI0teXNb+fAVQI0tc6Y6GfQs77BahQlcJf9oifHvHVKaUUbVQIsoOVV8ucrPCVfGL+BUCFIFtYE3o5WuKjI0ptTx1RawnL3KDKSqYEdiW13c2cXoZz4m7Womax5BWgQtAGqB7y5v/9tbMtNRmn7cLrPHE7IQ9DuLabPHk1neBnrIY+vGs3C/Yyz1ZyG8nevh9nyvnh+3ckL003f4rhWLz0+LF5MvWoBGZTHiwPNXY8XHYqBcHrDDOAW0o42V64Xdl6xCV47LTvC1qBM1kjP5diq0PK0zAaUMVrrvNgq4r3u+HxsiFBG3za2PPTPTaQXYVLH33bO00D3n9E9+8oA8rPd+DRLnqPBVYA7UlqeMrTVPK0ENiaIqBNSgN6+y+lj0aQOrnPMYcafH/x4tBmedFUoqQDz3ZxRtceCHSr5Kct+Tn0CKmTiPIzXX+4KE81RUC/ey7oVdWQ+38HsBsD6DalTAGIotgmMvHYy+SJI8G/PTXT5onXyY6lQtAFlUNcSv0IAJ3344wpfylwiBZSNlKtMH2Wd/0lGAVIj42KYEcqkLYaqARAV0KD1xHbAtfQh5RXBrYNNKKCtCmQtoztYa5nNYZ0YZ5qHiBlL/pZOTTwXZtmlO8EiMQR7rqbXtBGgNvzPR+0D+nf3QCQ3smTN1Al1I3di/6qMI6lLQ2F1cDYk86quPv3QvDQdtGSDrX1QJXQcRK4gL20XelZMhlCguy96azjJILYgXjRvOJoRJCnw2IIXHskpFkkD+NDuxIKA1b7kDeNKEt9ylM/MueTPgrUEkJ6v90KWA3BiMyOdiJsxh3kXrUGSO/CCn5MvCkb3wFKYiklS4NaAUhvYUUHk53xQR5BlXBwWAFIb8MNeuYe7AOgxhKSc0/0Mh516DZnjNSXPmJShFrY266gPa2rTm2BN02dzZSuGIUQWEddFIFHUMWjHFa4cFqYG6xjdCgCvx4VHuVmbnATxeBVaFKsrkbtFyFvC+VzLXhVz0aHIlhdtRmQsgdBr+dPHaBjyY8+vGsj7PUFqngQ1Hp3hYoLigdU8aaYMTLbq6KtCgVTPSLPwbuzZe7n1ooT+XtTEoefnYDeniONBCYTtXizsL7YTtfI6fBZNkOxzZ6WfdYL3nQ7kCHyOSCDJ6+m2TIflt0kuECsx3e7XEYx7GwIza3oO2/fj/MKnheEO2VY39D98rWsvDMDO5nP2qFv19hb8dEBz8jwk2UhZdFneRtQrr1eSA1qpYbDYH3MGhQgvf2bpvcuQHqtVfbpXQdUS2/6hmFbZ7NsgZurzHPDfCP0jVcPIFHeKX/etc/VQJWOEqtQ8iVB1vdxIQ5DKTGsX4zyvotOpWhlfeLaPCdzoQaqs5vWxZBqhCOJoWftgIn4RN6z1H0H9UL7VFtHSpBee9bClqXa7eyui2N6ZfP56d6sSuPi297pGOiWS1YedUQwpZo3kPZu36DM9iP57bg382xG6sOsSwiqtLm0vZDJ+KxUBuo9wVRmCH8hc4+qPY/1hACyDMVSg3sAVKh0oJqGYtIOvgSoUJlUVwZ1auxNczGsPrZ+HBXeT9z8LnkIUgdVcy/bYaDnKoI6vQdYVnifHyOfa4wpglAVPWoQUMWLb+HnhcrURtXs8cV4HgR5AlXTsyGMhKDIQT1H8UJQ/KDCm0KQJ9XL+mCyED7vKJuss6QOggCqnhJKHwvgLvo8T5JYpvMrk/Z3CvOBygBqM/CzrTo+zL3fy6zJzT8DUKFStFFDHwTUUbz2CKYDlQVUF3jjak2Pjo4yyBxUzWVhQUCVpXuaHh0TOSBzUCeK1w+1a5/2fQEqVCpQ92WYBKBCUMSgskx33zfYUfESY7KQtXh4JnO6Bxb3CJ6+4bzfVPn6WSS/3WhOXlCJlBRU7TCuIfCoe1ajQ65iATX7tneawoQrEvqKp9OeQP/aaEOwgQUgMBsoRBvVyviGmuOqckq69m7/obaWgQCqGagcAmcasNI1E+V29m1lA5OBgoHKJ6Q5/Z37irB2PELKnvTYql0Ik4FCelRLb8GwnjFg64yxcscRpczIk+ZhLzwqFBxU66MQGLCJANtcAdA2pQG9/e5sDzMGpFAw3S5z404SAoB7f1uG928IsIdyb/aQE3d3yChfAM6p42wPW3YBKzIIeghqwRiPA+WlZVxJrKIRZiNBsYS++XEQUxTLA6UoAigaUGGUc71phmKAogJVvCp2MEDFBUXuUVk9FA28KRQ5qDJN7hOKBxUWFLdHzUO+Ku92f4R5vVD0oMqqmsTZTC2MTefYtxfaFI+ah8BVDP8SmAa0MaAKrIOKtVdfIuSFNg5UgZW96kkFyuNEKiYI2jxQBdak5LCeyDNC0OaCWnJYzwEpVBpQSworP0sHpgCVCtQCrC/LEu4abmUKQXagCqwDennhNnec9Q3CXaj0oAqsmbs5Ne3LBj0zL+P7g/KOheBQNUAVWC8o8Vkvf7r417IeUWpjnBSqHKgFYHlPobbAEFs4zB7/GU8LRHsUqjSoBe+aSjh8FIGHPRFAu9hKBdpk1TUuKl6LgeUdBjksTijtGz0Tr/gZUBoCTqgs2rq6ujK5kezh23E3Z5dyiOxrIzMOszNJgBMCqArg5tuAbhdeFykrvE4AJlQF/S/AACtU6hJJLxXEAAAAAElFTkSuQmCC" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('etc')"><div class="cc-icon">📁</div><div class="cc-label">기타</div><div class="cc-badge">준비중</div></button></div></div></div><div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
+<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('etc')"><div class="cc-icon">📁</div><div class="cc-label">기타</div><div class="cc-badge">준비중</div></button></div></div></div><div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
   <div class="hd-top">
     <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOoAAABkCAYAAACILqzmAAAACXBIWXMAAC4jAAAuIwF4pT92AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAACJxJREFUeNrsnb9yGkkQxkcUgTNUzq+Ey3Ux3BMIP4BK3BNoHTswLkeOtIocuYyDi4WewLj0AFqe4FDschnK+Z2UXabrlnrllQQGxHTPsPt9VVNgGXZnh/5N9/zfurq6chBURf3z2+8deulR2r/3X+eUBpye/vh6EUNetwAqVEFAt+llSGl3wUcvKXUJ1ix0nmv42aAKQpotASmrQemMvpMAVAiyFXvS1orf6ROsTYAKQTbeNFnSk87yrH2ACkE26q7x3f2QXhWgQlXS/prf7wBUCNINe31ABo8KQRBAhaALgApBkevpj69jD5cZA1QI0teXNb+fAVQI0tc6Y6GfQs77BahQlcJf9oifHvHVKaUUbVQIsoOVV8ucrPCVfGL+BUCFIFtYE3o5WuKjI0ptTx1RawnL3KDKSqYEdiW13c2cXoZz4m7Womax5BWgQtAGqB7y5v/9tbMtNRmn7cLrPHE7IQ9DuLabPHk1neBnrIY+vGs3C/Yyz1ZyG8nevh9nyvnh+3ckL003f4rhWLz0+LF5MvWoBGZTHiwPNXY8XHYqBcHrDDOAW0o42V64Xdl6xCV47LTvC1qBM1kjP5diq0PK0zAaUMVrrvNgq4r3u+HxsiFBG3za2PPTPTaQXYVLH33bO00D3n9E9+8oA8rPd+DRLnqPBVYA7UlqeMrTVPK0ENiaIqBNSgN6+y+lj0aQOrnPMYcafH/x4tBmedFUoqQDz3ZxRtceCHSr5Kct+Tn0CKmTiPIzXX+4KE81RUC/ey7oVdWQ+38HsBsD6DalTAGIotgmMvHYy+SJI8G/PTXT5onXyY6lQtAFlUNcSv0IAJ3344wpfylwiBZSNlKtMH2Wd/0lGAVIj42KYEcqkLYaqARAV0KD1xHbAtfQh5RXBrYNNKKCtCmQtoztYa5nNYZ0YZ5qHiBlL/pZOTTwXZtmlO8EiMQR7rqbXtBGgNvzPR+0D+nf3QCQ3smTN1Al1I3di/6qMI6lLQ2F1cDYk86quPv3QvDQdtGSDrX1QJXQcRK4gL20XelZMhlCguy96azjJILYgXjRvOJoRJCnw2IIXHskpFkkD+NDuxIKA1b7kDeNKEt9ylM/MueTPgrUEkJ6v90KWA3BiMyOdiJsxh3kXrUGSO/CCn5MvCkb3wFKYiklS4NaAUhvYUUHk53xQR5BlXBwWAFIb8MNeuYe7AOgxhKSc0/0Mh516DZnjNSXPmJShFrY266gPa2rTm2BN02dzZSuGIUQWEddFIFHUMWjHFa4cFqYG6xjdCgCvx4VHuVmbnATxeBVaFKsrkbtFyFvC+VzLXhVz0aHIlhdtRmQsgdBr+dPHaBjyY8+vGsj7PUFqngQ1Hp3hYoLigdU8aaYMTLbq6KtCgVTPSLPwbuzZe7n1ooT+XtTEoefnYDeniONBCYTtXizsL7YTtfI6fBZNkOxzZ6WfdYL3nQ7kCHyOSCDJ6+m2TIflt0kuECsx3e7XEYx7GwIza3oO2/fj/MKnheEO2VY39D98rWsvDMDO5nP2qFv19hb8dEBz8jwk2UhZdFneRtQrr1eSA1qpYbDYH3MGhQgvf2bpvcuQHqtVfbpXQdUS2/6hmFbZ7NsgZurzHPDfCP0jVcPIFHeKX/etc/VQJWOEqtQ8iVB1vdxIQ5DKTGsX4zyvotOpWhlfeLaPCdzoQaqs5vWxZBqhCOJoWftgIn4RN6z1H0H9UL7VFtHSpBee9bClqXa7eyui2N6ZfP56d6sSuPi297pGOiWS1YedUQwpZo3kPZu36DM9iP57bg382xG6sOsSwiqtLm0vZDJ+KxUBuo9wVRmCH8hc4+qPY/1hACyDMVSg3sAVKh0oJqGYtIOvgSoUJlUVwZ1auxNczGsPrZ+HBXeT9z8LnkIUgdVcy/bYaDnKoI6vQdYVnifHyOfa4wpglAVPWoQUMWLb+HnhcrURtXs8cV4HgR5AlXTsyGMhKDIQT1H8UJQ/KDCm0KQJ9XL+mCyED7vKJuss6QOggCqnhJKHwvgLvo8T5JYpvMrk/Z3CvOBygBqM/CzrTo+zL3fy6zJzT8DUKFStFFDHwTUUbz2CKYDlQVUF3jjak2Pjo4yyBxUzWVhQUCVpXuaHh0TOSBzUCeK1w+1a5/2fQEqVCpQ92WYBKBCUMSgskx33zfYUfESY7KQtXh4JnO6Bxb3CJ6+4bzfVPn6WSS/3WhOXlCJlBRU7TCuIfCoe1ajQ65iATX7tneawoQrEvqKp9OeQP/aaEOwgQUgMBsoRBvVyviGmuOqckq69m7/obaWgQCqGagcAmcasNI1E+V29m1lA5OBgoHKJ6Q5/Z37irB2PELKnvTYql0Ik4FCelRLb8GwnjFg64yxcscRpczIk+ZhLzwqFBxU66MQGLCJANtcAdA2pQG9/e5sDzMGpFAw3S5z404SAoB7f1uG928IsIdyb/aQE3d3yChfAM6p42wPW3YBKzIIeghqwRiPA+WlZVxJrKIRZiNBsYS++XEQUxTLA6UoAigaUGGUc71phmKAogJVvCp2MEDFBUXuUVk9FA28KRQ5qDJN7hOKBxUWFLdHzUO+Ku92f4R5vVD0oMqqmsTZTC2MTefYtxfaFI+ah8BVDP8SmAa0MaAKrIOKtVdfIuSFNg5UgZW96kkFyuNEKiYI2jxQBdak5LCeyDNC0OaCWnJYzwEpVBpQSworP0sHpgCVCtQCrC/LEu4abmUKQXagCqwDennhNnec9Q3CXaj0oAqsmbs5Ne3LBj0zL+P7g/KOheBQNUAVWC8o8Vkvf7r417IeUWpjnBSqHKgFYHlPobbAEFs4zB7/GU8LRHsUqjSoBe+aSjh8FIGHPRFAu9hKBdpk1TUuKl6LgeUdBjksTijtGz0Tr/gZUBoCTqgs2rq6ujK5kezh23E3Z5dyiOxrIzMOszNJgBMCqArg5tuAbhdeFykrvE4AJlQF/S/AACtU6hJJLxXEAAAAAElFTkSuQmCC" alt="CHM" style="height:28px;width:auto;display:block">
@@ -447,7 +452,159 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
-</div><script>
+</div>
+
+<div id="app-accident" style="display:none">
+<header>
+  <div class="hd-top">
+    <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
+      <span class="logo-text">🚑 산업재해관리</span></div>
+    <nav>
+      <button class="acc-nav-btn active" onclick="goAccPage('dashboard')">대시보드</button>
+      <button class="acc-nav-btn" onclick="goAccPage('input')">재해 입력</button>
+      <button class="acc-nav-btn" onclick="goAccPage('list')">재해 목록</button>
+    </nav>
+    <div style="display:flex;align-items:center;gap:.6rem">
+        <span class="hd-date" id="acc-hd-inspector"></span>
+        <span class="hd-date" id="acc-hd-date"></span>
+        <button style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:.3rem .7rem;font-size:.68rem;cursor:pointer;font-family:'Noto Sans KR',sans-serif" onclick="logout()">로그아웃</button>
+      </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ════ 재해 대시보드 ════ -->
+<div class="acc-page active" id="acc-page-dashboard">
+  <div class="page-hd">
+    <div><h1>산업재해 대시보드</h1><p>연도별 재해 발생 현황 및 통계</p></div>
+    <button class="btn btn-primary" onclick="goAccPage('input')">+ 재해 등록</button>
+  </div>
+  <div class="kpi-section">
+    <div class="kpi-section-title">현황 요약</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem">
+      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
+        <div class="kpi-icon" style="background:rgba(147,197,253,.25);margin-bottom:.4rem">🚑</div>
+        <div class="kpi-val" id="acc-kpi-total" style="color:#1e40af;font-size:1.3rem">0</div>
+        <div class="kpi-lbl" style="margin-top:.2rem">전체 재해 건수</div>
+      </div>
+      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
+        <div class="kpi-icon" style="background:rgba(252,129,129,.25);margin-bottom:.4rem">📅</div>
+        <div class="kpi-val" id="acc-kpi-year" style="color:#dc2626;font-size:1.3rem">0</div>
+        <div class="kpi-lbl" style="margin-top:.2rem" id="acc-kpi-year-lbl">올해 발생</div>
+      </div>
+      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
+        <div class="kpi-icon" style="background:rgba(251,191,36,.25);margin-bottom:.4rem">🏥</div>
+        <div class="kpi-val" id="acc-kpi-leave" style="color:#d97706;font-size:1.3rem">0</div>
+        <div class="kpi-lbl" style="margin-top:.2rem">휴직 중</div>
+      </div>
+      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
+        <div class="kpi-icon" style="background:rgba(52,211,153,.25);margin-bottom:.4rem">✅</div>
+        <div class="kpi-val" id="acc-kpi-closed" style="color:#059669;font-size:1.3rem">0</div>
+        <div class="kpi-lbl" style="margin-top:.2rem">종결 건수</div>
+      </div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">연도별 재해 발생 추이</div>
+      <canvas id="acc-chart-year" height="220"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">재해유형별 비율</div>
+      <canvas id="acc-chart-type" height="220"></canvas>
+    </div>
+  </div>
+  <div class="card" style="margin-top:.85rem">
+    <div class="card-title">최근 등록 재해</div>
+    <div id="acc-recent-list"><div style="text-align:center;padding:2rem;color:var(--muted);font-size:.8rem">등록된 재해가 없습니다</div></div>
+  </div>
+</div>
+
+<!-- ════ 재해 입력 ════ -->
+<div class="acc-page" id="acc-page-input">
+  <div class="page-hd">
+    <div><h1>재해 입력</h1><p>산업재해 발생 정보를 입력하세요</p></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="form-section-title">기본 정보</div>
+      <div class="form-row">
+        <div class="fg"><label>사업장 *</label><select id="acc-inp-site"><option value="">— 선택 —</option></select></div>
+        <div class="fg"><label>발생일 *</label><input type="date" id="acc-inp-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>성명 *</label><input type="text" id="acc-inp-name" placeholder="재해자 성명"></div>
+        <div class="fg"><label>직군</label><input type="text" id="acc-inp-job" placeholder="예: 생산직, 사무직"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>재해유형 *</label>
+          <select id="acc-inp-acctype">
+            <option value="">— 선택 —</option>
+            <option>추락</option><option>전도(넘어짐)</option><option>충돌/협착</option><option>절단/베임</option><option>화상</option><option>질병(직업성)</option><option>교통사고</option><option>기타</option>
+          </select>
+        </div>
+        <div class="fg"><label>재해구분</label>
+          <select id="acc-inp-category"><option value="">— 선택 —</option><option>업무상 재해</option><option>통근재해</option><option>질병</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>사고내용 *</label><textarea id="acc-inp-detail" placeholder="사고 경위 및 내용을 상세히 기재"></textarea></div>
+    </div>
+    <div class="card">
+      <div class="form-section-title">처리 현황</div>
+      <div class="form-row">
+        <div class="fg"><label>조사표 제출일</label><input type="date" id="acc-inp-reportdate"></div>
+        <div class="fg"><label>위험성평가 반영</label>
+          <select id="acc-inp-riskassess"><option value="">— 선택 —</option><option>반영완료</option><option>반영예정</option><option>해당없음</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>진행상황</label>
+        <select id="acc-inp-status"><option>진행중</option><option>종결</option></select>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>휴직 시작일</label><input type="date" id="acc-inp-leavestart" onchange="calcLeaveDays()"></div>
+        <div class="fg"><label>휴직 종료일</label><input type="date" id="acc-inp-leaveend" onchange="calcLeaveDays()"></div>
+      </div>
+      <div class="fg"><label>휴직일수</label><input type="number" id="acc-inp-leavedays" placeholder="자동 계산 (직접 입력 가능)"></div>
+      <div class="fg"><label>비고</label><textarea id="acc-inp-note" placeholder="기타 특이사항"></textarea></div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.5rem">
+    <button class="btn btn-outline" onclick="resetAccidentForm()">초기화</button>
+    <button class="btn btn-primary" id="acc-btn-save" onclick="saveAccidentForm()">💾 저장</button>
+  </div>
+</div>
+
+<!-- ════ 재해 목록 ════ -->
+<div class="acc-page" id="acc-page-list">
+  <div class="page-hd">
+    <div><h1>재해 목록</h1><p>등록된 전체 산업재해 현황</p></div>
+    <button class="btn btn-primary btn-sm" onclick="goAccPage('input')">+ 재해 등록</button>
+  </div>
+  <div class="card" style="margin-bottom:.85rem">
+    <div class="form-row" style="margin-bottom:0">
+      <div class="fg"><label>사업장 필터</label>
+        <select id="acc-filter-site" onchange="renderAccList()"><option value="">전체</option></select>
+      </div>
+      <div class="fg"><label>진행상황 필터</label>
+        <select id="acc-filter-status" onchange="renderAccList()"><option value="">전체</option><option>진행중</option><option>종결</option></select>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>발생일</th><th>사업장</th><th>성명</th><th>직군</th><th>재해유형</th><th>사고내용</th><th>진행상황</th><th>휴직일수</th></tr></thead>
+        <tbody id="acc-list-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 재해가 없습니다</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
   // ══ 로그인 게이트 (점검자별 4자리 비밀번호) ══
 const INSPECTOR_PINS = {"천재우":"2873","이재혁":"6538"};
 function currentInspector(){ return localStorage.getItem("shi_login") || ""; }
@@ -476,7 +633,7 @@ function logout(){
   try { localStorage.removeItem("shi_login"); } catch(e) {}
   location.reload();
 }
-const CATEGORY_TITLES = {accident:"산업재해관리", budget:"예산관리", msds:"MSDS관리", etc:"기타"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!INSPECTOR_PINS[currentInspector()]){
+const CATEGORY_TITLES = {budget:"예산관리", msds:"MSDS관리", etc:"기타"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!INSPECTOR_PINS[currentInspector()]){
   document.getElementById("login-gate").style.display = "flex";}else{showCategoryMenu();
 }
 document.getElementById("login-btn").addEventListener("click", doLogin);
@@ -577,6 +734,202 @@ async function syncFromServer(){
   updateReportSel();
   syncFromServer(); // 서버 데이터로 대시보드 재갱신 (다른 기기에서 저장한 결과 포함)
 })();
+
+// ═══ 산업재해관리 ═══
+let accidents = [];
+
+function escapeHtml(str){
+  return String(str==null?"":str).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function calcLeaveDays(){
+  const s = document.getElementById("acc-inp-leavestart").value;
+  const e = document.getElementById("acc-inp-leaveend").value;
+  if(s && e){
+    const d1 = new Date(s), d2 = new Date(e);
+    const days = Math.round((d2-d1)/86400000) + 1;
+    if(days > 0) document.getElementById("acc-inp-leavedays").value = days;
+  }
+}
+
+function initAccidentForm(){
+  const dateEl = document.getElementById("acc-inp-date");
+  if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split("T")[0];
+  const siteSelInp = document.getElementById("acc-inp-site");
+  const siteSelFilter = document.getElementById("acc-filter-site");
+  if(siteSelInp && siteSelInp.options.length <= 1){
+    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSelInp.appendChild(o); });
+  }
+  if(siteSelFilter && siteSelFilter.options.length <= 1){
+    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSelFilter.appendChild(o); });
+  }
+  document.getElementById("acc-hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
+  document.getElementById("acc-hd-inspector").textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
+}
+
+async function loadAccidents(){
+  try {
+    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=accidents");
+    const data = await res.json();
+    accidents = (data && Array.isArray(data.accidents)) ? data.accidents : [];
+  } catch(e) {
+    console.error("산업재해 데이터 로드 실패:", e);
+  }
+  renderAccDashboard();
+  renderAccCharts();
+  renderAccList();
+}
+
+function renderAccDashboard(){
+  const total = accidents.length;
+  const thisYear = String(new Date().getFullYear());
+  const yearCount = accidents.filter(a=>a.year===thisYear).length;
+  const leaveCount = accidents.filter(a=>a.status==="진행중" && a.leaveStart && !a.leaveEnd).length;
+  const closedCount = accidents.filter(a=>a.status==="종결").length;
+  document.getElementById("acc-kpi-total").textContent = total;
+  document.getElementById("acc-kpi-year").textContent = yearCount;
+  document.getElementById("acc-kpi-year-lbl").textContent = thisYear + "년 발생";
+  document.getElementById("acc-kpi-leave").textContent = leaveCount;
+  document.getElementById("acc-kpi-closed").textContent = closedCount;
+
+  const recent = [...accidents].sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||""))).slice(0,5);
+  const wrap = document.getElementById("acc-recent-list");
+  if(recent.length===0){
+    wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.8rem">등록된 재해가 없습니다</div>';
+  } else {
+    wrap.innerHTML = recent.map(a=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--text)">${escapeHtml(a.site)} · ${escapeHtml(a.name)}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${escapeHtml(a.date)} · ${escapeHtml(a.accType)}</div>
+        </div>
+        <span class="badge" style="background:${a.status==='종결'?'#dcfce7':'#fef3c7'};color:${a.status==='종결'?'#166534':'#92400e'}">${escapeHtml(a.status||'진행중')}</span>
+      </div>`).join("");
+  }
+}
+
+let accChartYear, accChartType;
+function renderAccCharts(){
+  if(typeof Chart === "undefined") return;
+  const yearCounts = {};
+  accidents.forEach(a=>{ const y=a.year||"미상"; yearCounts[y]=(yearCounts[y]||0)+1; });
+  const years = Object.keys(yearCounts).sort();
+  const yearCtx = document.getElementById("acc-chart-year");
+  if(accChartYear) accChartYear.destroy();
+  if(yearCtx) accChartYear = new Chart(yearCtx, {
+    type:"bar",
+    data:{ labels:years, datasets:[{label:"재해 건수", data:years.map(y=>yearCounts[y]), backgroundColor:"#1e40af"}] },
+    options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
+  });
+
+  const typeCounts = {};
+  accidents.forEach(a=>{ const t=a.accType||"미상"; typeCounts[t]=(typeCounts[t]||0)+1; });
+  const types = Object.keys(typeCounts);
+  const typeCtx = document.getElementById("acc-chart-type");
+  if(accChartType) accChartType.destroy();
+  if(typeCtx) accChartType = new Chart(typeCtx, {
+    type:"doughnut",
+    data:{ labels:types, datasets:[{data:types.map(t=>typeCounts[t]), backgroundColor:["#1e40af","#2563eb","#60a5fa","#93c5fd","#dc2626","#f59e0b","#059669","#7c3aed"]}] },
+    options:{ plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}} }
+  });
+}
+
+function renderAccList(){
+  const siteFilterEl = document.getElementById("acc-filter-site");
+  const statusFilterEl = document.getElementById("acc-filter-status");
+  const siteFilter = siteFilterEl ? siteFilterEl.value : "";
+  const statusFilter = statusFilterEl ? statusFilterEl.value : "";
+  let list = [...accidents];
+  if(siteFilter) list = list.filter(a=>a.site===siteFilter);
+  if(statusFilter) list = list.filter(a=>a.status===statusFilter);
+  list.sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+  const body = document.getElementById("acc-list-body");
+  if(!body) return;
+  if(list.length===0){
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 재해가 없습니다</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(a=>`
+    <tr>
+      <td>${escapeHtml(a.date)}</td>
+      <td>${escapeHtml(a.site)}</td>
+      <td>${escapeHtml(a.name)}</td>
+      <td>${escapeHtml(a.job)}</td>
+      <td>${escapeHtml(a.accType)}</td>
+      <td style="max-width:280px;white-space:normal">${escapeHtml(a.detail)}</td>
+      <td><span class="badge" style="background:${a.status==='종결'?'#dcfce7':'#fef3c7'};color:${a.status==='종결'?'#166534':'#92400e'}">${escapeHtml(a.status||'진행중')}</span></td>
+      <td>${a.leaveDays || '-'}</td>
+    </tr>`).join("");
+}
+
+function resetAccidentForm(){
+  ["acc-inp-site","acc-inp-date","acc-inp-name","acc-inp-job","acc-inp-acctype","acc-inp-category","acc-inp-detail","acc-inp-reportdate","acc-inp-riskassess","acc-inp-leavestart","acc-inp-leaveend","acc-inp-leavedays","acc-inp-note"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = "";
+  });
+  document.getElementById("acc-inp-status").value = "진행중";
+  document.getElementById("acc-inp-date").value = new Date().toISOString().split("T")[0];
+}
+
+async function saveAccidentForm(){
+  const site = document.getElementById("acc-inp-site").value;
+  const date = document.getElementById("acc-inp-date").value;
+  const name = document.getElementById("acc-inp-name").value.trim();
+  const accType = document.getElementById("acc-inp-acctype").value;
+  const detail = document.getElementById("acc-inp-detail").value.trim();
+  if(!site || !date || !name || !accType || !detail){
+    alert("사업장, 발생일, 성명, 재해유형, 사고내용은 필수 입력입니다.");
+    return;
+  }
+  const payload = {
+    type: "accident_save",
+    site, date, name,
+    job: document.getElementById("acc-inp-job").value.trim(),
+    accType,
+    detail,
+    category: document.getElementById("acc-inp-category").value,
+    reportDate: document.getElementById("acc-inp-reportdate").value,
+    riskAssess: document.getElementById("acc-inp-riskassess").value,
+    status: document.getElementById("acc-inp-status").value,
+    leaveStart: document.getElementById("acc-inp-leavestart").value,
+    leaveEnd: document.getElementById("acc-inp-leaveend").value,
+    leaveDays: document.getElementById("acc-inp-leavedays").value,
+    note: document.getElementById("acc-inp-note").value.trim(),
+    registrant: currentInspector()
+  };
+
+  const saveBtn = document.getElementById("acc-btn-save");
+  const original = saveBtn.innerHTML;
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = "⏳ 저장 중...";
+
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+    alert("저장되었습니다.");
+    resetAccidentForm();
+    await loadAccidents();
+    goAccPage("list");
+  } catch(e) {
+    alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+  }
+  saveBtn.disabled = false;
+  saveBtn.innerHTML = original;
+}
+
+function goAccPage(name){
+  document.querySelectorAll(".acc-page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".acc-nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("acc-page-"+name).classList.add("active");
+  const idx = ["dashboard","input","list"].indexOf(name);
+  document.querySelectorAll(".acc-nav-btn")[idx].classList.add("active");
+  if(name==="list") renderAccList();
+}
 
 // ══ 점검 항목 렌더링 ══
 function renderCheckItems(){
