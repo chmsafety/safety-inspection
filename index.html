@@ -29,6 +29,18 @@ nav{display:flex;gap:.2rem}
 .nav-btn:hover{background:rgba(255,255,255,.25)}
 .nav-btn.active{background:#fff;color:var(--accent)}
 .hd-date{font-size:.72rem;opacity:.7;font-family:"IBM Plex Mono",monospace}
+  .login-gate{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 50%,#2563eb 100%);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .login-box{background:#fff;border-radius:16px;padding:2rem 1.75rem;width:320px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+  .login-box .logo-icon-lg{width:48px;height:48px;background:var(--accent-light);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto .75rem}
+  .login-box h2{font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+  .login-box p{font-size:.75rem;color:var(--text2);margin-bottom:1.25rem}
+  .login-box .fg{text-align:left;margin-bottom:.85rem;display:flex;flex-direction:column;gap:.28rem}
+  .login-box .fg label{font-size:.7rem;font-weight:600;color:var(--text2)}
+  .login-box select,.login-box input{width:100%;background:#fff;border:1px solid var(--border2);border-radius:8px;padding:.6rem .75rem;font-size:.85rem;font-family:"Noto Sans KR",sans-serif;outline:none}
+  .login-box select:focus,.login-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,64,175,.1)}
+  .login-box .btn-login{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:.7rem;font-size:.85rem;font-weight:700;cursor:pointer;margin-top:.35rem;font-family:"Noto Sans KR",sans-serif}
+  .login-box .btn-login:hover{background:#1e3a8a}
+  .login-err{color:var(--danger);font-size:.72rem;margin-top:.5rem;min-height:1em}
 
 /* Layout */
 main{max-width:1400px;margin:0 auto;padding:1.25rem}
@@ -206,6 +218,26 @@ tbody tr:hover{background:var(--surface2)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+<div class="login-gate" id="login-gate" style="display:none">
+  <div class="login-box">
+    <div class="logo-icon-lg">🛡</div>
+    <h2>안전보건점검 관리시스템</h2>
+    <p>점검자를 선택하고 비밀번호를 입력하세요</p>
+    <div class="fg">
+      <label>점검자</label>
+      <select id="login-name">
+        <option value="천재우">천재우</option>
+        <option value="이재혁">이재혁</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>비밀번호 (4자리)</label>
+      <input type="password" id="login-pin" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="****">
+    </div>
+    <button class="btn-login" id="login-btn">입장하기</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
 
 <header>
   <div class="hd-top">
@@ -218,7 +250,11 @@ tbody tr:hover{background:var(--surface2)}
       <button class="nav-btn" onclick="goPage('input')">점검 입력</button>
       <button class="nav-btn" onclick="goPage('report')">결과보고서</button>
     </nav>
-    <div class="hd-date" id="hd-date"></div>
+    <div style="display:flex;align-items:center;gap:.6rem">
+        <span class="hd-date" id="hd-inspector"></span>
+        <span class="hd-date" id="hd-date"></span>
+        <button id="logout-btn" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:.3rem .7rem;font-size:.68rem;cursor:pointer;font-family:'Noto Sans KR',sans-serif">로그아웃</button>
+      </div>
   </div>
 </header>
 
@@ -413,6 +449,41 @@ tbody tr:hover{background:var(--surface2)}
 </div>
 
 <script>
+  // ══ 로그인 게이트 (점검자별 4자리 비밀번호) ══
+const INSPECTOR_PINS = {"천재우":"2873","이재혁":"6538"};
+function currentInspector(){ return localStorage.getItem("shi_login") || ""; }
+function fillInspectorField(){
+  const el = document.getElementById("inp-inspector");
+  if(el) el.value = currentInspector();
+  const hd = document.getElementById("hd-inspector");
+  if(hd) hd.textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
+}
+function doLogin(){
+  const name = document.getElementById("login-name").value;
+  const pin = document.getElementById("login-pin").value.trim();
+  if(INSPECTOR_PINS[name] === pin){
+    try { localStorage.setItem("shi_login", name); } catch(e) {}
+    document.getElementById("login-err").textContent = "";
+    document.getElementById("login-pin").value = "";
+    document.getElementById("login-gate").style.display = "none";
+    fillInspectorField();
+  } else {
+    document.getElementById("login-err").textContent = "비밀번호가 올바르지 않습니다.";
+    document.getElementById("login-pin").value = "";
+    document.getElementById("login-pin").focus();
+  }
+}
+function logout(){
+  try { localStorage.removeItem("shi_login"); } catch(e) {}
+  location.reload();
+}
+if(!INSPECTOR_PINS[currentInspector()]){
+  document.getElementById("login-gate").style.display = "flex";
+}
+document.getElementById("login-btn").addEventListener("click", doLogin);
+document.getElementById("logout-btn").addEventListener("click", logout);
+document.getElementById("login-pin").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
+
 // ══ 데이터 ══
 const SITES = ["T-타워","서린","둔산","보라매","분당","인재개발원","종로타워","부암","성수","테크원","판교","우산","KT&G","관훈","태평","유타워","삼화타워","전주","무의연수원","청주","서산공장","원주","본리","부사","L7호텔","데이터","제주","ICN10","인천","안락","장안","모비언트 광주","수유","신천","송정","센터원 서울사무소","용인","영시티","현대위아 평택","행복나눔","넥실리스","인천석유화학","11번가","중동","센트로시티","오토에버 광주","오리온용암수","고려대 거점오피스","서강대","스타크빌딩","명륜","분당N타워"];
 
@@ -499,6 +570,7 @@ async function syncFromServer(){
 (function(){
   document.getElementById("hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
   document.getElementById("inp-date").value = new Date().toISOString().split("T")[0];
+    fillInspectorField();
   const sel = document.getElementById("inp-site");
   SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; sel.appendChild(o); });
   renderCheckItems();
@@ -712,7 +784,7 @@ async function saveInspection(){
 
 function resetInput(){
   document.getElementById("inp-site").value="";
-  document.getElementById("inp-inspector").value="";
+  document.getElementById("inp-inspector").value=currentInspector();
   document.getElementById("inp-memo").value="";
   document.getElementById("inp-mgr-name").value="";
   document.getElementById("inp-mgr-email").value="";
