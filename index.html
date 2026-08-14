@@ -452,6 +452,16 @@ let currentRptId = null;
 let deductPhotos = []; // base64 사진 배열
 let deductCount = 0;
 
+  // 구글 드라이브 사진/서명 URL을 안정적으로 렌더링되는 형식으로 변환한다.
+  // (drive.google.com/uc?id= 형식은 이미지 태그로 바로 열리지 않고 깨지는 경우가 있어
+  //  lh3.googleusercontent.com/d/ 형식으로 변환한다. data: 로컬 미리보기는 그대로 둔다.)
+    function driveImg(url){
+                     if(!url) return url;
+    if(url.startsWith("data:")) return url;
+    const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    return m ? ("https://lh3.googleusercontent.com/d/" + m[1]) : url;
+  }
+
 // ══ 서버(Google Sheets) 동기화 ══
 // 대시보드가 이 브라우저의 localStorage만 보던 문제를 해결하기 위해,
 // 페이지를 열 때마다 Apps Script에서 전체 점검현황/개선현황을 받아와 화면을 갱신한다.
@@ -966,7 +976,7 @@ function renderExecRpt(ins){
         ${ins.deductItems&&ins.deductItems.length>0?
           ins.deductItems.map((item,i)=>`
             <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.65rem;padding:.65rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px">
-              <img src="${item.src}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;flex-shrink:0">
+              <img src="${driveImg(item.src)}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;flex-shrink:0">
               <div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--danger);margin-bottom:.25rem">미흡사항 ${i+1}</div>
                 <div style="font-size:.8rem;color:var(--text2)">${item.note||"내용 없음"}</div>
@@ -1028,7 +1038,7 @@ function renderSiteRpt(ins){
           ${ins.deductItems&&ins.deductItems.length>0?
             ins.deductItems.map((item,i)=>`
               <div style="display:flex;gap:.65rem;align-items:flex-start;margin-bottom:.5rem;padding:.5rem;background:rgba(185,28,28,.06);border-radius:6px">
-                <img src="${item.src}" style="width:80px;height:80px;object-fit:cover;border-radius:5px;flex-shrink:0">
+                <img src="${driveImg(item.src)}" style="width:80px;height:80px;object-fit:cover;border-radius:5px;flex-shrink:0">
                 <div>
                   <div style="font-size:.68rem;font-weight:700;color:var(--danger);margin-bottom:.2rem">미흡사항 ${i+1}</div>
                   <div style="font-size:.78rem;color:var(--text2)">${item.note||"내용 없음"}</div>
@@ -1118,7 +1128,7 @@ function buildReportHtml(ins, feedbacks) {
         <div style="padding:8px 10px">
           ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:4px 8px;margin-bottom:6px;font-size:10px;color:#475569">지적: ${r.originalNote}</div>`:""}
           <div style="font-size:11px;color:#0f172a">${r.improvementText||"<span style='color:#94a3b8'>미입력</span>"}</div>
-          ${r.photos&&r.photos.length>0?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${r.photos.slice(0,4).map(p=>`<img src="${p.url||p.src}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0">`).join("")}</div>`:""}
+          ${(()=>{const isDeduct=r.key&&String(r.key).startsWith("deduct");const beforeP=isDeduct?(ins.deductItems||[]):[];const afterP=r.photos||[];if(!beforeP.length&&!afterP.length)return"";return `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">${beforeP.length?`<div style="flex:1;min-width:130px"><div style="font-size:9px;font-weight:800;color:#b91c1c;margin-bottom:3px">◀ 개선 전</div><div style="display:flex;flex-wrap:wrap;gap:4px">${beforeP.slice(0,4).map(p=>`<img src="${driveImg(p.src)}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #fecaca">`).join("")}</div></div>`:""}${afterP.length?`<div style="flex:1;min-width:130px"><div style="font-size:9px;font-weight:800;color:#15803d;margin-bottom:3px">개선 후 ▶</div><div style="display:flex;flex-wrap:wrap;gap:4px">${afterP.slice(0,4).map(p=>`<img src="${driveImg(p.url||p.src)}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #bbf7d0">`).join("")}</div></div>`:""}</div>`;})()}
         </div>
       </div>`).join("")}
       ${fb.signature?`
@@ -1126,7 +1136,7 @@ function buildReportHtml(ins, feedbacks) {
         <div style="text-align:center">
           <div style="font-size:10px;color:#64748b;margin-bottom:4px">사업장 관리자 서명</div>
           <div style="border:1px solid #e2e8f0;border-radius:6px;padding:4px;display:inline-block">
-            <img src="${fb.signature}" style="height:50px;max-width:160px">
+            <img src="${driveImg(fb.signature)}" style="height:50px;max-width:160px">
           </div>
           <div style="font-size:10px;color:#64748b;margin-top:2px">${fb.manager}</div>
         </div>
