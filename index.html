@@ -87,6 +87,16 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem}
 
 /* Site grid */
 .site-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem}
+
+/* Grade grid */
+.grade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+.grade-col{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.grade-col-head{padding:.55rem .7rem;font-size:.75rem;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.grade-col-body{padding:.5rem .6rem;display:flex;flex-direction:column;gap:.4rem;min-height:2.5rem}
+.grade-site-item{display:flex;align-items:center;justify-content:space-between;font-size:.72rem;padding:.3rem .4rem;border-radius:6px;background:var(--bg,#f8fafc);cursor:pointer}
+.grade-site-item:hover{background:var(--border)}
+.grade-site-name{font-weight:600;color:var(--text)}
+.grade-site-score{font-family:'IBM Plex Mono',monospace;font-weight:700}
 .site-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:.65rem;text-align:center;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
 .site-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--accent)}
 .site-card.done-ok{border-top:3px solid var(--ok)}
@@ -201,6 +211,7 @@ tbody tr:hover{background:var(--surface2)}
   .kpi-grid4{grid-template-columns:1fr 1fr}
   .kpi-section > div:last-child{grid-template-columns:repeat(2,1fr)!important}
   .site-grid{grid-template-columns:repeat(3,1fr)}
+  .grade-grid{grid-template-columns:repeat(2,1fr)}
   .form-row,.form-row3{grid-template-columns:1fr}
   .check-header{flex-direction:column;align-items:flex-start;gap:.4rem}
   .radio-group{width:100%}
@@ -210,6 +221,7 @@ tbody tr:hover{background:var(--surface2)}
 }
 @media(max-width:480px){
   .site-grid{grid-template-columns:repeat(2,1fr)}
+  .grade-grid{grid-template-columns:1fr}
   .kpi-grid4{grid-template-columns:1fr 1fr}
   .kpi-section > div:last-child{grid-template-columns:repeat(2,1fr)!important}
 }
@@ -251,6 +263,7 @@ tbody tr:hover{background:var(--surface2)}
       <span class="logo-text">안전보건 관리시스템</span></div>
     <nav>
       <button class="nav-btn active" onclick="goPage('dashboard')">대시보드</button>
+      <button class="nav-btn" onclick="goPage('detail')">세부내용</button>
       <button class="nav-btn" onclick="goPage('input')">점검 입력</button>
       <button class="nav-btn" onclick="goPage('report')">결과보고서</button>
     </nav>
@@ -327,20 +340,27 @@ tbody tr:hover{background:var(--surface2)}
     </div>
   </div>
 
-  <div class="g3">
+  <div class="card" style="margin-top:.85rem">
+    <div class="card-title">사업장별 점검 현황</div>
+    <div class="site-grid" id="site-grid"></div>
+  </div>
+</div>
+
+<!-- ════ 세부내용 ════ -->
+<div class="page" id="page-detail">
+  <div class="card" style="margin-bottom:.85rem">
+    <div class="card-title">등급별 사업장</div>
+    <div class="grade-grid" id="grade-grid"></div>
+  </div>
+
+  <div class="g2">
     <div class="card">
-      <div class="card-title">사업장별 점검 현황</div>
-      <div class="site-grid" id="site-grid"></div>
+      <div class="card-title">🏆 상위 항목 TOP 5</div>
+      <div id="top5"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.8rem">데이터 없음</div></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:.85rem">
-      <div class="card">
-        <div class="card-title">🏆 상위 항목 TOP 3</div>
-        <div id="top3"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.8rem">데이터 없음</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">⚠ 하위 항목 BOTTOM 3</div>
-        <div id="bot3"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.8rem">데이터 없음</div></div>
-      </div>
+    <div class="card">
+      <div class="card-title">⚠ 하위 항목 BOTTOM 5</div>
+      <div id="bot5"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.8rem">데이터 없음</div></div>
     </div>
   </div>
 
@@ -1167,9 +1187,10 @@ function goPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("page-"+name).classList.add("active");
-  const idx=["dashboard","input","report"].indexOf(name);
+  const idx=["dashboard","detail","input","report"].indexOf(name);
   document.querySelectorAll(".nav-btn")[idx].classList.add("active");
   if(name==="dashboard") updateDashboard();
+  if(name==="detail") updateDetailPage();
   if(name==="report") updateReportSel();
 }
 
@@ -1227,16 +1248,85 @@ function updateDashboard(){
     </div>`;
   }).join("");
 
-  // 개선현황
+  // 개선현황 (KPI 집계만 - 표는 세부내용 페이지에서)
   let totalImproved = 0;
-  let totalIssuesAll = 0;
-  const impList = document.getElementById("improvement-list");
   const fbEntries = Object.values(feedbacks);
   if(fbEntries.length>0){
-    fbEntries.forEach(fb=>{ totalImproved += (fb.doneCount||0); totalIssuesAll += (fb.totalIssues||0); });
+    fbEntries.forEach(fb=>{ totalImproved += (fb.doneCount||0); });
     document.getElementById("kpi-improved").textContent = totalImproved;
     const improveRate = badTotal>0 ? Math.round(totalImproved/badTotal*100) : 0;
     document.getElementById("kpi-improve-rate").textContent = improveRate+"%";
+  } else {
+    document.getElementById("kpi-improved").textContent = "0";
+    document.getElementById("kpi-improve-rate").textContent = "0%";
+  }
+}
+
+// ══ 세부내용 ══
+function updateDetailPage(){
+  const done = inspections.length;
+
+  // 등급별 사업장
+  const gradeGrid = document.getElementById("grade-grid");
+  if(gradeGrid){
+    const grades = [
+      {g:"A",color:"#15803d",label:"A등급 사업장"},
+      {g:"B",color:"#1e40af",label:"B등급 사업장"},
+      {g:"C",color:"#b45309",label:"C등급 사업장"},
+      {g:"D",color:"#b91c1c",label:"D등급 사업장"}
+    ];
+    gradeGrid.innerHTML = grades.map(gr=>{
+      const list = inspections.filter(ins=>gradeInfo(ins.finalScore)[0]===gr.g).sort((a,b)=>b.finalScore-a.finalScore);
+      return `<div class="grade-col">
+        <div class="grade-col-head" style="background:${gr.color}">
+          <span>${gr.label}</span>
+          <span>${list.length}개소</span>
+        </div>
+        <div class="grade-col-body">
+          ${list.length>0 ? list.map(ins=>`
+          <div class="grade-site-item" onclick="loadRptById(${ins.id})">
+            <span class="grade-site-name">${ins.site}</span>
+            <span class="grade-site-score" style="color:${gr.color}">${ins.finalScore}점</span>
+          </div>`).join("") : `<div style="text-align:center;padding:.6rem 0;color:var(--muted);font-size:.72rem">대상 없음</div>`}
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // Item avgs (TOP5 / BOTTOM5 / 항목별 평균 점수)
+  if(done>0){
+    const itemAvgs = CHECK_ITEMS.map(item=>{
+      const sum = inspections.reduce((s,ins)=>s+(ins.scores[item.key]?.score||0),0);
+      return {...item, avg: Math.round(sum/done/4*100)};
+    });
+    itemAvgs.sort((a,b)=>b.avg-a.avg);
+    document.getElementById("top5").innerHTML = itemAvgs.slice(0,5).map((item,i)=>`
+      <div class="rank-item">
+        <div class="rank-num rank-top">${i+1}</div>
+        <div class="rank-lbl">${item.name}</div>
+        <div class="rank-val" style="color:var(--ok)">${item.avg}점</div>
+      </div>`).join("");
+    document.getElementById("bot5").innerHTML = [...itemAvgs].reverse().slice(0,5).map((item,i)=>`
+      <div class="rank-item">
+        <div class="rank-num rank-bot">${i+1}</div>
+        <div class="rank-lbl">${item.name}</div>
+        <div class="rank-val" style="color:var(--danger)">${item.avg}점</div>
+      </div>`).join("");
+    document.getElementById("item-chart").innerHTML = itemAvgs.map(item=>{
+      const col = item.avg>=80?"#15803d":item.avg>=60?"#b45309":"#b91c1c";
+      return `<div class="chart-row">
+        <div class="chart-lbl">${item.name}</div>
+        <div class="chart-wrap"><div class="chart-fill" style="width:${item.avg}%;background:${col}">${item.avg}점</div></div>
+        <div class="chart-val">${item.avg}점</div>
+      </div>`;
+    }).join("");
+  }
+
+  // 사업장별 개선현황
+  const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
+  const impList = document.getElementById("improvement-list");
+  const fbEntries = Object.values(feedbacks);
+  if(fbEntries.length>0){
     impList.innerHTML = `
       <table>
         <thead><tr><th>사업장</th><th>담당자</th><th style="text-align:center">미흡</th><th style="text-align:center">개선완료</th><th style="text-align:center">진행률</th><th>제출일</th></tr></thead>
@@ -1261,37 +1351,7 @@ function updateDashboard(){
         }).join("")}</tbody>
       </table>`;
   } else {
-    document.getElementById("kpi-improved").textContent = "0";
-    document.getElementById("kpi-improve-rate").textContent = "0%";
-  }
-
-  // Item avgs
-  if(done>0){
-    const itemAvgs = CHECK_ITEMS.map(item=>{
-      const sum = inspections.reduce((s,ins)=>s+(ins.scores[item.key]?.score||0),0);
-      return {...item, avg: Math.round(sum/done/4*100)};
-    });
-    itemAvgs.sort((a,b)=>b.avg-a.avg);
-    document.getElementById("top3").innerHTML = itemAvgs.slice(0,3).map((item,i)=>`
-      <div class="rank-item">
-        <div class="rank-num rank-top">${i+1}</div>
-        <div class="rank-lbl">${item.name}</div>
-        <div class="rank-val" style="color:var(--ok)">${item.avg}점</div>
-      </div>`).join("");
-    document.getElementById("bot3").innerHTML = [...itemAvgs].reverse().slice(0,3).map((item,i)=>`
-      <div class="rank-item">
-        <div class="rank-num rank-bot">${i+1}</div>
-        <div class="rank-lbl">${item.name}</div>
-        <div class="rank-val" style="color:var(--danger)">${item.avg}점</div>
-      </div>`).join("");
-    document.getElementById("item-chart").innerHTML = itemAvgs.map(item=>{
-      const col = item.avg>=80?"#15803d":item.avg>=60?"#b45309":"#b91c1c";
-      return `<div class="chart-row">
-        <div class="chart-lbl">${item.name}</div>
-        <div class="chart-wrap"><div class="chart-fill" style="width:${item.avg}%;background:${col}">${item.avg}점</div></div>
-        <div class="chart-val">${item.avg}점</div>
-      </div>`;
-    }).join("");
+    impList.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.8rem">개선결과 데이터가 없습니다</div>`;
   }
 }
 
