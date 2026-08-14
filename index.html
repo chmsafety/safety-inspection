@@ -802,7 +802,7 @@ function updateDashboard(){
   if(fbEntries.length>0){
     fbEntries.forEach(fb=>{ totalImproved += (fb.doneCount||0); totalIssuesAll += (fb.totalIssues||0); });
     document.getElementById("kpi-improved").textContent = totalImproved;
-    const improveRate = totalIssuesAll>0 ? Math.round(totalImproved/totalIssuesAll*100) : 0;
+    const improveRate = badTotal>0 ? Math.round(totalImproved/badTotal*100) : 0;
     document.getElementById("kpi-improve-rate").textContent = improveRate+"%";
     impList.innerHTML = `
       <table>
@@ -1128,11 +1128,12 @@ function buildReportHtml(ins, feedbacks) {
         <div style="padding:8px 10px">
           ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:4px 8px;margin-bottom:6px;font-size:10px;color:#475569">지적: ${r.originalNote}</div>`:""}
           <div style="font-size:11px;color:#0f172a">${r.improvementText||"<span style='color:#94a3b8'>미입력</span>"}</div>
-          ${(()=>{const isDeduct=r.key&&String(r.key).startsWith("deduct");const beforeP=isDeduct?(ins.deductItems||[]):[];const afterP=r.photos||[];if(!beforeP.length&&!afterP.length)return"";return `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">${beforeP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#b91c1c;margin-bottom:3px">◀ 개선 전</div><div style="display:flex;flex-wrap:wrap;gap:4px">${beforeP.slice(0,4).map(p=>`<img src="${driveImg(p.src)}" style="width:130px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #fecaca">`).join("")}</div></div>`:""}${afterP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#15803d;margin-bottom:3px">개선 후 ▶</div><div style="display:flex;flex-wrap:wrap;gap:4px">${afterP.slice(0,4).map(p=>`<img src="${driveImg(p.url||p.src)}" style="width:130px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #bbf7d0">`).join("")}</div></div>`:""}</div>`;})()}
+          ${(()=>{const isDeduct=r.key&&String(r.key).startsWith("deduct");const beforeP=isDeduct?(ins.deductItems||[]):[];const afterP=r.photos||[];if(!beforeP.length&&!afterP.length)return"";return `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">${beforeP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#b91c1c;margin-bottom:3px">◀ 개선 전</div><div style="display:flex;flex-wrap:wrap;gap:4px">${beforeP.slice(0,4).map(p=>`<img src="${driveImg(p.src)}" style="width:175px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #fecaca">`).join("")}</div></div>`:""}${afterP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#15803d;margin-bottom:3px">개선 후 ▶</div><div style="display:flex;flex-wrap:wrap;gap:4px">${afterP.slice(0,4).map(p=>`<img src="${driveImg(p.url||p.src)}" style="width:175px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #bbf7d0">`).join("")}</div></div>`:""}</div>`;})()}
         </div>
       </div>`).join("")}
       ${fb.signature?`
-      <div style="font-size:10px;color:#334155;line-height:1.6;margin-top:12px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap"><span>본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며, 개선결과를 안전관리팀에 제출합니다.</span><span style="white-space:nowrap;font-weight:700">${(()=>{if(!fb.date)return"";const p=String(fb.date).split("-");if(p.length<3)return fb.date;return p[0]+"년 "+parseInt(p[1],10)+"월 "+parseInt(p[2],10)+"일";})()}</span></div>
+      <div style="font-size:10px;color:#334155;line-height:1.6;margin-top:12px">본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며, 개선결과를 안전관리팀에 제출합니다.</div>
+      <div style="text-align:right;font-size:10px;color:#64748b;font-weight:700;margin-top:4px">${(()=>{if(!fb.date)return"";const p=String(fb.date).split("-");if(p.length<3)return fb.date;return p[0]+"년 "+parseInt(p[1],10)+"월 "+parseInt(p[2],10)+"일";})()}</div>
       <div style="display:flex;justify-content:flex-end;margin-top:6px">
         <div style="text-align:center">
           <div style="font-size:10px;color:#64748b;margin-bottom:4px">사업장 관리자 서명</div>
@@ -1207,7 +1208,7 @@ ${ins.deductCount>0&&ins.deductItems?`
   <div style="padding:8px 10px">
     ${ins.deductItems.map((d,i)=>`
     <div style="display:flex;gap:8px;margin-bottom:6px;padding:6px;background:#fef2f2;border-radius:4px">
-      ${d.src?`<img src="${driveImg(d.src)}" style="width:110px;height:110px;object-fit:cover;border-radius:4px;flex-shrink:0">`:""}
+      ${d.src?`<img src="${driveImg(d.src)}" style="width:150px;height:110px;object-fit:cover;border-radius:4px;flex-shrink:0">`:""}
       <div><div style="font-size:10px;font-weight:700;color:#b91c1c">미흡 ${i+1}</div><div style="font-size:11px;color:#475569">${d.note||"내용 없음"}</div></div>
     </div>`).join("")}
   </div>
