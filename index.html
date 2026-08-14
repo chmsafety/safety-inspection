@@ -1132,7 +1132,7 @@ function buildReportHtml(ins, feedbacks) {
         </div>
       </div>`).join("")}
       ${fb.signature?`
-      <div style="font-size:10px;color:#334155;line-height:1.6;margin-top:12px">본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며, 개선결과를 안전관리팀에 제출합니다.</div>
+      <div style="font-size:10px;color:#334155;line-height:1.6;margin-top:12px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap"><span>본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며, 개선결과를 안전관리팀에 제출합니다.</span><span style="white-space:nowrap;font-weight:700">${(()=>{if(!fb.date)return"";const p=String(fb.date).split("-");if(p.length<3)return fb.date;return p[0]+"년 "+parseInt(p[1],10)+"월 "+parseInt(p[2],10)+"일";})()}</span></div>
       <div style="display:flex;justify-content:flex-end;margin-top:6px">
         <div style="text-align:center">
           <div style="font-size:10px;color:#64748b;margin-bottom:4px">사업장 관리자 서명</div>
