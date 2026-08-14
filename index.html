@@ -1196,7 +1196,7 @@ ${ins.deductCount>0&&ins.deductItems?`
   <div style="padding:8px 10px">
     ${ins.deductItems.map((d,i)=>`
     <div style="display:flex;gap:8px;margin-bottom:6px;padding:6px;background:#fef2f2;border-radius:4px">
-      ${d.src?`<img src="${d.src}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0">`:""}
+      ${d.src?`<img src="${driveImg(d.src)}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0">`:""}
       <div><div style="font-size:10px;font-weight:700;color:#b91c1c">미흡 ${i+1}</div><div style="font-size:11px;color:#475569">${d.note||"내용 없음"}</div></div>
     </div>`).join("")}
   </div>
