@@ -569,7 +569,8 @@ tbody tr:hover{background:var(--surface2)}
       <div class="fg"><label>비고</label><textarea id="acc-inp-note" placeholder="기타 특이사항"></textarea></div>
     </div>
   </div>
-  <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.5rem">
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:.5rem;margin-top:.5rem">
+    <span id="acc-save-status" style="font-size:.75rem;font-weight:600"></span>
     <button class="btn btn-outline" onclick="resetAccidentForm()">초기화</button>
     <button class="btn btn-primary" id="acc-btn-save" onclick="saveAccidentForm()">💾 저장</button>
   </div>
@@ -899,9 +900,11 @@ async function saveAccidentForm(){
   };
 
   const saveBtn = document.getElementById("acc-btn-save");
+  const statusEl = document.getElementById("acc-save-status");
   const original = saveBtn.innerHTML;
   saveBtn.disabled = true;
   saveBtn.innerHTML = "⏳ 저장 중...";
+  if(statusEl){ statusEl.textContent = ""; statusEl.style.color = ""; }
 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
   try {
@@ -911,12 +914,11 @@ async function saveAccidentForm(){
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify(payload)
     });
-    alert("저장되었습니다.");
     resetAccidentForm();
     await loadAccidents();
     goAccPage("list");
   } catch(e) {
-    alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+    if(statusEl){ statusEl.textContent = "⚠ 저장 중 오류가 발생했습니다. 다시 시도해주세요."; statusEl.style.color = "var(--danger)"; }
   }
   saveBtn.disabled = false;
   saveBtn.innerHTML = original;
