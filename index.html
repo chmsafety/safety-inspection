@@ -402,7 +402,7 @@ tbody tr:hover{background:var(--surface2)}
   </div>
   <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.5rem">
     <button class="btn btn-outline" onclick="resetInput()">초기화</button>
-    <button class="btn btn-primary" onclick="saveInspection()">💾 저장 및 보고서 생성</button>
+    <button class="btn btn-primary" id="btn-save-report" onclick="saveInspection()">💾 저장 및 보고서 생성</button>
   </div>
 </div>
 
@@ -723,6 +723,11 @@ async function saveInspection(){
   });
   if(!allSelected){ alert("모든 점검 항목(25개)을 선택해주세요."); return; }
 
+  const saveBtn = document.getElementById("btn-save-report");
+  const saveBtnOriginal = saveBtn.innerHTML;
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = "⏳ 생성중... 5~10초 정도 기다려주세요";
+
   const maxScore = CHECK_ITEMS.length * 4;
   const baseScore = Math.round(totalScore / maxScore * 100);
   const finalScore = Math.max(0, baseScore - deductCount);
@@ -778,6 +783,8 @@ async function saveInspection(){
   } catch(e) {
     document.getElementById("modal-status").textContent = "⚠ 네트워크 오류 (로컬 저장 완료)";
   }
+  saveBtn.disabled = false;
+  saveBtn.innerHTML = saveBtnOriginal;
   document.getElementById("modal-saved").classList.add("open");
 }
 
