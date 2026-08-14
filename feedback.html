@@ -283,7 +283,7 @@ const SITES = ["T-타워","서린","둔산","보라매","분당","인재개발�
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
 
 let photoData = {}; // {issueIndex: [{src, note}]}
-let currentIssues = [];
+let currentIssues = []; function driveImg(url){ if(!url) return url; if(url.startsWith("data:")) return url; const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m ? ("https://lh3.googleusercontent.com/d/" + m[1]) : url; }
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -404,7 +404,7 @@ function renderIssues(data){
           <div class="photo-list" style="margin-bottom:.75rem">
             ${issue.originalPhotos.map(p=>`
               <div class="photo-item">
-                <img src="${p.url}" style="cursor:zoom-in" onclick="window.open('${p.url}','_blank')">
+                <img src="${driveImg(p.url)}" style="cursor:zoom-in" onclick="window.open('${driveImg(p.url)}','_blank')">
                 <div style="flex:1;font-size:.75rem;color:var(--text2);align-self:center">${p.note?escapeHtml(p.note):'<span style="color:var(--muted)">(설명 없음)</span>'}</div>
               </div>`).join("")}
           </div>`:""}
