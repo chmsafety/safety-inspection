@@ -1128,7 +1128,7 @@ function buildReportHtml(ins, feedbacks) {
         <div style="padding:8px 10px">
           ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:4px 8px;margin-bottom:6px;font-size:10px;color:#475569">지적: ${r.originalNote}</div>`:""}
           <div style="font-size:11px;color:#0f172a">${r.improvementText||"<span style='color:#94a3b8'>미입력</span>"}</div>
-          ${(()=>{const isDeduct=r.key&&String(r.key).startsWith("deduct");const beforeP=isDeduct?(ins.deductItems||[]):[];const afterP=r.photos||[];if(!beforeP.length&&!afterP.length)return"";return `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">${beforeP.length?`<div style="flex:1;min-width:130px"><div style="font-size:9px;font-weight:800;color:#b91c1c;margin-bottom:3px">◀ 개선 전</div><div style="display:flex;flex-wrap:wrap;gap:4px">${beforeP.slice(0,4).map(p=>`<img src="${driveImg(p.src)}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #fecaca">`).join("")}</div></div>`:""}${afterP.length?`<div style="flex:1;min-width:130px"><div style="font-size:9px;font-weight:800;color:#15803d;margin-bottom:3px">개선 후 ▶</div><div style="display:flex;flex-wrap:wrap;gap:4px">${afterP.slice(0,4).map(p=>`<img src="${driveImg(p.url||p.src)}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #bbf7d0">`).join("")}</div></div>`:""}</div>`;})()}
+          ${(()=>{const isDeduct=r.key&&String(r.key).startsWith("deduct");const beforeP=isDeduct?(ins.deductItems||[]):[];const afterP=r.photos||[];if(!beforeP.length&&!afterP.length)return"";return `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">${beforeP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#b91c1c;margin-bottom:3px">◀ 개선 전</div><div style="display:flex;flex-wrap:wrap;gap:4px">${beforeP.slice(0,4).map(p=>`<img src="${driveImg(p.src)}" style="width:130px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #fecaca">`).join("")}</div></div>`:""}${afterP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#15803d;margin-bottom:3px">개선 후 ▶</div><div style="display:flex;flex-wrap:wrap;gap:4px">${afterP.slice(0,4).map(p=>`<img src="${driveImg(p.url||p.src)}" style="width:130px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #bbf7d0">`).join("")}</div></div>`:""}</div>`;})()}
         </div>
       </div>`).join("")}
       ${fb.signature?`
@@ -1206,7 +1206,7 @@ ${ins.deductCount>0&&ins.deductItems?`
   <div style="padding:8px 10px">
     ${ins.deductItems.map((d,i)=>`
     <div style="display:flex;gap:8px;margin-bottom:6px;padding:6px;background:#fef2f2;border-radius:4px">
-      ${d.src?`<img src="${driveImg(d.src)}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0">`:""}
+      ${d.src?`<img src="${driveImg(d.src)}" style="width:110px;height:110px;object-fit:cover;border-radius:4px;flex-shrink:0">`:""}
       <div><div style="font-size:10px;font-weight:700;color:#b91c1c">미흡 ${i+1}</div><div style="font-size:11px;color:#475569">${d.note||"내용 없음"}</div></div>
     </div>`).join("")}
   </div>
