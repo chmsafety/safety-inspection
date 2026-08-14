@@ -784,7 +784,7 @@ async function loadAccidents(){
 function renderAccDashboard(){
   const total = accidents.length;
   const thisYear = String(new Date().getFullYear());
-  const yearCount = accidents.filter(a=>a.year===thisYear).length;
+  const yearCount = accidents.filter(a=>String(a.year)===thisYear).length;
   const leaveCount = accidents.filter(a=>a.status==="진행중" && a.leaveStart && !a.leaveEnd).length;
   const closedCount = accidents.filter(a=>a.status==="종결").length;
   document.getElementById("acc-kpi-total").textContent = total;
