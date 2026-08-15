@@ -335,15 +335,22 @@ async function loadSiteIssues(){
         result: item.result
       }));
 
-    // 현장점검 미흡사항 추가
+    // 현장점검 미흡사항 추가 — deductCount 만큼 항목을 개별로 생성 (전체 집계에 정확히 반영되도록)
     if(data.deductCount > 0){
-      currentIssues.push({
-        key:'deduct_0',
-        name:`현장점검 미흡사항 (${data.deductCount}건)`,
-        originalNote: data.deductNote||'',
-        result:'deduct',
-        originalPhotos: Array.isArray(data.photoUrls) ? data.photoUrls : []
-      });
+      const photos = Array.isArray(data.photoUrls) ? data.photoUrls : [];
+      // deductNote는 "미흡1: ... / 미흡2: ..." 형태의 결합 문자열이므로, 개별 사진 설명이 없을 때 폴백으로 분리해서 사용
+      const noteParts = (data.deductNote||'').split(' / ').map(s=>s.trim());
+      for(let di=0; di<data.deductCount; di++){
+        const p = photos[di];
+        const fallbackNote = noteParts[di] || (data.deductCount===1 ? (data.deductNote||'') : '');
+        currentIssues.push({
+          key:`deduct_${di}`,
+          name: data.deductCount>1?`현장점검 미흡사항 ${di+1}`:`현장점검 미흡사항`,
+          originalNote: (p && p.note) || fallbackNote || '',
+          result:'deduct',
+          originalPhotos: (p && p.url) ? [{url:p.url, note:p.note||''}] : []
+        });
+      }
     }
 
     photoData = {};

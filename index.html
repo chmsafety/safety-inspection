@@ -1595,7 +1595,7 @@ function updateDashboard(){
       </div>
       <div style="font-size:.58rem;font-weight:700;color:${fbColor};background:${fbBg};padding:.1rem .4rem;border-radius:4px;display:inline-block;margin-top:.1rem">${fbStatus}</div>
       `:`<div class="site-score" style="color:var(--muted)">—</div>`}
-      <div class="site-date">${ins?ins.date:"미점검"}</div>
+      <div class="site-date">${ins?`점검 ${fmtDate(ins.date)}`:"미점검"}${fb?`<br>개선제출 ${fmtDate(fb.date)}`:""}</div>
     </div>`;
   }).join("");
 
@@ -1684,7 +1684,8 @@ function updateDetailPage(){
         <tbody>${fbEntries.map(fb=>{
           const pct = fb.totalIssues>0?Math.round(fb.doneCount/fb.totalIssues*100):0;
           const col = pct>=100?"var(--ok)":pct>=50?"var(--warn)":"var(--danger)";
-          return `<tr>
+          const matchIns = inspections.filter(i=>i.site===fb.site).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+          return `<tr${matchIns?` style="cursor:pointer" onclick="loadRptById(${matchIns.id})" title="클릭하면 보고서 보기 / PDF 다운로드"`:""}>
             <td style="font-weight:600">${fb.site}</td>
             <td style="font-size:.75rem">${fb.manager||"-"}</td>
             <td style="text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--danger)">${fb.totalIssues}</td>
@@ -1739,6 +1740,19 @@ function gradeInfo(score){
   if(score>=80) return ["B","#1e40af"];
   if(score>=70) return ["C","#b45309"];
   return ["D","#b91c1c"];
+}
+
+// 날짜를 년/월/일(YYYY-MM-DD)까지만 표시
+function fmtDate(d){
+  if(!d) return "";
+  const s = String(d);
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  if(m) return m[1];
+  const dt = new Date(s);
+  if(!isNaN(dt.getTime())){
+    return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  }
+  return s;
 }
 
 function renderExecRpt(ins){
@@ -1820,7 +1834,7 @@ function renderExecRpt(ins){
         ${ins.deductItems&&ins.deductItems.length>0?
           ins.deductItems.map((item,i)=>`
             <div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.65rem;padding:.65rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px">
-              <img src="${driveImg(item.src)}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;flex-shrink:0">
+              <img src="${driveImg(item.src)}" style="width:140px;height:100px;object-fit:cover;border-radius:6px;flex-shrink:0">
               <div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--danger);margin-bottom:.25rem">미흡사항 ${i+1}</div>
                 <div style="font-size:.8rem;color:var(--text2)">${item.note||"내용 없음"}</div>
@@ -1855,8 +1869,7 @@ function renderSiteRpt(ins){
           <div style="font-size:.75rem;color:var(--text2);margin-top:.2rem">점검일: ${ins.date} · 점검자: ${ins.inspector} · ${ins.type}</div>
         </div>
         <p style="font-size:.82rem;line-height:1.9;color:var(--text2);margin-bottom:1rem">
-          귀사의 무궁한 발전을 기원합니다.<br>
-          상기 일자에 실시한 안전보건점검 결과를 아래와 같이 통보하오니, 해당 사항에 대한 개선 조치 후 결과를 회신하여 주시기 바랍니다.
+          상기 일자에 실시한 안전보건점검 결과를 아래와 같이 안내드리니, 해당 사항에 대한 개선 조치 후 결과를 회신하여 주시기 바랍니다.
         </p>
         ${issueItems.length>0?`
         <div style="font-weight:700;color:var(--accent);border-left:3px solid var(--accent);padding-left:.6rem;margin-bottom:.75rem;font-size:.82rem">▶ 개선 요청 사항 (${issueItems.length}건)</div>
@@ -1882,7 +1895,7 @@ function renderSiteRpt(ins){
           ${ins.deductItems&&ins.deductItems.length>0?
             ins.deductItems.map((item,i)=>`
               <div style="display:flex;gap:.65rem;align-items:flex-start;margin-bottom:.5rem;padding:.5rem;background:rgba(185,28,28,.06);border-radius:6px">
-                <img src="${driveImg(item.src)}" style="width:80px;height:80px;object-fit:cover;border-radius:5px;flex-shrink:0">
+                <img src="${driveImg(item.src)}" style="width:112px;height:80px;object-fit:cover;border-radius:5px;flex-shrink:0">
                 <div>
                   <div style="font-size:.68rem;font-weight:700;color:var(--danger);margin-bottom:.2rem">미흡사항 ${i+1}</div>
                   <div style="font-size:.78rem;color:var(--text2)">${item.note||"내용 없음"}</div>
@@ -1962,7 +1975,7 @@ function buildReportHtml(ins, feedbacks) {
           <td style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#15803d">${fb.doneCount}건</td>
         </tr>
       </table>
-      ${fb.results.map((r,i)=>`
+      ${(()=>{const deductResultCount=fb.results.filter(r=>r.key&&String(r.key).startsWith("deduct")).length;return fb.results.map((r,i)=>`
       <div style="border:1px solid #e2e8f0;border-radius:6px;margin-bottom:8px;overflow:hidden;page-break-inside:avoid">
         <div style="background:#fef2f2;padding:6px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #fecaca">
           <span style="background:#b91c1c;color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">${i+1}</span>
@@ -1972,9 +1985,9 @@ function buildReportHtml(ins, feedbacks) {
         <div style="padding:8px 10px">
           ${r.originalNote?`<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:4px 8px;margin-bottom:6px;font-size:10px;color:#475569">지적: ${r.originalNote}</div>`:""}
           <div style="font-size:11px;color:#0f172a">${r.improvementText||"<span style='color:#94a3b8'>미입력</span>"}</div>
-          ${(()=>{const isDeduct=r.key&&String(r.key).startsWith("deduct");const beforeP=isDeduct?(ins.deductItems||[]):[];const afterP=r.photos||[];if(!beforeP.length&&!afterP.length)return"";return `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">${beforeP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#b91c1c;margin-bottom:3px">◀ 개선 전</div><div style="display:flex;flex-wrap:wrap;gap:4px">${beforeP.slice(0,4).map(p=>`<img src="${driveImg(p.src)}" style="width:175px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #fecaca">`).join("")}</div></div>`:""}${afterP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#15803d;margin-bottom:3px">개선 후 ▶</div><div style="display:flex;flex-wrap:wrap;gap:4px">${afterP.slice(0,4).map(p=>`<img src="${driveImg(p.url||p.src)}" style="width:175px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #bbf7d0">`).join("")}</div></div>`:""}</div>`;})()}
+          ${(()=>{const isDeduct=r.key&&String(r.key).startsWith("deduct");let beforeP=[];if(isDeduct){if(deductResultCount>1){const idx=parseInt(String(r.key).split("_")[1],10);const item=(ins.deductItems||[])[idx];beforeP=item?[item]:[];}else{beforeP=ins.deductItems||[];}}const afterP=r.photos||[];if(!beforeP.length&&!afterP.length)return"";return `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">${beforeP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#b91c1c;margin-bottom:3px">◀ 개선 전</div><div style="display:flex;flex-wrap:wrap;gap:4px">${beforeP.slice(0,4).map(p=>`<img src="${driveImg(p.src)}" style="width:175px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #fecaca">`).join("")}</div></div>`:""}${afterP.length?`<div style="flex:1;min-width:280px"><div style="font-size:9px;font-weight:800;color:#15803d;margin-bottom:3px">개선 후 ▶</div><div style="display:flex;flex-wrap:wrap;gap:4px">${afterP.slice(0,4).map(p=>`<img src="${driveImg(p.url||p.src)}" style="width:175px;height:130px;object-fit:cover;border-radius:4px;border:1px solid #bbf7d0">`).join("")}</div></div>`:""}</div>`;})()}
         </div>
-      </div>`).join("")}
+      </div>`).join("");})()}
       ${fb.signature?`
       <div style="font-size:10px;color:#334155;line-height:1.6;margin-top:12px">본인은 안전보건점검 결과 통보된 미흡사항에 대하여 개선 조치를 완료하였음을 확인하며, 개선결과를 안전관리팀에 제출합니다.</div>
       <div style="font-size:10px;color:#64748b;font-weight:700;margin-top:10px">${(()=>{if(!fb.date)return"";const p=String(fb.date).split("-");if(p.length<3)return fb.date;return p[0]+"년 "+parseInt(p[1],10)+"월 "+parseInt(p[2],10)+"일";})()}</div>
