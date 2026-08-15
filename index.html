@@ -1684,6 +1684,25 @@ function updateDetailPage(){
 
 }
 
+// "YYYY-MM-DD" 문자열을 (UTC 파싱으로 인한 시간대 하루 오차 없이) 로컬 달력 기준 자정 Date로 변환한다.
+// new Date("YYYY-MM-DD")는 UTC 자정으로 해석되어, UTC보다 느린 시간대(예: 미국)에서 열람하면
+// setHours/setDate 같은 로컬 기준 연산 시 하루가 밀리는 문제가 있어 이 헬퍼를 사용한다.
+function parseLocalDate(dateStr){
+  const m = String(dateStr||"").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return null;
+  return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+}
+function addDaysLocal(dateStr, days){
+  const d = parseLocalDate(dateStr);
+  if(!d) return null;
+  d.setDate(d.getDate()+days);
+  return d;
+}
+function ymdLocal(d){
+  if(!d) return "";
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
 // ══ 사업장별 개선현황 (세부내용과 분리된 별도 페이지) ══
 // 점검을 완료한 사업장은 개선결과 제출 여부와 무관하게 모두 표시하고,
 // 마감일(점검일+21일), 7/3/1일전 독촉 알림 발송여부(추정), 마감초과 시
@@ -1699,8 +1718,8 @@ function updateImprovePage(){
     const totalIssues = fb ? (fb.totalIssues||0) : ((ins.badCount||0)+(ins.deductCount||0));
     const doneCount = fb ? (fb.doneCount||0) : 0;
     const submitted = !!fb;
-    const inspDate = new Date(ins.date); inspDate.setHours(0,0,0,0);
-    const deadline = new Date(inspDate); deadline.setDate(deadline.getDate()+21);
+    const deadline = addDaysLocal(ins.date, 21);
+    if(!deadline) return null;
     const overdue = !submitted && today > deadline;
     const daysOverdue = overdue ? Math.round((today-deadline)/864e5) : 0;
     // 7/3/1일전 알림 발송여부는 서버에 발송이력이 남지 않아 정확한 로그는 아니며,
@@ -1709,13 +1728,13 @@ function updateImprovePage(){
       const rDate = new Date(deadline); rDate.setDate(rDate.getDate()-n);
       if(today < rDate) return null; // 아직 도래하지 않음
       if(fb && fb.date){
-        const subDate = new Date(fb.date); subDate.setHours(0,0,0,0);
-        if(subDate <= rDate) return false; // 해당 시점 이전에 이미 제출되어 발송 대상에서 제외됨
+        const subDate = parseLocalDate(fb.date);
+        if(subDate && subDate <= rDate) return false; // 해당 시점 이전에 이미 제출되어 발송 대상에서 제외됨
       }
       return true;
     });
     return {ins, fb, totalIssues, doneCount, submitted, deadline, overdue, daysOverdue, reminderStatus};
-  }).sort((a,b)=>{
+  }).filter(Boolean).sort((a,b)=>{
     if(a.overdue!==b.overdue) return a.overdue?-1:1;
     if(a.submitted!==b.submitted) return a.submitted?1:-1;
     return a.deadline-b.deadline;
@@ -1738,7 +1757,7 @@ function updateImprovePage(){
       <tbody>${rows.map(r=>{
         const pct = r.totalIssues>0 ? Math.round(r.doneCount/r.totalIssues*100) : 100;
         const col = pct>=100?"var(--ok)":pct>=50?"var(--warn)":"var(--danger)";
-        const deadlineStr = fmtDate(r.deadline.toISOString().split("T")[0]);
+        const deadlineStr = ymdLocal(r.deadline);
         const badges = r.reminderStatus.map((s,i)=>{
           const label = ["7일","3일","1일"][i];
           const bg = s===true ? "var(--ok-bg)" : "var(--surface2)";
@@ -2025,7 +2044,7 @@ function renderSiteRpt(ins){
             :""}
         </div>`:""}
         <div style="margin-top:1rem;background:var(--accent-light);border:1px solid #bfdbfe;border-radius:7px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent2)">
-          📅 개선 완료 기한: ${new Date(new Date(ins.date).getTime()+21*864e5).toLocaleDateString("ko-KR")} 까지<br>
+          📅 개선 완료 기한: ${(addDaysLocal(ins.date,21)||new Date()).toLocaleDateString("ko-KR")} 까지<br>
           📧 개선 결과를 이메일로 회신 부탁드립니다.
         </div>
       </div>
