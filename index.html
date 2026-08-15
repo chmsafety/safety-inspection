@@ -379,7 +379,10 @@ tbody tr:hover{background:var(--surface2)}
   <div class="card" style="margin-top:.85rem">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
       <div class="card-title" style="margin-bottom:0">사업장별 개선현황</div>
-      <a href="feedback.html" target="_blank" class="btn btn-primary btn-sm">+ 개선결과 입력</a>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-outline btn-sm" onclick="sendOverdueRemindersManual()" id="overdue-btn">⚠ 마감초과 일괄알림</button>
+        <a href="feedback.html" target="_blank" class="btn btn-primary btn-sm">+ 개선결과 입력</a>
+      </div>
     </div>
     <div id="improvement-list">
       <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.8rem">개선결과 데이터가 없습니다</div>
@@ -1704,6 +1707,38 @@ function updateDetailPage(){
       </table>`;
   } else {
     impList.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.8rem">개선결과 데이터가 없습니다</div>`;
+  }
+}
+
+// ══ 마감초과 사업장 수동 일괄 알림 ══
+async function sendOverdueRemindersManual(){
+  if(!confirm("마감일(점검일+21일)이 지났는데 개선결과를 제출하지 않은 사업장에게\nSMS·이메일·카카오톡으로 독촉 알림을 일괄 발송합니다.\n실제 문자/이메일이 발송되며 비용이 발생할 수 있습니다.\n계속하시겠습니까?")){
+    return;
+  }
+  const btn = document.getElementById("overdue-btn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ 발송 중...";
+  try{
+    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=send_overdue_reminders");
+    const data = await res.json();
+    if(data.error){
+      alert("오류: " + data.error);
+      return;
+    }
+    if(!data.sentCount || data.sentCount===0){
+      alert("현재 마감일이 지난 미제출 사업장이 없습니다.");
+      return;
+    }
+    const lines = (data.results||[]).map(r=>
+      `- ${r.site} (${r.daysOverdue}일 경과) : ${r.smsSent?"SMS ✓":"SMS ✗"} / ${r.emailSent?"이메일 ✓":"이메일 ✗"}`
+    ).join("\n");
+    alert(`총 ${data.sentCount}개 사업장에 알림을 발송했습니다.\n\n${lines}`);
+  }catch(e){
+    alert("발송 중 오류가 발생했습니다: " + e.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 }
 
