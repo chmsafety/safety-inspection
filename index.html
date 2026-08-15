@@ -234,7 +234,7 @@ tbody tr:hover{background:var(--surface2)}
 .acc-nav-btn.active{background:#fff;color:var(--accent)}
 .acc-nav-btn-input{background:rgba(251,146,60,.22);border:1px solid rgba(251,146,60,.55);margin-left:.35rem}
 .acc-nav-btn-input:hover{background:rgba(251,146,60,.38)}
-.acc-nav-btn-input.active{background:#f97316;color:#fff;border-color:#f97316}
+.acc-nav-btn-input.active{background:#f97316;color:#fff;border-color:#f97316}.msds-page{display:none}.msds-page.active{display:block;animation:fadeUp .25s ease}.msds-nav-btn{padding:.35rem .9rem;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:rgba(255,255,255,.15);color:#fff;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}.msds-nav-btn.active{background:#fff;color:var(--accent)}.msds-site-chip{display:inline-flex;align-items:center;gap:.25rem;background:var(--surface2);color:var(--text2);font-size:.68rem;font-weight:600;padding:.15rem .55rem;border-radius:20px;margin:.12rem .12rem 0 0}.msds-site-check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.35rem;max-height:220px;overflow-y:auto;border:1px solid var(--border2);border-radius:8px;padding:.6rem;margin-top:.3rem}.msds-site-check-grid label{display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2);cursor:pointer}.msds-dropzone{border:2px dashed var(--border2);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .15s;font-size:.85rem;color:var(--text2);font-weight:600}.msds-dropzone:hover{border-color:var(--accent);background:var(--surface2)}.msds-dropzone.has-file{border-color:var(--accent);background:rgba(37,99,235,.06);color:var(--accent)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -262,7 +262,7 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
-<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('etc')"><div class="cc-icon">📁</div><div class="cc-label">기타</div><div class="cc-badge">준비중</div></button></div></div></div><div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
+<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div></button><button class="category-card" onclick="selectCategory('etc')"><div class="cc-icon">📁</div><div class="cc-label">기타</div><div class="cc-badge">준비중</div></button></div></div></div><div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
   <div class="hd-top">
     <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
       <img src="data:image/png;base64,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" alt="CHM" style="height:28px;width:auto;display:block">
@@ -631,6 +631,77 @@ tbody tr:hover{background:var(--surface2)}
 </main>
 </div>
 
+<div id="app-msds" style="display:none">
+<header>
+  <div class="hd-top">
+    <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
+      <span class="logo-text">🧪 MSDS관리</span></div>
+    <nav>
+      <button class="msds-nav-btn active" onclick="goMsdsPage('list')">제품 목록</button>
+      <button class="msds-nav-btn" onclick="goMsdsPage('upload')">MSDS 업로드</button>
+    </nav>
+    <div style="display:flex;align-items:center;gap:.6rem">
+        <span class="hd-date" id="msds-hd-inspector"></span>
+        <span class="hd-date" id="msds-hd-date"></span>
+        <button style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:.3rem .7rem;font-size:.68rem;cursor:pointer;font-family:'Noto Sans KR',sans-serif" onclick="logout()">로그아웃</button>
+      </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ════ MSDS 목록 ════ -->
+<div class="msds-page active" id="msds-page-list">
+  <div class="page-hd">
+    <div><h1>MSDS 제품 목록</h1><p>업로드된 MSDS 자료 검색 및 다운로드</p></div>
+    <button class="btn btn-primary btn-sm" onclick="goMsdsPage('upload')">+ MSDS 업로드</button>
+  </div>
+  <div class="card" style="margin-bottom:.85rem">
+    <div class="form-row" style="margin-bottom:0">
+      <div class="fg"><label>검색 (제품명·제조사·CAS번호)</label>
+        <input type="text" id="msds-search" placeholder="검색어 입력" oninput="renderMsdsList()">
+      </div>
+      <div class="fg"><label>사업장 필터</label>
+        <select id="msds-filter-site" onchange="renderMsdsList()"><option value="">전체</option></select>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>제품명</th><th>제조사</th><th>특수건강검진</th><th>CAS번호</th><th>유해성분</th><th>특별관리물질</th><th>보유사업장</th><th>파일</th><th>관리</th></tr></thead>
+        <tbody id="msds-list-body"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 MSDS 자료가 없습니다</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MSDS 업로드 ════ -->
+<div class="msds-page" id="msds-page-upload">
+  <div class="page-hd">
+    <div><h1>MSDS 업로드</h1><p>PDF 파일을 업로드하면 제품 정보를 자동으로 추출합니다 (추출이 정확하지 않으면 목록에서 직접 수정할 수 있습니다)</p></div>
+  </div>
+  <div class="card">
+    <div class="form-section-title">MSDS PDF 파일</div>
+    <div class="msds-dropzone" id="msds-dropzone" onclick="document.getElementById('msds-file-input').click()">
+      <input type="file" id="msds-file-input" accept="application/pdf,.pdf" style="display:none" onchange="handleMsdsFileSelect(this)">
+      <div id="msds-dropzone-label">📄 클릭하여 MSDS PDF 파일 선택</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:.85rem">
+    <div class="form-section-title">보유 사업장 * (해당되는 사업장 모두 선택)</div>
+    <div class="msds-site-check-grid" id="msds-site-checks"></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:.5rem;margin-top:.5rem">
+    <span id="msds-upload-status" style="font-size:.75rem;font-weight:600"></span>
+    <button class="btn btn-outline" onclick="resetMsdsUploadForm()">초기화</button>
+    <button class="btn btn-primary" id="msds-btn-upload" onclick="uploadMsdsFile()">📤 업로드</button>
+  </div>
+</div>
+
+</main>
+</div>
+
 <script>
   // ══ 로그인 게이트 (점검자별 4자리 비밀번호) ══
 const INSPECTOR_PINS = {"천재우":"2873","이재혁":"6538"};
@@ -660,7 +731,7 @@ function logout(){
   try { localStorage.removeItem("shi_login"); } catch(e) {}
   location.reload();
 }
-const CATEGORY_TITLES = {budget:"예산관리", msds:"MSDS관리", etc:"기타"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!INSPECTOR_PINS[currentInspector()]){
+const CATEGORY_TITLES = {budget:"예산관리", etc:"기타"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!INSPECTOR_PINS[currentInspector()]){
   document.getElementById("login-gate").style.display = "flex";}else{showCategoryMenu();
 }
 document.getElementById("login-btn").addEventListener("click", doLogin);
@@ -957,6 +1028,250 @@ function goAccPage(name){
   const idx = ["dashboard","list","input"].indexOf(name);
   document.querySelectorAll(".acc-nav-btn")[idx].classList.add("active");
   if(name==="list") renderAccList();
+}
+
+// ══ MSDS 관리 ══
+let msdsList = [];
+let msdsSelectedFile = null;
+
+function initMsdsForm(){
+  const grid = document.getElementById("msds-site-checks");
+  if(grid && grid.children.length === 0){
+    grid.innerHTML = SITES.map(s=>`<label><input type="checkbox" value="${escapeHtml(s)}"> ${escapeHtml(s)}</label>`).join("");
+  }
+  const filterSel = document.getElementById("msds-filter-site");
+  if(filterSel && filterSel.options.length <= 1){
+    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; filterSel.appendChild(o); });
+  }
+  const dateEl = document.getElementById("msds-hd-date");
+  if(dateEl) dateEl.textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
+  const inspEl = document.getElementById("msds-hd-inspector");
+  if(inspEl) inspEl.textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
+}
+
+async function loadMsds(){
+  try {
+    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=msds");
+    const data = await res.json();
+    msdsList = (data && Array.isArray(data.msds)) ? data.msds : [];
+  } catch(e) {
+    console.error("MSDS 데이터 로드 실패:", e);
+  }
+  renderMsdsList();
+}
+
+function handleMsdsFileSelect(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    msdsSelectedFile = { name: file.name, dataUrl: e.target.result };
+    const label = document.getElementById("msds-dropzone-label");
+    if(label) label.textContent = "✅ " + file.name;
+    const zone = document.getElementById("msds-dropzone");
+    if(zone) zone.classList.add("has-file");
+  };
+  reader.readAsDataURL(file);
+}
+
+function getMsdsSelectedSites(){
+  return Array.from(document.querySelectorAll("#msds-site-checks input[type=checkbox]:checked")).map(el=>el.value);
+}
+
+function resetMsdsUploadForm(){
+  msdsSelectedFile = null;
+  const fileInput = document.getElementById("msds-file-input");
+  if(fileInput) fileInput.value = "";
+  const label = document.getElementById("msds-dropzone-label");
+  if(label) label.textContent = "📄 클릭하여 MSDS PDF 파일 선택";
+  const zone = document.getElementById("msds-dropzone");
+  if(zone) zone.classList.remove("has-file");
+  document.querySelectorAll("#msds-site-checks input[type=checkbox]").forEach(el=>el.checked=false);
+  const statusEl = document.getElementById("msds-upload-status");
+  if(statusEl){ statusEl.textContent = ""; statusEl.style.color = ""; }
+}
+
+async function uploadMsdsFile(){
+  const sites = getMsdsSelectedSites();
+  if(!msdsSelectedFile){ alert("MSDS PDF 파일을 선택해주세요."); return; }
+  if(sites.length === 0){ alert("보유 사업장을 1개 이상 선택해주세요."); return; }
+
+  const payload = {
+    type: "msds_save",
+    fileName: msdsSelectedFile.name,
+    fileData: msdsSelectedFile.dataUrl,
+    sites,
+    registrant: currentInspector()
+  };
+
+  const btn = document.getElementById("msds-btn-upload");
+  const statusEl = document.getElementById("msds-upload-status");
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "⏳ 업로드 및 자동추출 중...";
+  if(statusEl){ statusEl.textContent = ""; statusEl.style.color = ""; }
+
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+    if(statusEl){ statusEl.textContent = "✅ 업로드 완료! 목록에 반영 중..."; statusEl.style.color = "var(--accent)"; }
+    resetMsdsUploadForm();
+    // 서버측 PDF 추출 처리 시간을 고려해 잠시 대기 후 목록 갱신
+    setTimeout(async () => {
+      await loadMsds();
+      goMsdsPage("list");
+    }, 3000);
+  } catch(e) {
+    if(statusEl){ statusEl.textContent = "⚠ 업로드 중 오류가 발생했습니다. 다시 시도해주세요."; statusEl.style.color = "var(--danger)"; }
+  }
+  btn.disabled = false;
+  btn.innerHTML = original;
+}
+
+function renderMsdsList(){
+  const searchEl = document.getElementById("msds-search");
+  const siteFilterEl = document.getElementById("msds-filter-site");
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : "";
+  const siteFilter = siteFilterEl ? siteFilterEl.value : "";
+  let list = [...msdsList];
+  if(q){
+    list = list.filter(m =>
+      (m.productName||"").toLowerCase().includes(q) ||
+      (m.manufacturer||"").toLowerCase().includes(q) ||
+      (m.casNumber||"").toLowerCase().includes(q)
+    );
+  }
+  if(siteFilter){
+    list = list.filter(m => Array.isArray(m.sites) && m.sites.includes(siteFilter));
+  }
+  list.sort((a,b)=>String(b.uploadedAt||"").localeCompare(String(a.uploadedAt||"")));
+  const body = document.getElementById("msds-list-body");
+  if(!body) return;
+  if(list.length===0){
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 MSDS 자료가 없습니다</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(m => renderMsdsRow(m)).join("");
+}
+
+function renderMsdsRow(m){
+  const healthOk = (m.specialHealthCheckup||"").includes("대상") && !(m.specialHealthCheckup||"").includes("아님");
+  const healthBadge = m.specialHealthCheckup
+    ? `<span class="badge" style="background:${healthOk?'#fef3c7':'#f1f5f9'};color:${healthOk?'#92400e':'#475569'}">${escapeHtml(m.specialHealthCheckup)}</span>`
+    : '<span style="color:var(--muted);font-size:.7rem">미확인</span>';
+  const specialOk = (m.specialManagement||"").includes("해당") && !(m.specialManagement||"").includes("없음");
+  const specialBadge = m.specialManagement
+    ? `<span class="badge" style="background:${specialOk?'#fee2e2':'#f1f5f9'};color:${specialOk?'#991b1b':'#475569'}">${escapeHtml(m.specialManagement)}</span>`
+    : '<span style="color:var(--muted);font-size:.7rem">미확인</span>';
+  const sites = (Array.isArray(m.sites)?m.sites:[]).map(s=>`<span class="msds-site-chip">${escapeHtml(s)}</span>`).join("");
+  const fileLink = m.fileUrl ? `<a href="${m.fileUrl}" target="_blank" rel="noopener" style="color:var(--accent);font-size:.72rem;font-weight:700;text-decoration:none">⬇ 다운로드</a>` : '<span style="color:var(--muted);font-size:.7rem">-</span>';
+  return `
+    <tr id="msds-row-${m.id}">
+      <td style="font-weight:700">${escapeHtml(m.productName||'(미입력)')}</td>
+      <td>${escapeHtml(m.manufacturer||'-')}</td>
+      <td>${healthBadge}</td>
+      <td>${escapeHtml(m.casNumber||'-')}</td>
+      <td style="max-width:220px;white-space:normal;font-size:.72rem;color:var(--text2)">${escapeHtml(m.hazardIngredient||'-')}</td>
+      <td>${specialBadge}</td>
+      <td style="max-width:200px;white-space:normal">${sites || '-'}</td>
+      <td>${fileLink}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-outline btn-sm" onclick="editMsdsRow('${m.id}')">수정</button>
+        <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger-border)" onclick="deleteMsdsRow('${m.id}')">삭제</button>
+      </td>
+    </tr>`;
+}
+
+function editMsdsRow(id){
+  const m = msdsList.find(x=>String(x.id)===String(id));
+  if(!m) return;
+  const row = document.getElementById("msds-row-"+id);
+  if(!row) return;
+  const siteOptions = SITES.map(s=>`<label style="display:inline-flex;align-items:center;gap:.2rem;font-size:.68rem;margin:.1rem .3rem 0 0"><input type="checkbox" value="${escapeHtml(s)}" ${m.sites && m.sites.includes(s) ? 'checked':''}> ${escapeHtml(s)}</label>`).join("");
+  row.innerHTML = `
+    <td><input type="text" id="edit-name-${id}" value="${escapeHtml(m.productName||'')}" style="width:100%;font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border2);border-radius:5px"></td>
+    <td><input type="text" id="edit-mfr-${id}" value="${escapeHtml(m.manufacturer||'')}" style="width:100%;font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border2);border-radius:5px"></td>
+    <td>
+      <select id="edit-health-${id}" style="font-size:.72rem;padding:.25rem;border:1px solid var(--border2);border-radius:5px">
+        <option value="" ${!m.specialHealthCheckup?'selected':''}>미확인</option>
+        <option value="대상" ${m.specialHealthCheckup==='대상'?'selected':''}>대상</option>
+        <option value="대상 아님" ${m.specialHealthCheckup==='대상 아님'?'selected':''}>대상 아님</option>
+      </select>
+    </td>
+    <td><input type="text" id="edit-cas-${id}" value="${escapeHtml(m.casNumber||'')}" style="width:100%;font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border2);border-radius:5px"></td>
+    <td><input type="text" id="edit-hazard-${id}" value="${escapeHtml(m.hazardIngredient||'')}" style="width:100%;font-size:.72rem;padding:.25rem .4rem;border:1px solid var(--border2);border-radius:5px"></td>
+    <td>
+      <select id="edit-special-${id}" style="font-size:.72rem;padding:.25rem;border:1px solid var(--border2);border-radius:5px">
+        <option value="" ${!m.specialManagement?'selected':''}>미확인</option>
+        <option value="해당" ${m.specialManagement==='해당'?'selected':''}>해당</option>
+        <option value="해당없음" ${m.specialManagement==='해당없음'?'selected':''}>해당없음</option>
+      </select>
+    </td>
+    <td style="max-width:200px"><div id="edit-sites-${id}">${siteOptions}</div></td>
+    <td>${m.fileUrl ? `<a href="${m.fileUrl}" target="_blank" rel="noopener" style="color:var(--accent);font-size:.72rem">⬇</a>` : '-'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-primary btn-sm" onclick="saveMsdsEdit('${id}')">저장</button>
+      <button class="btn btn-outline btn-sm" onclick="renderMsdsList()">취소</button>
+    </td>`;
+}
+
+async function saveMsdsEdit(id){
+  const sites = Array.from(document.querySelectorAll(`#edit-sites-${id} input[type=checkbox]:checked`)).map(el=>el.value);
+  const payload = {
+    type: "msds_update",
+    id,
+    productName: document.getElementById(`edit-name-${id}`).value.trim(),
+    manufacturer: document.getElementById(`edit-mfr-${id}`).value.trim(),
+    specialHealthCheckup: document.getElementById(`edit-health-${id}`).value,
+    casNumber: document.getElementById(`edit-cas-${id}`).value.trim(),
+    hazardIngredient: document.getElementById(`edit-hazard-${id}`).value.trim(),
+    specialManagement: document.getElementById(`edit-special-${id}`).value,
+    sites
+  };
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+    const idx = msdsList.findIndex(x=>String(x.id)===String(id));
+    if(idx>-1) msdsList[idx] = {...msdsList[idx], ...payload};
+    renderMsdsList();
+    setTimeout(loadMsds, 2000);
+  } catch(e) {
+    alert("수정 저장 중 오류가 발생했습니다.");
+  }
+}
+
+async function deleteMsdsRow(id){
+  if(!confirm("이 MSDS 자료를 삭제하시겠습니까?")) return;
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+  try {
+    await fetch(SCRIPT_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({type:"msds_delete", id})
+    });
+    msdsList = msdsList.filter(x=>String(x.id)!==String(id));
+    renderMsdsList();
+  } catch(e) {
+    alert("삭제 중 오류가 발생했습니다.");
+  }
+}
+
+function goMsdsPage(name){
+  document.querySelectorAll(".msds-page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".msds-nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("msds-page-"+name).classList.add("active");
+  const idx = ["list","upload"].indexOf(name);
+  document.querySelectorAll(".msds-nav-btn")[idx].classList.add("active");
+  if(name==="list") renderMsdsList();
 }
 
 // ══ 점검 항목 렌더링 ══
