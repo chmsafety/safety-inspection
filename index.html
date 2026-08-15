@@ -1939,7 +1939,7 @@ function renderSiteRpt(ins){
             :""}
         </div>`:""}
         <div style="margin-top:1rem;background:var(--accent-light);border:1px solid #bfdbfe;border-radius:7px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent2)">
-          📅 개선 완료 기한: ${new Date(Date.now()+14*864e5).toLocaleDateString("ko-KR")} 까지<br>
+          📅 개선 완료 기한: ${new Date(new Date(ins.date).getTime()+21*864e5).toLocaleDateString("ko-KR")} 까지<br>
           📧 개선 결과를 이메일로 회신 부탁드립니다.
         </div>
       </div>
