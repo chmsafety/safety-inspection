@@ -238,6 +238,16 @@ tbody tr:hover{background:var(--surface2)}
 .acc-nav-btn-input{background:rgba(251,146,60,.22);border:1px solid rgba(251,146,60,.55);margin-left:.35rem}
 .acc-nav-btn-input:hover{background:rgba(251,146,60,.38)}
 .acc-nav-btn-input.active{background:#f97316;color:#fff;border-color:#f97316}.msds-page{display:none}.msds-page.active{display:block;animation:fadeUp .25s ease}.msds-nav-btn{padding:.35rem .9rem;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:rgba(255,255,255,.15);color:#fff;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}.msds-nav-btn.active{background:#fff;color:var(--accent)}.msds-site-chip{display:inline-flex;align-items:center;gap:.25rem;background:var(--surface2);color:var(--text2);font-size:.68rem;font-weight:600;padding:.15rem .55rem;border-radius:20px;margin:.12rem .12rem 0 0}.msds-site-check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.35rem;max-height:220px;overflow-y:auto;border:1px solid var(--border2);border-radius:8px;padding:.6rem;margin-top:.3rem}.msds-site-check-grid label{display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2);cursor:pointer}.msds-dropzone{border:2px dashed var(--border2);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .15s;font-size:.85rem;color:var(--text2);font-weight:600}.msds-dropzone:hover{border-color:var(--accent);background:var(--surface2)}.msds-dropzone.has-file{border-color:var(--accent);background:rgba(37,99,235,.06);color:var(--accent)}.ai-chat-page{max-width:760px;margin:0 auto;padding:1.5rem}.ai-chat-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;display:flex;flex-direction:column;height:65vh;overflow:hidden;margin-top:1rem}.ai-chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.6rem}.ai-msg{max-width:80%;padding:.6rem .9rem;border-radius:10px;font-size:.85rem;line-height:1.65;white-space:pre-wrap;word-break:break-word}.ai-msg-user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:2px}.ai-msg-bot{align-self:flex-start;background:var(--surface2);color:var(--text);border-bottom-left-radius:2px}.ai-chat-input-row{display:flex;gap:.5rem;padding:.75rem;border-top:1px solid var(--border2)}.ai-chat-input-row input{flex:1;padding:.6rem .8rem;border:1px solid var(--border2);border-radius:8px;font-size:.85rem;font-family:"Noto Sans KR",sans-serif}.ai-chat-input-row input:focus{outline:none;border-color:var(--accent)}
+.hazard-page{max-width:760px;margin:0 auto}
+.hazard-dropzone{border:2px dashed var(--border2);border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;transition:all .15s;font-size:.85rem;color:var(--text2);font-weight:600}
+.hazard-dropzone:hover{border-color:var(--accent);background:var(--surface2)}
+.hazard-dropzone.has-file{border-color:var(--accent);background:rgba(37,99,235,.06);color:var(--accent)}
+.hazard-risk-badge{display:inline-flex;align-items:center;font-size:.75rem;font-weight:800;padding:.25rem .75rem;border-radius:20px}
+.hazard-item{border:1px solid var(--border);border-radius:9px;padding:.85rem 1rem;margin-bottom:.6rem;background:#fff}
+.hazard-item-hd{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem}
+.hazard-item-title{font-weight:700;font-size:.85rem}
+.hazard-item-row{font-size:.78rem;color:var(--text2);margin-top:.3rem;line-height:1.6}
+.hazard-item-row b{color:var(--text);font-weight:600}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -265,7 +275,7 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
-<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div></button><button class="category-card" onclick="selectCategory('etc')"><div class="cc-icon">📁</div><div class="cc-label">기타</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('ai')"><div class="cc-icon">🤖</div><div class="cc-label">AI 검색</div></button></div></div></div><div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
+<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div></button><button class="category-card" onclick="selectCategory('hazard')"><div class="cc-icon">📷</div><div class="cc-label">현장위험도 분석</div></button><button class="category-card" onclick="selectCategory('ai')"><div class="cc-icon">🤖</div><div class="cc-label">AI 검색</div></button></div></div></div><div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
   <div class="hd-top">
     <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
       <img src="data:image/png;base64,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" alt="CHM" style="height:28px;width:auto;display:block">
@@ -743,6 +753,53 @@ tbody tr:hover{background:var(--surface2)}
 </main>
 </div>
 
+<div id="app-hazard" style="display:none">
+<header>
+  <div class="hd-top">
+    <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
+      <span class="logo-text">📷 현장위험도 분석</span></div>
+    <nav></nav>
+    <div style="display:flex;align-items:center;gap:.6rem">
+        <span class="hd-date" id="hazard-hd-inspector"></span>
+        <span class="hd-date" id="hazard-hd-date"></span>
+        <button style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:.3rem .7rem;font-size:.68rem;cursor:pointer;font-family:'Noto Sans KR',sans-serif" onclick="logout()">로그아웃</button>
+      </div>
+  </div>
+</header>
+
+<main>
+<div class="hazard-page">
+  <div class="page-hd">
+    <div><h1>현장위험도 분석</h1><p>현장 사진을 올리면 AI가 위험요소 및 산업안전보건법 관련 참고사항을 점검해드립니다</p></div>
+  </div>
+
+  <div style="background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent);margin-bottom:1rem">
+    ℹ️ AI가 사진에서 확인되는 위험요소를 참고용으로 안내합니다. 실제 법 위반 여부는 반드시 안전관리자가 현장에서 최종 확인해주세요.
+  </div>
+
+  <div class="card">
+    <div class="form-section-title">현장 사진</div>
+    <div class="hazard-dropzone" id="hazard-dropzone" onclick="document.getElementById('hazard-file-input').click()">
+      <input type="file" id="hazard-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleHazardFileSelect(this)">
+      <div id="hazard-dropzone-label">📷 클릭하여 사진 촬영 또는 선택</div>
+    </div>
+    <img id="hazard-preview-img" style="display:none;max-width:100%;max-height:360px;border-radius:8px;margin-top:.75rem;border:1px solid var(--border)">
+    <div class="fg" style="margin-top:.85rem">
+      <label>추가 설명 (선택)</label>
+      <textarea id="hazard-memo" placeholder="예: 지하 1층 기계실, 작업 중인 공정 등 참고할 내용을 적어주세요"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:.5rem;margin-top:.75rem">
+      <span id="hazard-status" style="font-size:.75rem;font-weight:600"></span>
+      <button class="btn btn-outline" onclick="resetHazardForm()">초기화</button>
+      <button class="btn btn-primary" id="hazard-btn-analyze" onclick="analyzeHazardPhoto()">🔍 위험요소 분석하기</button>
+    </div>
+  </div>
+
+  <div id="hazard-result-wrap" style="display:none;margin-top:.85rem"></div>
+</div>
+</main>
+</div>
+
 <!-- 사고내용 상세보기 모달 (모바일에서 표 안에 긴 텍스트가 세로로 깨지는 것을 막기 위해, 목록에서는 줄임 표시하고 클릭 시 여기서 전체 내용을 보여준다). app-* 래퍼 밖(전역)에 두어 어느 화면에서든 열 수 있게 한다. -->
 <div class="modal-overlay" id="modal-acc-detail">
   <div class="modal" style="width:480px">
@@ -783,7 +840,7 @@ function logout(){
   try { localStorage.removeItem("shi_login"); } catch(e) {}
   location.reload();
 }
-const CATEGORY_TITLES = {budget:"예산관리", etc:"기타"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("app-ai").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else if(cat === "ai"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-ai").style.display = "block";initAiChat();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!INSPECTOR_PINS[currentInspector()]){
+const CATEGORY_TITLES = {budget:"예산관리"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("app-ai").style.display = "none";document.getElementById("app-hazard").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else if(cat === "ai"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-ai").style.display = "block";initAiChat();} else if(cat === "hazard"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-hazard").style.display = "block";initHazardApp();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!INSPECTOR_PINS[currentInspector()]){
   document.getElementById("login-gate").style.display = "flex";}else{showCategoryMenu();
 }
 document.getElementById("login-btn").addEventListener("click", doLogin);
@@ -2381,6 +2438,164 @@ async function sendAiChatQuestion(){
   inputEl.disabled = false;
   btn.disabled = false;
   inputEl.focus();
+}
+
+// ═══ 현장위험도 분석 (사진 업로드 → AI 비전 분석으로 위험요소/산업안전보건법 관련사항 점검) ═══
+// 참고: AI가 사진에서 확인되는 위험요소를 안내하는 보조 도구이며, 실제 법 위반 여부에 대한
+// 확정적 법적 판단이 아니므로 반드시 안전관리자의 현장 확인을 함께 안내한다.
+let hazardImageDataUrl = null;
+let hazardImageMime = "image/jpeg";
+
+function initHazardApp(){
+  document.getElementById("hazard-hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
+  document.getElementById("hazard-hd-inspector").textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
+}
+
+// 사진을 지정한 최대 변 길이로 축소하고 JPEG로 압축해 업로드/분석 용량을 줄인다.
+function resizeImageToDataUrl(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("파일을 읽을 수 없습니다."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("이미지를 불러올 수 없습니다."));
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w >= h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleHazardFileSelect(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const dropzone = document.getElementById("hazard-dropzone");
+  const label = document.getElementById("hazard-dropzone-label");
+  label.textContent = "⏳ 사진 불러오는 중...";
+  try {
+    const dataUrl = await resizeImageToDataUrl(file, 1280, 0.75);
+    hazardImageDataUrl = dataUrl;
+    hazardImageMime = "image/jpeg";
+    const img = document.getElementById("hazard-preview-img");
+    img.src = dataUrl;
+    img.style.display = "block";
+    dropzone.classList.add("has-file");
+    label.textContent = "✅ " + file.name + " (다른 사진을 선택하려면 다시 클릭하세요)";
+  } catch(e){
+    label.textContent = "📷 클릭하여 사진 촬영 또는 선택";
+    alert("사진을 불러오는 중 오류가 발생했습니다: " + e.message);
+  }
+}
+
+function resetHazardForm(){
+  hazardImageDataUrl = null;
+  document.getElementById("hazard-file-input").value = "";
+  document.getElementById("hazard-memo").value = "";
+  const img = document.getElementById("hazard-preview-img");
+  img.style.display = "none"; img.src = "";
+  document.getElementById("hazard-dropzone").classList.remove("has-file");
+  document.getElementById("hazard-dropzone-label").textContent = "📷 클릭하여 사진 촬영 또는 선택";
+  document.getElementById("hazard-status").textContent = "";
+  const resultWrap = document.getElementById("hazard-result-wrap");
+  resultWrap.style.display = "none";
+  resultWrap.innerHTML = "";
+}
+
+function severityColor(sev){
+  if(sev === "상") return {bg:"var(--danger-bg)", color:"var(--danger)", border:"var(--danger-border)"};
+  if(sev === "중") return {bg:"var(--warn-bg)", color:"var(--warn)", border:"var(--warn-border)"};
+  return {bg:"var(--ok-bg)", color:"var(--ok)", border:"var(--ok-border)"};
+}
+
+function renderHazardResult(result){
+  const wrap = document.getElementById("hazard-result-wrap");
+  if(!result || result.status !== "ok"){
+    wrap.innerHTML = `<div class="card" style="border-color:var(--danger-border)">
+      <div style="color:var(--danger);font-size:.85rem;font-weight:600">⚠ 분석에 실패했습니다: ${escapeHtml((result && result.msg) || "알 수 없는 오류")}</div>
+    </div>`;
+    wrap.style.display = "block";
+    return;
+  }
+  const overallCol = severityColor(result.overallRisk);
+  const items = Array.isArray(result.items) ? result.items : [];
+  wrap.innerHTML = `
+    <div class="card" style="margin-bottom:.6rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem">
+        <div class="card-title" style="margin-bottom:0">종합 분석 결과</div>
+        ${result.overallRisk ? `<span class="hazard-risk-badge" style="background:${overallCol.bg};color:${overallCol.color};border:1px solid ${overallCol.border}">위험도 ${escapeHtml(result.overallRisk)}</span>` : ""}
+      </div>
+      <div style="font-size:.85rem;color:var(--text2);line-height:1.7">${escapeHtml(result.summary || "특이사항이 발견되지 않았습니다.")}</div>
+    </div>
+    ${items.length > 0 ? `
+    <div class="card-title" style="margin:0 0 .5rem .1rem">발견된 위험요소 (${items.length}건)</div>
+    ${items.map(it => {
+      const col = severityColor(it.severity);
+      return `<div class="hazard-item" style="border-left:3px solid ${col.color}">
+        <div class="hazard-item-hd">
+          <div class="hazard-item-title">⚠ ${escapeHtml(it.hazard || "위험요소")}</div>
+          ${it.severity ? `<span class="hazard-risk-badge" style="background:${col.bg};color:${col.color};border:1px solid ${col.border};font-size:.65rem;padding:.15rem .55rem">${escapeHtml(it.severity)}</span>` : ""}
+        </div>
+        <div class="hazard-item-row">${escapeHtml(it.description || "")}</div>
+        <div class="hazard-item-row"><b>관련 법령/기준:</b> ${escapeHtml(it.lawRef || "관련 법령 확인 필요")}</div>
+        <div class="hazard-item-row"><b>개선 권고:</b> ${escapeHtml(it.recommendation || "")}</div>
+      </div>`;
+    }).join("")}` : `
+    <div class="card" style="text-align:center;padding:1.5rem;color:var(--ok)">
+      ✅ 사진에서 뚜렷한 위험요소가 확인되지 않았습니다.
+    </div>`}
+    <div style="text-align:center;font-size:.68rem;color:var(--muted);margin-top:.5rem">
+      본 결과는 AI가 사진을 기반으로 참고용으로 제공하는 분석이며, 실제 산업안전보건법 위반 여부는 안전관리자의 현장 확인이 필요합니다.
+    </div>`;
+  wrap.style.display = "block";
+}
+
+async function analyzeHazardPhoto(){
+  if(!hazardImageDataUrl){ alert("분석할 사진을 먼저 선택해주세요."); return; }
+  const btn = document.getElementById("hazard-btn-analyze");
+  const statusEl = document.getElementById("hazard-status");
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "⏳ 분석 중... (최대 30초 정도 걸릴 수 있어요)";
+  if(statusEl){ statusEl.textContent = ""; statusEl.style.color = ""; }
+  document.getElementById("hazard-result-wrap").style.display = "none";
+
+  const id = Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+  const memo = document.getElementById("hazard-memo").value.trim();
+
+  try {
+    await fetch(DASHBOARD_SYNC_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({ type:"hazard_analyze", id, imageBase64: hazardImageDataUrl, mimeType: hazardImageMime, memo })
+    });
+
+    let result = null;
+    for(let i = 0; i < 15; i++){
+      const res = await fetch(DASHBOARD_SYNC_URL + "?mode=hazard_analyze_result&id=" + encodeURIComponent(id));
+      const data = await res.json();
+      if(data && data.status !== "pending"){ result = data; break; }
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    if(!result){ result = { status:"error", msg:"분석이 너무 오래 걸리고 있습니다. 잠시 후 다시 시도해주세요." }; }
+    renderHazardResult(result);
+  } catch(e){
+    renderHazardResult({ status:"error", msg: e.message });
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = original;
 }
 </script>
 </body>
