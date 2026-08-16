@@ -780,7 +780,7 @@ tbody tr:hover{background:var(--surface2)}
   <div class="card">
     <div class="form-section-title">현장 사진</div>
     <div class="hazard-dropzone" id="hazard-dropzone" onclick="document.getElementById('hazard-file-input').click()">
-      <input type="file" id="hazard-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleHazardFileSelect(this)">
+      <input type="file" id="hazard-file-input" accept="image/*" style="display:none" onchange="handleHazardFileSelect(this)">
       <div id="hazard-dropzone-label">📷 클릭하여 사진 촬영 또는 선택</div>
     </div>
     <img id="hazard-preview-img" style="display:none;max-width:100%;max-height:360px;border-radius:8px;margin-top:.75rem;border:1px solid var(--border)">
@@ -1439,7 +1439,7 @@ function renderCheckItems(){
       <div class="photo-zone" onclick="document.getElementById('photo-input').click()">
         <div style="font-size:.8rem;color:var(--danger)">📷 미흡사항 사진 첨부</div>
         <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">클릭하여 사진 선택 (카메라/갤러리)</div>
-        <input type="file" id="photo-input" multiple accept="image/*" capture="environment" style="display:none" onchange="handlePhotos(this)">
+        <input type="file" id="photo-input" multiple accept="image/*" style="display:none" onchange="handlePhotos(this)">
       </div>
       <div class="photo-preview" id="photo-preview"></div>
     </div>`;
