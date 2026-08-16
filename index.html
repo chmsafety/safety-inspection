@@ -785,6 +785,10 @@ tbody tr:hover{background:var(--surface2)}
     </div>
     <img id="hazard-preview-img" style="display:none;max-width:100%;max-height:360px;border-radius:8px;margin-top:.75rem;border:1px solid var(--border)">
     <div class="fg" style="margin-top:.85rem">
+      <label>사업장 (선택)</label>
+      <select id="hazard-site"><option value="">— 선택 —</option></select>
+    </div>
+    <div class="fg" style="margin-top:.85rem">
       <label>추가 설명 (선택)</label>
       <textarea id="hazard-memo" placeholder="예: 지하 1층 기계실, 작업 중인 공정 등 참고할 내용을 적어주세요"></textarea>
     </div>
@@ -796,6 +800,11 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 
   <div id="hazard-result-wrap" style="display:none;margin-top:.85rem"></div>
+
+  <div class="card" style="margin-top:1rem">
+    <div class="form-section-title">📋 분석 이력</div>
+    <div id="hazard-history-wrap"><div style="text-align:center;color:var(--muted);font-size:.8rem;padding:1rem">불러오는 중...</div></div>
+  </div>
 </div>
 </main>
 </div>
@@ -807,6 +816,17 @@ tbody tr:hover{background:var(--surface2)}
     <div id="modal-acc-detail-body" style="font-size:.85rem;line-height:1.8;color:var(--text);white-space:pre-wrap;background:var(--surface2);border-radius:8px;padding:.9rem 1rem"></div>
     <div class="modal-ft">
       <button class="btn btn-outline" onclick="closeModal('modal-acc-detail')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 현장위험도 분석 이력 상세보기 모달 -->
+<div class="modal-overlay" id="modal-hazard-detail">
+  <div class="modal" style="width:560px;max-height:85vh;overflow-y:auto">
+    <div class="modal-hd"><div class="modal-title">분석 상세</div><button class="modal-close" onclick="closeModal('modal-hazard-detail')">✕</button></div>
+    <div id="modal-hazard-detail-body"></div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-hazard-detail')">닫기</button>
     </div>
   </div>
 </div>
@@ -2446,9 +2466,80 @@ async function sendAiChatQuestion(){
 let hazardImageDataUrl = null;
 let hazardImageMime = "image/jpeg";
 
+let hazardHistoryList = [];
+
 function initHazardApp(){
   document.getElementById("hazard-hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
   document.getElementById("hazard-hd-inspector").textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
+  const siteSel = document.getElementById("hazard-site");
+  if(siteSel && siteSel.options.length <= 1){
+    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSel.appendChild(o); });
+  }
+  loadHazardHistory();
+}
+
+async function loadHazardHistory(){
+  try {
+    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=hazard_history");
+    const data = await res.json();
+    hazardHistoryList = (data && Array.isArray(data.history)) ? data.history : [];
+  } catch(e){
+    console.error("현장위험도 이력 로드 실패:", e);
+  }
+  renderHazardHistory();
+}
+
+function renderHazardHistory(){
+  const wrap = document.getElementById("hazard-history-wrap");
+  if(!wrap) return;
+  if(hazardHistoryList.length === 0){
+    wrap.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:.8rem;padding:1rem">등록된 분석 이력이 없습니다</div>';
+    return;
+  }
+  wrap.innerHTML = hazardHistoryList.map((h,i) => {
+    const col = severityColor(h.overallRisk);
+    const dateStr = h.createdAt ? new Date(h.createdAt).toLocaleString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) : "";
+    const thumb = h.photoUrl
+      ? `<img src="${escapeHtml(h.photoUrl)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex-shrink:0">`
+      : `<div style="width:64px;height:64px;border-radius:8px;background:var(--surface2);flex-shrink:0"></div>`;
+    return `<div class="hazard-item" style="display:flex;gap:.75rem;align-items:flex-start;cursor:pointer" onclick="showHazardHistoryDetail(${i})">
+      ${thumb}
+      <div style="flex:1;min-width:0">
+        <div class="hazard-item-hd">
+          <div class="hazard-item-title">${escapeHtml(h.site || "사업장 미지정")}</div>
+          ${h.overallRisk ? `<span class="hazard-risk-badge" style="background:${col.bg};color:${col.color};border:1px solid ${col.border};font-size:.65rem;padding:.15rem .55rem">위험도 ${escapeHtml(h.overallRisk)}</span>` : ""}
+        </div>
+        <div class="hazard-item-row" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(h.summary || "")}</div>
+        <div class="hazard-item-row" style="color:var(--muted);font-size:.7rem">${escapeHtml(dateStr)}${h.registrant ? " · " + escapeHtml(h.registrant) : ""}</div>
+      </div>
+      <button class="btn btn-outline" style="flex-shrink:0;padding:.3rem .6rem;font-size:.7rem" onclick="event.stopPropagation();deleteHazardRecord('${escapeHtml(String(h.id))}')">삭제</button>
+    </div>`;
+  }).join("");
+}
+
+function showHazardHistoryDetail(i){
+  const h = hazardHistoryList[i];
+  if(!h) return;
+  const photoHtml = h.photoUrl ? `<img src="${escapeHtml(h.photoUrl)}" style="max-width:100%;max-height:280px;border-radius:8px;border:1px solid var(--border);margin-bottom:.75rem;display:block">` : "";
+  const memoHtml = h.memo ? `<div style="font-size:.78rem;color:var(--text2);margin-bottom:.75rem"><b>메모:</b> ${escapeHtml(h.memo)}</div>` : "";
+  document.getElementById("modal-hazard-detail-body").innerHTML = photoHtml + memoHtml + '<div id="modal-hazard-detail-result"></div>';
+  renderHazardResult({ status:"ok", overallRisk: h.overallRisk, summary: h.summary, items: h.items }, "modal-hazard-detail-result");
+  document.getElementById("modal-hazard-detail").classList.add("open");
+}
+
+async function deleteHazardRecord(id){
+  if(!confirm("이 분석 이력을 삭제하시겠습니까?")) return;
+  try {
+    await fetch(DASHBOARD_SYNC_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({ type:"hazard_delete", id })
+    });
+    hazardHistoryList = hazardHistoryList.filter(x=>String(x.id)!==String(id));
+    renderHazardHistory();
+  } catch(e){
+    alert("삭제 중 오류가 발생했습니다.");
+  }
 }
 
 // 사진을 지정한 최대 변 길이로 축소하고 JPEG로 압축해 업로드/분석 용량을 줄인다.
@@ -2518,8 +2609,8 @@ function severityColor(sev){
   return {bg:"var(--ok-bg)", color:"var(--ok)", border:"var(--ok-border)"};
 }
 
-function renderHazardResult(result){
-  const wrap = document.getElementById("hazard-result-wrap");
+function renderHazardResult(result, targetId){
+  const wrap = document.getElementById(targetId || "hazard-result-wrap");
   if(!result || result.status !== "ok"){
     wrap.innerHTML = `<div class="card" style="border-color:var(--danger-border)">
       <div style="color:var(--danger);font-size:.85rem;font-weight:600">⚠ 분석에 실패했습니다: ${escapeHtml((result && result.msg) || "알 수 없는 오류")}</div>
@@ -2572,13 +2663,14 @@ async function analyzeHazardPhoto(){
 
   const id = Date.now() + "_" + Math.random().toString(36).slice(2, 8);
   const memo = document.getElementById("hazard-memo").value.trim();
+  const site = document.getElementById("hazard-site").value;
 
   try {
     await fetch(DASHBOARD_SYNC_URL, {
       method:"POST",
       mode:"no-cors",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({ type:"hazard_analyze", id, imageBase64: hazardImageDataUrl, mimeType: hazardImageMime, memo })
+      body: JSON.stringify({ type:"hazard_analyze", id, imageBase64: hazardImageDataUrl, mimeType: hazardImageMime, memo, site, registrant: currentInspector() })
     });
 
     let result = null;
@@ -2590,6 +2682,7 @@ async function analyzeHazardPhoto(){
     }
     if(!result){ result = { status:"error", msg:"분석이 너무 오래 걸리고 있습니다. 잠시 후 다시 시도해주세요." }; }
     renderHazardResult(result);
+    loadHazardHistory();
   } catch(e){
     renderHazardResult({ status:"error", msg: e.message });
   }
