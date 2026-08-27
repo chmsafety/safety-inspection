@@ -249,9 +249,22 @@ tbody tr:hover{background:var(--surface2)}
 .hazard-item-row{font-size:.78rem;color:var(--text2);margin-top:.3rem;line-height:1.6}
 .hazard-item-row b{color:var(--text);font-weight:600}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<!-- 콘텐츠 보안 정책: 스크립트/통신 대상을 화이트리스트로 제한한다.
+     ※ CDN 라이브러리에는 SRI(무결성 해시)를 반드시 채워 넣을 것.
+        cdnjs.com에서 각 파일의 "Copy SRI" 값을 복사해 integrity="..." 에 붙여넣으면 된다.
+        해시가 비어 있으면 CDN이 침해당했을 때 임의 코드가 그대로 실행된다. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+  style-src  'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src   'self' https://fonts.gstatic.com;
+  img-src    'self' data: blob:;
+  connect-src 'self' https://script.google.com https://script.googleusercontent.com;
+  base-uri 'self';
+  form-action 'none';">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 <div class="login-gate" id="login-gate" style="display:none">
@@ -267,8 +280,8 @@ tbody tr:hover{background:var(--surface2)}
       </select>
     </div>
     <div class="fg">
-      <label>비밀번호 (4자리)</label>
-      <input type="password" id="login-pin" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="****">
+      <label>비밀번호</label>
+      <input type="password" id="login-pin" maxlength="32" autocomplete="current-password" placeholder="비밀번호 입력">
     </div>
     <button class="btn-login" id="login-btn">입장하기</button>
     <div class="login-err" id="login-err"></div>
@@ -833,34 +846,119 @@ tbody tr:hover{background:var(--surface2)}
 
 <script>
   // ══ 로그인 게이트 (점검자별 4자리 비밀번호) ══
-const INSPECTOR_PINS = {"천재우":"2873","이재혁":"6538"};
-function currentInspector(){ return localStorage.getItem("shi_login") || ""; }
+// ⚠ 인증은 전적으로 서버(Apps Script)가 판정한다.
+//   이 파일에는 어떤 비밀번호도 들어 있지 않으며,
+//   이 화면을 개발자도구로 우회해도 토큰이 없으면 서버가 모든 데이터 요청을 거부한다.
+const SESSION_KEY = "shi_session";
+
+function getSession(){
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !s.token || !s.expiresAt) return null;
+    if(Date.now() >= Number(s.expiresAt)){ localStorage.removeItem(SESSION_KEY); return null; }
+    return s;
+  } catch(e){ return null; }
+}
+function setSession(s){ try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch(e){} }
+function clearSession(){ try { localStorage.removeItem(SESSION_KEY); } catch(e){} }
+function getSessionToken(){ const s = getSession(); return s ? s.token : ""; }
+function hasValidSession(){ return !!getSession(); }
+function isAdmin(){ const s = getSession(); return !!s && s.role === "admin"; }
+function currentInspector(){ const s = getSession(); return s ? s.name : ""; }
+
+// 서버가 인증을 거부하면 즉시 세션을 버리고 로그인 화면으로 되돌린다.
+let authFailureShown = false;
+function handleAuthFailure(data){
+  clearSession();
+  if(authFailureShown) return;
+  authFailureShown = true;
+  const msg = (data && data.status === "forbidden")
+    ? "이 기능을 사용할 권한이 없습니다."
+    : "로그인이 만료되었습니다. 다시 로그인해주세요.";
+  alert(msg);
+  location.reload();
+}
 function fillInspectorField(){
   const el = document.getElementById("inp-inspector");
   if(el) el.value = currentInspector();
   const hd = document.getElementById("hd-inspector");
   if(hd) hd.textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
 }
-function doLogin(){
-  const name = document.getElementById("login-name").value;
-  const pin = document.getElementById("login-pin").value.trim();
-  if(INSPECTOR_PINS[name] === pin){
-    try { localStorage.setItem("shi_login", name); } catch(e) {}
-    document.getElementById("login-err").textContent = "";
-    document.getElementById("login-pin").value = "";
-    document.getElementById("login-gate").style.display = "none";showCategoryMenu();
-    fillInspectorField();
-  } else {
-    document.getElementById("login-err").textContent = "비밀번호가 올바르지 않습니다.";
-    document.getElementById("login-pin").value = "";
-    document.getElementById("login-pin").focus();
+// 로그인 요청. POST(본문)를 우선하고, 실패 시 GET으로 대체한다.
+// POST 본문에 실으면 비밀번호가 브라우저 기록·서버 접근로그의 URL에 남지 않는다.
+async function loginRequest(name, pin){
+  try {
+    const res = await fetch(DASHBOARD_SYNC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ mode:"login", name:name, pin:pin })
+    });
+    const data = await res.json();
+    if(data && data.status) return data;
+  } catch(e){ /* 아래 GET으로 재시도 */ }
+
+  const res2 = await fetch(DASHBOARD_SYNC_URL + "?mode=login"
+    + "&name=" + encodeURIComponent(name)
+    + "&pin="  + encodeURIComponent(pin));
+  return await res2.json();
+}
+
+async function doLogin(){
+  const nameEl = document.getElementById("login-name");
+  const pinEl  = document.getElementById("login-pin");
+  const errEl  = document.getElementById("login-err");
+  const btn    = document.getElementById("login-btn");
+  const name = nameEl.value;
+  const pin  = pinEl.value.trim();
+
+  if(!pin){ errEl.textContent = "비밀번호를 입력하세요."; pinEl.focus(); return; }
+
+  btn.disabled = true;
+  const btnOriginal = btn.textContent;
+  btn.textContent = "확인 중...";
+  errEl.textContent = "";
+
+  try {
+    // 비밀번호는 서버에서만 검증된다. 응답으로 만료 시각이 있는 세션 토큰을 받는다.
+    // 로그인 자체는 아직 토큰이 없으므로 래퍼를 거치지 않는다 (서버에서 유일한 공개 mode).
+    // 비밀번호가 URL에 남지 않도록 POST를 우선 사용하고,
+    // 응답을 읽을 수 없는 환경에서만 GET으로 되돌린다.
+    const data = await loginRequest(name, pin);
+
+    if(data && data.status === "ok" && data.token){
+      setSession({ token:data.token, name:data.name, role:data.role, expiresAt:data.expiresAt });
+      pinEl.value = "";
+      document.getElementById("login-gate").style.display = "none";
+      showCategoryMenu();
+      fillInspectorField();
+      // 로그인 전에는 동기화를 건너뛰므로, 로그인 직후 한 번 서버 데이터를 받아온다.
+      syncFromServer();
+    } else {
+      errEl.textContent = (data && data.msg) ? data.msg : "이름 또는 비밀번호가 올바르지 않습니다.";
+      pinEl.value = "";
+      pinEl.focus();
+    }
+  } catch(e){
+    errEl.textContent = "서버에 연결할 수 없습니다. 네트워크를 확인해주세요.";
   }
+
+  btn.disabled = false;
+  btn.textContent = btnOriginal;
 }
 function logout(){
-  try { localStorage.removeItem("shi_login"); } catch(e) {}
+  const token = getSessionToken();
+  clearSession();
+  // 서버측 세션도 폐기한다 (실패해도 로컬 세션은 이미 사라진 상태)
+  if(token){
+    try {
+      fetch(DASHBOARD_SYNC_URL + "?mode=logout&token=" + encodeURIComponent(token), { keepalive:true });
+    } catch(e){}
+  }
   location.reload();
 }
-const CATEGORY_TITLES = {budget:"예산관리"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("app-ai").style.display = "none";document.getElementById("app-hazard").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else if(cat === "ai"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-ai").style.display = "block";initAiChat();} else if(cat === "hazard"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-hazard").style.display = "block";initHazardApp();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!INSPECTOR_PINS[currentInspector()]){
+const CATEGORY_TITLES = {budget:"예산관리"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("app-ai").style.display = "none";document.getElementById("app-hazard").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else if(cat === "ai"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-ai").style.display = "block";initAiChat();} else if(cat === "hazard"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-hazard").style.display = "block";initHazardApp();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!hasValidSession()){
   document.getElementById("login-gate").style.display = "flex";}else{showCategoryMenu();
 }
 document.getElementById("login-btn").addEventListener("click", doLogin);
@@ -906,24 +1004,145 @@ let currentRptId = null;
 let deductPhotos = []; // base64 사진 배열
 let deductCount = 0;
 
-  // 구글 드라이브 사진/서명 URL을 안정적으로 렌더링되는 형식으로 변환한다.
-  // (drive.google.com/uc?id= 형식은 이미지 태그로 바로 열리지 않고 깨지는 경우가 있어
-  //  lh3.googleusercontent.com/d/ 형식으로 변환한다. data: 로컬 미리보기는 그대로 둔다.)
-    function driveImg(url){
-                     if(!url) return url;
-    if(url.startsWith("data:")) return url;
-    const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    return m ? ("https://lh3.googleusercontent.com/d/" + m[1]) : url;
-  }
+
+// ══ Drive 사진 비공개 전달 ══
+// Drive 파일을 공개 링크로 직접 렌더링하지 않는다. 자리표시자를 먼저 그린 뒤,
+// 인증된 요청으로 이미지 바이트를 받아 채워 넣는다.
+// (Drive 폴더를 "제한됨"으로 돌려도 앱에서는 정상적으로 보인다)
+const DRIVE_PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTIwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVmMGY0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MyUiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiM5OWEwYWQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPuqzhOyGjSDrtojrn6zsmKTripTspJE8L3RleHQ+PC9zdmc+";
+const driveImgCache = new Map();
+
+function driveFileId(url){
+  if(!url || url.startsWith("data:")) return null;
+  const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+function driveImg(url){
+  if(!url) return url;
+  if(url.startsWith("data:")) return url;
+  const id = driveFileId(url);
+  if(!id) return url;
+  const cached = driveImgCache.get(id);
+  if(cached) return cached;
+  // 프래그먼트에 파일 ID를 실어 두면, 렌더 후 일괄로 찾아 채울 수 있다.
+  return DRIVE_PLACEHOLDER + "#drive=" + id;
+}
+
+async function hydrateOneImage(img){
+  const src = img.getAttribute("src") || "";
+  const i = src.indexOf("#drive=");
+  if(i < 0 || img.dataset.driveState) return;
+  const id = src.slice(i + 7);
+  img.dataset.driveState = "loading";
+
+  const cached = driveImgCache.get(id);
+  if(cached){ img.src = cached; img.dataset.driveState = "done"; return; }
+
+  try {
+    const res  = await __drivePhotoFetch(id);
+    const data = await res.json();
+    if(data && data.status === "ok"){
+      const dataUrl = "data:" + data.mimeType + ";base64," + data.data;
+      driveImgCache.set(id, dataUrl);
+      img.src = dataUrl;
+      img.dataset.driveState = "done";
+      return;
+    }
+  } catch(e){}
+  img.dataset.driveState = "failed";
+  img.alt = "사진을 불러올 수 없습니다";
+}
+
+let hydrateTimer = null;
+function hydrateDriveImages(){
+  document.querySelectorAll('img[src*="#drive="]').forEach(hydrateOneImage);
+}
+
+// 화면이 다시 그려질 때마다 새로 생긴 이미지를 자동으로 채운다.
+if(typeof MutationObserver !== "undefined"){
+  new MutationObserver(() => {
+    clearTimeout(hydrateTimer);
+    hydrateTimer = setTimeout(hydrateDriveImages, 80);
+  }).observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:["src"] });
+}
+
+function __drivePhotoFetch(id){ return apiFetch("?mode=photo&id=" + encodeURIComponent(id)); }
+
 
 // ══ 서버(Google Sheets) 동기화 ══
 // 대시보드가 이 브라우저의 localStorage만 보던 문제를 해결하기 위해,
 // 페이지를 열 때마다 Apps Script에서 전체 점검현황/개선현황을 받아와 화면을 갱신한다.
 // (로컬 저장은 오프라인 대비 백업 용도로 계속 유지)
 const DASHBOARD_SYNC_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+
+// ══ 인증된 API 호출 래퍼 ══
+// 모든 서버 요청은 반드시 이 두 함수를 통해서만 나간다.
+// 토큰은 헤더가 아니라 쿼리스트링/본문에 실어 보낸다.
+// (Apps Script는 CORS preflight(OPTIONS)에 응답하지 못하므로
+//  Authorization 같은 커스텀 헤더를 쓰면 요청 자체가 차단된다.)
+
+function apiUnauthorized_(data){
+  return !!data && (data.status === "unauthorized" || data.status === "forbidden");
+}
+
+// GET — 기존 fetch()와 같은 자리에 그대로 쓰도록 Response 유사 객체를 돌려준다.
+async function apiFetch(qs){
+  const token = getSessionToken();
+  // 로그인 전이면 조용히 중단한다. 여기서 handleAuthFailure()를 부르면
+  // 페이지 로드 시 자동 호출되는 동기화가 무한 새로고침을 일으킨다.
+  if(!token){ const e = new Error("no session"); e.__noSession = true; throw e; }
+  const sep = qs.indexOf("?") >= 0 ? "&" : "?";
+  const res = await apiFetch(qs + sep + "token=" + encodeURIComponent(token));
+  return {
+    ok: res.ok,
+    status: res.status,
+    async json(){
+      const data = await res.json();
+      if(apiUnauthorized_(data)){ handleAuthFailure(data); throw new Error(data.msg || "unauthorized"); }
+      return data;
+    },
+    text(){ return res.text(); }
+  };
+}
+
+// POST — 본문 JSON에 토큰을 주입한다.
+// 응답을 읽을 수 있으면 인증 실패를 즉시 감지하고,
+// 브라우저/배포 설정 때문에 응답을 읽을 수 없는 환경에서는 no-cors로 재시도한다.
+async function apiPost(payload){
+  const token = getSessionToken();
+  if(!token){ const e = new Error("no session"); e.__noSession = true; throw e; }
+  const obj = (typeof payload === "string")
+    ? (function(){ try { return JSON.parse(payload); } catch(e){ return {}; } })()
+    : Object.assign({}, payload || {});
+  obj.token = token;
+
+  const opts = {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(obj)
+  };
+
+  try {
+    const res  = await fetch(DASHBOARD_SYNC_URL, opts);
+    const data = await res.json().catch(function(){ return null; });
+    if(apiUnauthorized_(data)){
+      const err = new Error(data.msg || "unauthorized");
+      err.__auth = true;
+      handleAuthFailure(data);
+      throw err;
+    }
+    return data;
+  } catch(e){
+    if(e && (e.__auth || e.__noSession)) throw e;
+    // 응답을 읽지 못하는 환경 — 전송만 하고 결과는 확인하지 않는다.
+    await fetch(DASHBOARD_SYNC_URL, Object.assign({}, opts, { mode:"no-cors" }));
+    return null;
+  }
+}
 async function syncFromServer(){
   try {
-    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=list");
+    const res = await apiFetch("?mode=list");
     const data = await res.json();
     if(!data || !Array.isArray(data.inspections)) return;
     const feedbacks = data.feedbacks || {};
@@ -959,7 +1178,8 @@ async function syncFromServer(){
   renderCheckItems();
   updateDashboard();
   updateReportSel();
-  syncFromServer(); // 서버 데이터로 대시보드 재갱신 (다른 기기에서 저장한 결과 포함)
+  // 로그인한 세션이 있을 때만 서버와 동기화한다 (미로그인 상태에서는 요청 자체를 보내지 않음)
+  if(hasValidSession()) syncFromServer();
 })();
 
 // ═══ 산업재해관리 ═══
@@ -996,7 +1216,7 @@ function initAccidentForm(){
 
 async function loadAccidents(){
   try {
-    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=accidents");
+    const res = await apiFetch("?mode=accidents");
     const data = await res.json();
     accidents = (data && Array.isArray(data.accidents)) ? data.accidents : [];
   } catch(e) {
@@ -1142,14 +1362,8 @@ async function saveAccidentForm(){
   saveBtn.innerHTML = "⏳ 저장 중...";
   if(statusEl){ statusEl.textContent = ""; statusEl.style.color = ""; }
 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
   try {
-    await fetch(SCRIPT_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
+    await apiPost(payload);
     resetAccidentForm();
     await loadAccidents();
     goAccPage("list");
@@ -1190,7 +1404,7 @@ function initMsdsForm(){
 
 async function loadMsds(){
   try {
-    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=msds");
+    const res = await apiFetch("?mode=msds");
     const data = await res.json();
     msdsList = (data && Array.isArray(data.msds)) ? data.msds : [];
   } catch(e) {
@@ -1199,9 +1413,26 @@ async function loadMsds(){
   renderMsdsList();
 }
 
+const MSDS_MAX_BYTES = 10 * 1024 * 1024; // 10MB
 function handleMsdsFileSelect(input){
   const file = input.files[0];
   if(!file) return;
+
+  // 업로드 전 형식·용량을 검증한다 (서버에서도 동일하게 재검증할 것)
+  const nameOk = /\.pdf$/i.test(file.name);
+  const typeOk = !file.type || file.type === "application/pdf";
+  if(!nameOk || !typeOk){
+    alert("PDF 파일만 업로드할 수 있습니다.");
+    input.value = "";
+    return;
+  }
+  if(file.size > MSDS_MAX_BYTES){
+    alert("파일 용량은 10MB 이하여야 합니다. (선택한 파일: "
+      + (file.size/1024/1024).toFixed(1) + "MB)");
+    input.value = "";
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = e => {
     msdsSelectedFile = { name: file.name, dataUrl: e.target.result };
@@ -1250,14 +1481,8 @@ async function uploadMsdsFile(){
   btn.innerHTML = "⏳ 업로드 및 자동추출 중...";
   if(statusEl){ statusEl.textContent = ""; statusEl.style.color = ""; }
 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
   try {
-    await fetch(SCRIPT_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
+    await apiPost(payload);
     if(statusEl){ statusEl.textContent = "✅ 업로드 완료! 목록에 반영 중..."; statusEl.style.color = "var(--accent)"; }
     resetMsdsUploadForm();
     // 서버측 PDF 추출 처리 시간을 고려해 잠시 대기 후 목록 갱신
@@ -1372,13 +1597,8 @@ async function saveMsdsEdit(id){
     specialManagement: document.getElementById(`edit-special-${id}`).value,
     sites
   };
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
   try {
-    await fetch(SCRIPT_URL, {
-      method:"POST", mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
+    await apiPost(payload);
     const idx = msdsList.findIndex(x=>String(x.id)===String(id));
     if(idx>-1) msdsList[idx] = {...msdsList[idx], ...payload};
     renderMsdsList();
@@ -1390,13 +1610,8 @@ async function saveMsdsEdit(id){
 
 async function deleteMsdsRow(id){
   if(!confirm("이 MSDS 자료를 삭제하시겠습니까?")) return;
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
   try {
-    await fetch(SCRIPT_URL, {
-      method:"POST", mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify({type:"msds_delete", id})
-    });
+    await apiPost({ type:"msds_delete", id });
     msdsList = msdsList.filter(x=>String(x.id)!==String(id));
     renderMsdsList();
   } catch(e) {
@@ -1597,7 +1812,6 @@ async function saveInspection(){
   updateReportSel();
 
   // Apps Script 전송
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
   const payload = {
     site, date, inspector, type:ins.type, memo:ins.memo,
     mgrName:ins.mgrName, mgrEmail:ins.mgrEmail,
@@ -1608,12 +1822,7 @@ async function saveInspection(){
   };
   try {
     // 사진(base64) 포함 시 x-www-form-urlencoded(e.parameter)에서 누락될 수 있어 JSON 원문을 그대로 e.postData.contents로 전송한다.
-    await fetch(SCRIPT_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
+    await apiPost(payload);
     document.getElementById("modal-status").textContent = "✅ Google Sheets 저장 + 이메일 + 카카오톡 발송 완료!";
   } catch(e) {
     document.getElementById("modal-status").textContent = "⚠ 네트워크 오류 (로컬 저장 완료)";
@@ -1902,7 +2111,7 @@ async function sendReminderForSite(site){
     return;
   }
   try{
-    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=send_overdue_reminders&site=" + encodeURIComponent(site));
+    const res = await apiFetch("?mode=send_overdue_reminders&site=" + encodeURIComponent(site));
     const data = await res.json();
     if(data.sentCount>0){
       const r = data.results[0];
@@ -1919,6 +2128,8 @@ async function sendReminderForSite(site){
 
 // ══ 마감초과 사업장 수동 일괄 알림 ══
 async function sendOverdueRemindersManual(){
+  // 서버에서도 관리자 권한을 재확인하지만, UI에서도 미리 막아 오작동을 줄인다.
+  if(!isAdmin()){ alert("이 기능은 관리자만 사용할 수 있습니다."); return; }
   if(!confirm("마감일(점검일+21일)이 지났는데 개선결과를 제출하지 않은 사업장에게\nSMS·이메일·카카오톡으로 독촉 알림을 일괄 발송합니다.\n실제 문자/이메일이 발송되며 비용이 발생할 수 있습니다.\n계속하시겠습니까?")){
     return;
   }
@@ -1927,7 +2138,7 @@ async function sendOverdueRemindersManual(){
   btn.disabled = true;
   btn.textContent = "⏳ 발송 중...";
   try{
-    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=send_overdue_reminders");
+    const res = await apiFetch("?mode=send_overdue_reminders");
     const data = await res.json();
     if(data.error){
       alert("오류: " + data.error);
@@ -2436,8 +2647,8 @@ async function sendAiChatQuestion(){
 
   try {
     const histParam = encodeURIComponent(JSON.stringify(aiChatHistory.slice(-8)));
-    const url = DASHBOARD_SYNC_URL + "?mode=ai_chat&question=" + encodeURIComponent(q) + "&history=" + histParam;
-    const res = await fetch(url);
+    const qs = "?mode=ai_chat&question=" + encodeURIComponent(q) + "&history=" + histParam;
+    const res = await apiFetch(qs);
     const data = await res.json();
     if(thinkingEl) thinkingEl.remove();
 
@@ -2480,7 +2691,7 @@ function initHazardApp(){
 
 async function loadHazardHistory(){
   try {
-    const res = await fetch(DASHBOARD_SYNC_URL + "?mode=hazard_history");
+    const res = await apiFetch("?mode=hazard_history");
     const data = await res.json();
     hazardHistoryList = (data && Array.isArray(data.history)) ? data.history : [];
   } catch(e){
@@ -2530,11 +2741,7 @@ function showHazardHistoryDetail(i){
 async function deleteHazardRecord(id){
   if(!confirm("이 분석 이력을 삭제하시겠습니까?")) return;
   try {
-    await fetch(DASHBOARD_SYNC_URL, {
-      method:"POST", mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({ type:"hazard_delete", id })
-    });
+    await apiPost({ type:"hazard_delete", id });
     hazardHistoryList = hazardHistoryList.filter(x=>String(x.id)!==String(id));
     renderHazardHistory();
   } catch(e){
@@ -2666,16 +2873,11 @@ async function analyzeHazardPhoto(){
   const site = document.getElementById("hazard-site").value;
 
   try {
-    await fetch(DASHBOARD_SYNC_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({ type:"hazard_analyze", id, imageBase64: hazardImageDataUrl, mimeType: hazardImageMime, memo, site, registrant: currentInspector() })
-    });
+    await apiPost({ type:"hazard_analyze", id, imageBase64: hazardImageDataUrl, mimeType: hazardImageMime, memo, site, registrant: currentInspector() });
 
     let result = null;
     for(let i = 0; i < 15; i++){
-      const res = await fetch(DASHBOARD_SYNC_URL + "?mode=hazard_analyze_result&id=" + encodeURIComponent(id));
+      const res = await apiFetch("?mode=hazard_analyze_result&id=" + encodeURIComponent(id));
       const data = await res.json();
       if(data && data.status !== "pending"){ result = data; break; }
       await new Promise(r => setTimeout(r, 2000));
