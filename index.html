@@ -258,7 +258,7 @@ tbody tr:hover{background:var(--surface2)}
   script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
   style-src  'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src   'self' https://fonts.gstatic.com;
-  img-src    'self' data: blob:;
+  img-src    'self' data: blob: https://lh3.googleusercontent.com https://drive.google.com;
   connect-src 'self' https://script.google.com https://script.googleusercontent.com https://cdnjs.cloudflare.com;
   base-uri 'self';
   form-action 'none';">
@@ -1005,69 +1005,19 @@ let deductPhotos = []; // base64 사진 배열
 let deductCount = 0;
 
 
-// ══ Drive 사진 비공개 전달 ══
-// Drive 파일을 공개 링크로 직접 렌더링하지 않는다. 자리표시자를 먼저 그린 뒤,
-// 인증된 요청으로 이미지 바이트를 받아 채워 넣는다.
-// (Drive 폴더를 "제한됨"으로 돌려도 앱에서는 정상적으로 보인다)
-const DRIVE_PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTIwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVmMGY0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MyUiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiM5OWEwYWQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPuqzhOyGjSDrtojrn6zsmKTripTspJE8L3RleHQ+PC9zdmc+";
-const driveImgCache = new Map();
-
-function driveFileId(url){
-  if(!url || url.startsWith("data:")) return null;
-  const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : null;
-}
-
+// 구글 드라이브 사진/서명 URL을 안정적으로 렌더링되는 형식으로 변환한다.
+// (drive.google.com/uc?id= 형식은 이미지 태그로 바로 열리지 않고 깨지는 경우가 있어
+//  lh3.googleusercontent.com/d/ 형식으로 변환한다. data: 로컬 미리보기는 그대로 둔다.)
+//
+// ※ 서버 경유 전달(mode=photo)은 원본이 장당 4~5MB라 실사용이 불가능해 되돌렸다.
+//   Drive 썸네일을 쓰는 방식으로 다시 시도할 예정이다. 그때까지 Drive 폴더 공유 설정은
+//   "링크가 있는 모든 사용자"로 유지되어야 사진이 보인다.
 function driveImg(url){
   if(!url) return url;
   if(url.startsWith("data:")) return url;
-  const id = driveFileId(url);
-  if(!id) return url;
-  const cached = driveImgCache.get(id);
-  if(cached) return cached;
-  // 프래그먼트에 파일 ID를 실어 두면, 렌더 후 일괄로 찾아 채울 수 있다.
-  return DRIVE_PLACEHOLDER + "#drive=" + id;
+  const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? ("https://lh3.googleusercontent.com/d/" + m[1]) : url;
 }
-
-async function hydrateOneImage(img){
-  const src = img.getAttribute("src") || "";
-  const i = src.indexOf("#drive=");
-  if(i < 0 || img.dataset.driveState) return;
-  const id = src.slice(i + 7);
-  img.dataset.driveState = "loading";
-
-  const cached = driveImgCache.get(id);
-  if(cached){ img.src = cached; img.dataset.driveState = "done"; return; }
-
-  try {
-    const res  = await __drivePhotoFetch(id);
-    const data = await res.json();
-    if(data && data.status === "ok"){
-      const dataUrl = "data:" + data.mimeType + ";base64," + data.data;
-      driveImgCache.set(id, dataUrl);
-      img.src = dataUrl;
-      img.dataset.driveState = "done";
-      return;
-    }
-  } catch(e){}
-  img.dataset.driveState = "failed";
-  img.alt = "사진을 불러올 수 없습니다";
-}
-
-let hydrateTimer = null;
-function hydrateDriveImages(){
-  document.querySelectorAll('img[src*="#drive="]').forEach(hydrateOneImage);
-}
-
-// 화면이 다시 그려질 때마다 새로 생긴 이미지를 자동으로 채운다.
-if(typeof MutationObserver !== "undefined"){
-  new MutationObserver(() => {
-    clearTimeout(hydrateTimer);
-    hydrateTimer = setTimeout(hydrateDriveImages, 80);
-  }).observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:["src"] });
-}
-
-function __drivePhotoFetch(id){ return apiFetch("?mode=photo&id=" + encodeURIComponent(id)); }
 
 
 // ══ 서버(Google Sheets) 동기화 ══
