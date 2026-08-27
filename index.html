@@ -259,7 +259,7 @@ tbody tr:hover{background:var(--surface2)}
   style-src  'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src   'self' https://fonts.gstatic.com;
   img-src    'self' data: blob:;
-  connect-src 'self' https://script.google.com https://script.googleusercontent.com;
+  connect-src 'self' https://script.google.com https://script.googleusercontent.com https://cdnjs.cloudflare.com;
   base-uri 'self';
   form-action 'none';">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -1093,7 +1093,7 @@ async function apiFetch(qs){
   // 페이지 로드 시 자동 호출되는 동기화가 무한 새로고침을 일으킨다.
   if(!token){ const e = new Error("no session"); e.__noSession = true; throw e; }
   const sep = qs.indexOf("?") >= 0 ? "&" : "?";
-  const res = await apiFetch(qs + sep + "token=" + encodeURIComponent(token));
+  const res = await fetch(DASHBOARD_SYNC_URL + qs + sep + "token=" + encodeURIComponent(token));
   return {
     ok: res.ok,
     status: res.status,
