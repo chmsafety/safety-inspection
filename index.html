@@ -1395,7 +1395,23 @@ function editAccident(i){
   if(!a){ alert("기록을 찾지 못했습니다. 목록을 새로고침해 주세요."); return; }
   if(!a.id){ alert("이 기록에는 ID가 없어 수정할 수 없습니다."); return; }
 
-  const put = (id,val)=>{ const el=document.getElementById(id); if(el) el.value = (val==null?"":val); };
+  // 선택 목록에 없는 값(예전에 다른 표기로 저장된 값)도 그대로 살려서 보여준다.
+  // 이렇게 하지 않으면 목록에 없는 값이 빈칸이 되고, 저장할 때 원래 값이 지워진다.
+  const put = (id,val)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const v = (val==null ? "" : String(val));
+    if(el.tagName === "SELECT" && v !== ""){
+      const exists = Array.from(el.options).some(o=>o.value === v);
+      if(!exists){
+        const o = document.createElement("option");
+        o.value = v;
+        o.textContent = v + " (기존 입력값)";
+        el.appendChild(o);
+      }
+    }
+    el.value = v;
+  };
   put("acc-inp-site",       a.site);
   put("acc-inp-date",       fmtDate(a.date));
   put("acc-inp-name",       a.name);
@@ -1434,6 +1450,12 @@ function setAccEditMode(on, a){
     if(sub)   sub.textContent   = "산업재해 발생 정보를 입력하세요";
     if(btn)   btn.innerHTML = "💾 저장";
     if(cancel) cancel.style.display = "none";
+    // 수정하려고 임시로 넣었던 항목 제거
+    ["acc-inp-site","acc-inp-acctype","acc-inp-category","acc-inp-riskassess","acc-inp-status"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      Array.from(el.options).forEach(o=>{ if(/\(기존 입력값\)$/.test(o.textContent)) o.remove(); });
+    });
   }
 }
 
