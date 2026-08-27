@@ -102,22 +102,9 @@ main{max-width:720px;margin:0 auto;padding:1.5rem}
     <div class="code-logo">🛡</div>
     <div class="code-title">안전보건점검</div>
     <div class="code-sub">개선결과 제출 시스템</div>
-    <div class="fg" style="margin-bottom:1rem;text-align:left">
-      <label style="font-size:.78rem;font-weight:600;color:var(--text2)">사업장 선택</label>
-      <select id="code-site" style="width:100%;background:#fff;border:1px solid var(--border2);border-radius:7px;padding:.5rem .75rem;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;outline:none;color:var(--text)">
-        <option value="">— 사업장을 선택하세요 —</option>
-      </select>
+    <div id="gate-body" style="margin-top:1.25rem">
+      <div style="font-size:.85rem;color:var(--text2)">확인 중...</div>
     </div>
-    <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:.5rem;text-align:left">4자리 인증코드 입력</div>
-    <div class="code-input-wrap">
-      <input class="code-digit" id="d1" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d2')" onkeydown="movePrev(event,this,'')">
-      <input class="code-digit" id="d2" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d3')" onkeydown="movePrev(event,this,'d1')">
-      <input class="code-digit" id="d3" maxlength="1" type="password" inputmode="numeric" oninput="moveNext(this,'d4')" onkeydown="movePrev(event,this,'d2')">
-      <input class="code-digit" id="d4" maxlength="1" type="password" inputmode="numeric" oninput="checkCode()" onkeydown="movePrev(event,this,'d3')">
-    </div>
-    <div class="code-error" id="code-error"></div>
-    <button class="btn btn-primary" onclick="verifyCode()" style="width:100%;padding:.6rem">확인</button>
-    <div class="code-hint">※ 인증코드는 사업장 담당자에게 별도 안내됩니다</div>
   </div>
 </div>
 
@@ -212,70 +199,66 @@ main{max-width:720px;margin:0 auto;padding:1.5rem}
 </main>
 
 <script>
-// ══ 사업장별 인증코드 ══
-const SITE_CODES = {
-  "T-타워":"2951","서린":"6234","둔산":"9233","보라매":"9385","분당":"2681",
-  "인재개발원":"4658","종로타워":"7891","부암":"9975","성수":"9042","테크원":"8226",
-  "판교":"4931","우산":"1041","KT&G":"2322","관훈":"2814","태평":"5706",
-  "유타워":"2606","삼화타워":"8367","전주":"1188","무의연수원":"9032","청주":"6148",
-  "서산공장":"4444","원주":"7508","본리":"5120","부사":"6696","L7호텔":"6843",
-  "데이터":"7166","제주":"9414","ICN10":"2250","인천":"6577","안락":"2469",
-  "장안":"9815","모비언트 광주":"5786","수유":"5712","신천":"8494","송정":"3308",
-  "센터원 서울사무소":"6062","용인":"1405","영시티":"7043","현대위아 평택":"6956",
-  "행복나눔":"8554","넥실리스":"7917","인천석유화학":"2485","11번가":"7533",
-  "중동":"9166","센트로시티":"2907","오토에버 광주":"7970","오리온용암수":"9296",
-  "고려대 거점오피스":"9045","서강대":"7523","스타크빌딩":"9595","명륜":"5237","분당N타워":"7880"
-};
+// ══ 일회용 링크 인증 ══
+// 사업장 코드를 이 파일에 두지 않는다. 접근 권한은 URL의 토큰(?t=)이 결정하고,
+// 어느 사업장인지도 서버가 토큰을 보고 판단한다.
+// 담당자가 URL을 고쳐도 다른 사업장 데이터에는 접근할 수 없다.
 
 let verifiedSite = "";
+let fbToken = "";
+let alreadySubmitted = false;
 
-// 코드 입력 화면 초기화
-(function initCodeScreen(){
-  const sel = document.getElementById("code-site");
-  Object.keys(SITE_CODES).forEach(s=>{
-    const o = document.createElement("option");
-    o.value = s; o.textContent = s;
-    sel.appendChild(o);
-  });
-})();
+function getTokenFromUrl(){
+  const m = location.search.match(/[?&]t=([A-Za-z0-9_-]+)/);
+  return m ? m[1] : "";
+}
 
-function moveNext(el, nextId){
-  if(el.value.length===1 && nextId){
-    document.getElementById(nextId).focus();
+function gateMessage(icon, title, desc){
+  document.getElementById("gate-body").innerHTML =
+    '<div style="font-size:2rem;margin-bottom:.6rem">' + icon + '</div>' +
+    '<div style="font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.4rem">' + escapeHtml(title) + '</div>' +
+    '<div style="font-size:.8rem;color:var(--text2);line-height:1.7">' + escapeHtml(desc) + '</div>';
+}
+
+// 페이지 진입 시 토큰을 검증하고, 통과하면 곧바로 해당 사업장 화면을 연다.
+async function openWithToken(){
+  fbToken = getTokenFromUrl();
+
+  if(!fbToken){
+    gateMessage("🔗", "링크가 올바르지 않습니다",
+      "점검 결과 안내 메일에 포함된 링크로 접속해주세요. 링크를 찾을 수 없으면 안전관리 담당자에게 문의해주세요.");
+    return;
   }
-}
 
-function movePrev(e, el, prevId){
-  if(e.key==="Backspace" && el.value==="" && prevId){
-    document.getElementById(prevId).focus();
-  }
-}
+  try {
+    const res = await fetch(SCRIPT_URL + "?mode=fb_open&token=" + encodeURIComponent(fbToken));
+    const data = await res.json();
 
-function checkCode(){
-  const code = ["d1","d2","d3","d4"].map(id=>document.getElementById(id).value).join("");
-  if(code.length===4) verifyCode();
-}
+    if(!data || data.status !== "ok"){
+      gateMessage("⏳", "링크가 만료되었습니다",
+        (data && data.msg) ? data.msg : "안전관리 담당자에게 새 링크를 요청해주세요.");
+      return;
+    }
 
-function verifyCode(){
-  const site = document.getElementById("code-site").value;
-  const code = ["d1","d2","d3","d4"].map(id=>document.getElementById(id).value).join("");
-  const errEl = document.getElementById("code-error");
+    verifiedSite = data.site;
+    alreadySubmitted = !!data.submitted;
 
-  if(!site){ errEl.textContent="사업장을 선택해주세요."; return; }
-  if(code.length<4){ errEl.textContent="4자리 코드를 모두 입력해주세요."; return; }
+    document.getElementById("code-screen").style.display = "none";
+    document.getElementById("main-screen").style.display = "block";
+    document.getElementById("fb-site").value = verifiedSite;
+    // 응답 형식은 기존 ?site= 엔드포인트와 동일하다. 렌더 로직을 그대로 재사용한다.
+    loadSiteIssues(data);
 
-  if(SITE_CODES[site]===code){
-    verifiedSite = site;
-    document.getElementById("code-screen").style.display="none";
-    document.getElementById("main-screen").style.display="block";
-    // 사업장 자동 선택
-    document.getElementById("fb-site").value = site;
-    loadSiteIssues();
-    errEl.textContent="";
-  } else {
-    errEl.textContent="❌ 인증코드가 올바르지 않습니다.";
-    ["d1","d2","d3","d4"].forEach(id=>{ document.getElementById(id).value=""; });
-    document.getElementById("d1").focus();
+    if(alreadySubmitted){
+      const banner = document.createElement("div");
+      banner.style.cssText = "background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:.75rem 1rem;font-size:.82rem;margin-bottom:1rem";
+      banner.textContent = "이미 제출이 완료된 건입니다. 내용 확인만 가능합니다.";
+      const main = document.querySelector("#main-screen main") || document.getElementById("main-screen");
+      main.insertBefore(banner, main.firstChild);
+    }
+  } catch(e){
+    gateMessage("⚠", "연결할 수 없습니다",
+      "네트워크 상태를 확인한 뒤 다시 시도해주세요.");
   }
 }
 
@@ -284,7 +267,9 @@ const SITES = ["T-타워","서린","둔산","보라매","분당","인재개발�
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
 
 let photoData = {}; // {issueIndex: [{src, note}]}
-let currentIssues = []; function driveImg(url){ if(!url) return url; if(url.startsWith("data:")) return url; const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m ? ("https://lh3.googleusercontent.com/d/" + m[1]) : url; }
+let currentIssues = []; 
+function driveImg(url){ if(!url) return url; if(url.startsWith("data:")) return url; const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m ? ("https://lh3.googleusercontent.com/d/" + m[1]) : url; }
+
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -293,17 +278,13 @@ function escapeHtml(s){
 // 초기화
 (function(){
   document.getElementById("fb-date").value = new Date().toISOString().split("T")[0];
-  const sel = document.getElementById("fb-site");
-  SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; sel.appendChild(o); });
-  sel.addEventListener("change", loadSiteIssues);
+  // 사업장은 링크(토큰)가 결정하므로 선택 UI가 필요 없다.
+  openWithToken();
 })();
 
-async function loadSiteIssues(){
-  const site = document.getElementById("fb-site").value;
-  if(!site){
-    document.getElementById("issue-list").innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">사업장을 선택해주세요</div>`;
-    return;
-  }
+async function loadSiteIssues(preloaded){
+  const site = verifiedSite;
+  if(!site) return;
 
   // 로딩 표시
   document.getElementById("issue-list").innerHTML=`
@@ -313,9 +294,12 @@ async function loadSiteIssues(){
     </div>`;
 
   try {
-    // Google Sheets에서 미흡항목 조회
-    const res = await fetch(`${SCRIPT_URL}?site=${encodeURIComponent(site)}`);
-    const data = await res.json();
+    // 미흡항목 조회 — 사업장은 서버가 토큰을 보고 결정한다 (클라이언트가 지정하지 않는다)
+    let data = preloaded;
+    if(!data){
+      const res = await fetch(SCRIPT_URL + "?mode=fb_open&token=" + encodeURIComponent(fbToken));
+      data = await res.json();
+    }
 
     if(data.error){
       document.getElementById("issue-list").innerHTML=`
@@ -541,13 +525,30 @@ async function submitFeedback(){
   // Google Sheets에 저장 + 관리자 이메일 발송
   try {
     // 사진/서명(base64)이 포함되면 payload가 커져 x-www-form-urlencoded 방식(e.parameter)에서 누락/손상될 수 있으므로, JSON 원문을 그대로 e.postData.contents로 전송한다.
-    await fetch(SCRIPT_URL, {
+    payload.mode  = "fb_submit";
+    payload.token = fbToken;
+    // 서버가 payload.site 를 토큰 기준으로 덮어쓰므로, 여기 값이 조작돼도 반영되지 않는다.
+    const res = await fetch(SCRIPT_URL, {
       method:"POST",
-      mode:"no-cors",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify(payload)
     });
-  } catch(e) { console.log("전송 오류:", e); }
+    const out = await res.json().catch(()=>null);
+    if(out && out.status !== "ok"){
+      alert(out.msg || "제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+      if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = "개선결과 제출"; }
+      return;
+    }
+  } catch(e) {
+    // 응답을 읽을 수 없는 환경 — 전송만 하고 진행한다.
+    try {
+      await fetch(SCRIPT_URL, {
+        method:"POST", mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify(payload)
+      });
+    } catch(e2) { console.log("전송 오류:", e2); }
+  }
 
   // 로컬에도 저장 (대시보드 연동)
   const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
