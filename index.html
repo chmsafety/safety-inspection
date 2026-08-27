@@ -654,26 +654,16 @@ tbody tr:hover{background:var(--surface2)}
   </div>
   <div class="kpi-section">
     <div class="kpi-section-title">현황 요약</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem">
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(147,197,253,.25);margin-bottom:.4rem">🚑</div>
-        <div class="kpi-val" id="acc-kpi-total" style="color:#1e40af;font-size:1.3rem">0</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">전체 재해 건수</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem">
+      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.95rem .6rem">
+        <div class="kpi-icon" style="background:rgba(147,197,253,.25);margin-bottom:.4rem">📊</div>
+        <div class="kpi-val" id="acc-kpi-avg3" style="color:#1e40af;font-size:1.5rem">0</div>
+        <div class="kpi-lbl" style="margin-top:.2rem" id="acc-kpi-avg3-lbl">최근 3년간 평균 건수</div>
       </div>
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
+      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.95rem .6rem">
         <div class="kpi-icon" style="background:rgba(252,129,129,.25);margin-bottom:.4rem">📅</div>
-        <div class="kpi-val" id="acc-kpi-year" style="color:#dc2626;font-size:1.3rem">0</div>
-        <div class="kpi-lbl" style="margin-top:.2rem" id="acc-kpi-year-lbl">올해 발생</div>
-      </div>
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(251,191,36,.25);margin-bottom:.4rem">🏥</div>
-        <div class="kpi-val" id="acc-kpi-leave" style="color:#d97706;font-size:1.3rem">0</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">휴직 중</div>
-      </div>
-      <div class="kpi-card" style="flex-direction:column;align-items:center;text-align:center;padding:.85rem .6rem">
-        <div class="kpi-icon" style="background:rgba(52,211,153,.25);margin-bottom:.4rem">✅</div>
-        <div class="kpi-val" id="acc-kpi-closed" style="color:#059669;font-size:1.3rem">0</div>
-        <div class="kpi-lbl" style="margin-top:.2rem">종결 건수</div>
+        <div class="kpi-val" id="acc-kpi-year" style="color:#dc2626;font-size:1.5rem">0</div>
+        <div class="kpi-lbl" style="margin-top:.2rem" id="acc-kpi-year-lbl">올해 재해 건수</div>
       </div>
     </div>
   </div>
@@ -696,7 +686,8 @@ tbody tr:hover{background:var(--surface2)}
 <!-- ════ 재해 입력 ════ -->
 <div class="acc-page" id="acc-page-input">
   <div class="page-hd">
-    <div><h1>재해 입력</h1><p>산업재해 발생 정보를 입력하세요</p></div>
+    <div><h1 id="acc-form-title">재해 입력</h1><p id="acc-form-sub">산업재해 발생 정보를 입력하세요</p></div>
+    <button class="btn btn-outline btn-sm" id="acc-btn-cancel-edit" style="display:none" onclick="cancelAccEdit()">✕ 수정 취소</button>
   </div>
   <div class="g2">
     <div class="card">
@@ -767,8 +758,8 @@ tbody tr:hover{background:var(--surface2)}
   <div class="card">
     <div style="overflow-x:auto">
       <table>
-        <thead><tr><th>발생일</th><th>사업장</th><th>성명</th><th>직군</th><th>재해유형</th><th>사고내용</th><th>진행상황</th><th>휴직일수</th></tr></thead>
-        <tbody id="acc-list-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 재해가 없습니다</td></tr></tbody>
+        <thead><tr><th>발생일</th><th>사업장</th><th>성명</th><th>직군</th><th>재해유형</th><th>사고내용</th><th>진행상황</th><th>휴직일수</th><th style="text-align:center">관리</th></tr></thead>
+        <tbody id="acc-list-body"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 재해가 없습니다</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -1289,17 +1280,30 @@ async function loadAccidents(){
   renderAccList();
 }
 
+// 재해의 발생연도 (year 컬럼이 비어 있으면 발생일에서 뽑는다)
+function accYearOf(a){
+  const y = String(a.year||"").match(/\d{4}/);
+  if(y) return y[0];
+  const d = String(a.date||"").match(/\d{4}/);
+  return d ? d[0] : "";
+}
+
 function renderAccDashboard(){
-  const total = accidents.length;
-  const thisYear = String(new Date().getFullYear());
-  const yearCount = accidents.filter(a=>String(a.year)===thisYear).length;
-  const leaveCount = accidents.filter(a=>a.status==="진행중" && a.leaveStart && !a.leaveEnd).length;
-  const closedCount = accidents.filter(a=>a.status==="종결").length;
-  document.getElementById("acc-kpi-total").textContent = total;
+  const now = new Date().getFullYear();
+  const thisYear = String(now);
+
+  // 올해 재해 건수
+  const yearCount = accidents.filter(a=>accYearOf(a)===thisYear).length;
+
+  // 최근 3년간 평균 — 올해를 뺀 직전 3개 연도의 평균
+  const past = [now-3, now-2, now-1].map(String);
+  const pastTotal = accidents.filter(a=>past.indexOf(accYearOf(a))>=0).length;
+  const avg3 = Math.round(pastTotal/3*10)/10;
+
+  document.getElementById("acc-kpi-avg3").textContent = avg3;
+  document.getElementById("acc-kpi-avg3-lbl").textContent = "최근 3년간 평균 건수 (" + past[0] + "~" + past[2] + ")";
   document.getElementById("acc-kpi-year").textContent = yearCount;
-  document.getElementById("acc-kpi-year-lbl").textContent = thisYear + "년 발생";
-  document.getElementById("acc-kpi-leave").textContent = leaveCount;
-  document.getElementById("acc-kpi-closed").textContent = closedCount;
+  document.getElementById("acc-kpi-year-lbl").textContent = thisYear + "년 재해 건수";
 
   const recent = [...accidents].sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||""))).slice(0,5);
   const wrap = document.getElementById("acc-recent-list");
@@ -1355,7 +1359,7 @@ function renderAccList(){
   const body = document.getElementById("acc-list-body");
   if(!body) return;
   if(list.length===0){
-    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 재해가 없습니다</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 재해가 없습니다</td></tr>';
     return;
   }
   accListDetailCache = list; // 사고내용 상세보기 모달에서 인덱스로 조회하기 위한 캐시 (onclick 속성에 원문을 직접 넣지 않기 위함)
@@ -1369,6 +1373,7 @@ function renderAccList(){
       <td class="acc-detail-cell" title="클릭하여 전체 내용 보기" onclick="showAccDetail(${i})">${escapeHtml(a.detail)}</td>
       <td><span class="badge" style="background:${a.status==='종결'?'#dcfce7':'#fef3c7'};color:${a.status==='종결'?'#166534':'#92400e'}">${escapeHtml(a.status||'진행중')}</span></td>
       <td>${a.leaveDays || '-'}</td>
+      <td style="text-align:center"><button class="btn btn-outline btn-sm" onclick="editAccident(${i})">수정</button></td>
     </tr>`).join("");
 }
 
@@ -1381,6 +1386,63 @@ function showAccDetail(i){
   document.getElementById("modal-acc-detail").classList.add("open");
 }
 
+// 수정 중인 재해의 id (null 이면 새로 등록)
+let accEditingId = null;
+
+// 목록의 [수정] → 입력 화면에 값을 채우고 수정 모드로 바꾼다
+function editAccident(i){
+  const a = accListDetailCache[i];
+  if(!a){ alert("기록을 찾지 못했습니다. 목록을 새로고침해 주세요."); return; }
+  if(!a.id){ alert("이 기록에는 ID가 없어 수정할 수 없습니다."); return; }
+
+  const put = (id,val)=>{ const el=document.getElementById(id); if(el) el.value = (val==null?"":val); };
+  put("acc-inp-site",       a.site);
+  put("acc-inp-date",       fmtDate(a.date));
+  put("acc-inp-name",       a.name);
+  put("acc-inp-job",        a.job);
+  put("acc-inp-acctype",    a.accType);
+  put("acc-inp-category",   a.category);
+  put("acc-inp-detail",     a.detail);
+  put("acc-inp-reportdate", fmtDate(a.reportDate));
+  put("acc-inp-riskassess", a.riskAssess);
+  put("acc-inp-status",     a.status || "진행중");
+  put("acc-inp-leavestart", fmtDate(a.leaveStart));
+  put("acc-inp-leaveend",   fmtDate(a.leaveEnd));
+  put("acc-inp-leavedays",  a.leaveDays);
+  put("acc-inp-note",       a.note);
+
+  accEditingId = a.id;
+  setAccEditMode(true, a);
+  goAccPage("input");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function setAccEditMode(on, a){
+  const title  = document.getElementById("acc-form-title");
+  const sub    = document.getElementById("acc-form-sub");
+  const btn    = document.getElementById("acc-btn-save");
+  const cancel = document.getElementById("acc-btn-cancel-edit");
+  const status = document.getElementById("acc-save-status");
+  if(status) status.textContent = "";
+  if(on){
+    if(title) title.textContent = "재해 수정";
+    if(sub)   sub.textContent   = (a ? (a.site + " · " + fmtDate(a.date) + " · " + (a.name||"")) : "") + " 기록을 수정합니다";
+    if(btn)   btn.innerHTML = "💾 수정 저장";
+    if(cancel) cancel.style.display = "block";
+  } else {
+    if(title) title.textContent = "재해 입력";
+    if(sub)   sub.textContent   = "산업재해 발생 정보를 입력하세요";
+    if(btn)   btn.innerHTML = "💾 저장";
+    if(cancel) cancel.style.display = "none";
+  }
+}
+
+function cancelAccEdit(){
+  accEditingId = null;
+  resetAccidentForm();
+  goAccPage("list");
+}
+
 function resetAccidentForm(){
   ["acc-inp-site","acc-inp-date","acc-inp-name","acc-inp-job","acc-inp-acctype","acc-inp-category","acc-inp-detail","acc-inp-reportdate","acc-inp-riskassess","acc-inp-leavestart","acc-inp-leaveend","acc-inp-leavedays","acc-inp-note"].forEach(id=>{
     const el = document.getElementById(id);
@@ -1388,6 +1450,8 @@ function resetAccidentForm(){
   });
   document.getElementById("acc-inp-status").value = "진행중";
   document.getElementById("acc-inp-date").value = new Date().toISOString().split("T")[0];
+  accEditingId = null;
+  setAccEditMode(false);
 }
 
 async function saveAccidentForm(){
@@ -1401,7 +1465,8 @@ async function saveAccidentForm(){
     return;
   }
   const payload = {
-    type: "accident_save",
+    type: accEditingId ? "accident_update" : "accident_save",
+    id: accEditingId || undefined,
     site, date, name,
     job: document.getElementById("acc-inp-job").value.trim(),
     accType,
@@ -1417,20 +1482,30 @@ async function saveAccidentForm(){
     registrant: currentInspector()
   };
 
+  const editing = !!accEditingId;
   const saveBtn = document.getElementById("acc-btn-save");
   const statusEl = document.getElementById("acc-save-status");
   const original = saveBtn.innerHTML;
   saveBtn.disabled = true;
-  saveBtn.innerHTML = "⏳ 저장 중...";
+  saveBtn.innerHTML = editing ? "⏳ 수정 중..." : "⏳ 저장 중...";
   if(statusEl){ statusEl.textContent = ""; statusEl.style.color = ""; }
 
   try {
-    await apiPost(payload);
+    const res = await apiPost(payload);
+    if(res && res.status === "error"){
+      if(statusEl){ statusEl.textContent = "⚠ " + (res.msg || "저장하지 못했습니다."); statusEl.style.color = "var(--danger)"; }
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = original;
+      return;
+    }
     resetAccidentForm();
     await loadAccidents();
     goAccPage("list");
   } catch(e) {
-    if(statusEl){ statusEl.textContent = "⚠ 저장 중 오류가 발생했습니다. 다시 시도해주세요."; statusEl.style.color = "var(--danger)"; }
+    if(statusEl){
+      statusEl.textContent = editing ? "⚠ 수정 중 오류가 발생했습니다. 다시 시도해주세요." : "⚠ 저장 중 오류가 발생했습니다. 다시 시도해주세요.";
+      statusEl.style.color = "var(--danger)";
+    }
   }
   saveBtn.disabled = false;
   saveBtn.innerHTML = original;
