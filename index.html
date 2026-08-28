@@ -2325,7 +2325,7 @@ async function sendOverdueRemindersManual(){
 function updateReportSel(){
   const sel = document.getElementById("report-sel");
   sel.innerHTML = '<option value="">— 사업장 선택 —</option>' +
-    inspections.map(ins=>`<option value="${ins.id}">${ins.site} (${ins.date}) ${ins.finalScore}점</option>`).join("");
+    inspections.map(ins=>`<option value="${ins.id}">${ins.site} (${fmtDate(ins.date)}) ${ins.finalScore}점</option>`).join("");
   if(currentRptId){ sel.value=currentRptId; renderReports(currentRptId); }
 }
 
@@ -2395,7 +2395,7 @@ function renderExecRpt(ins){
         <div>
           <div style="font-size:.7rem;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem">안전보건점검 결과보고서 (임원용)</div>
           <div style="font-size:1.3rem;font-weight:900">${ins.site}</div>
-          <div style="font-size:.78rem;opacity:.8;margin-top:.3rem">${ins.type} · ${ins.date} · 점검자: ${ins.inspector}</div>
+          <div style="font-size:.78rem;opacity:.8;margin-top:.3rem">${ins.type} · ${fmtDate(ins.date)} · 점검자: ${ins.inspector}</div>
         </div>
         <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:10px;padding:.85rem 1.2rem">
           <div style="font-size:.65rem;opacity:.8;margin-bottom:.2rem">종합등급</div>
@@ -2472,17 +2472,18 @@ function renderExecRpt(ins){
 }
 
 function renderSiteRpt(ins){
-  const issueItems = CHECK_ITEMS.filter(item=>ins.scores[item.key]?.value==="bad"||ins.scores[item.key]?.value==="normal");
+  // 개선 요청 대상은 미흡(bad) 항목만. 보통(normal)은 통보/요청 대상에서 제외한다.
+  const issueItems = CHECK_ITEMS.filter(item=>ins.scores[item.key]?.value==="bad");
   document.getElementById("rpt-site").innerHTML = `
     <div style="max-width:860px;margin:0 auto">
       <div style="background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:var(--accent);margin-bottom:1rem">
-        📌 사업장 공유용 — 점수 미포함, 보통/미흡 항목 및 감점 사항만 표시
+        📌 사업장 공유용 — 점수 미포함, 미흡 항목 및 감점 사항만 표시
       </div>
       <div class="card">
         <div style="border-bottom:2px solid var(--accent);padding-bottom:.75rem;margin-bottom:1rem">
           <div style="font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem">안전보건점검 결과 통보</div>
           <div style="font-size:1.1rem;font-weight:800">${ins.site} 귀중</div>
-          <div style="font-size:.75rem;color:var(--text2);margin-top:.2rem">점검일: ${ins.date} · 점검자: ${ins.inspector} · ${ins.type}</div>
+          <div style="font-size:.75rem;color:var(--text2);margin-top:.2rem">점검일: ${fmtDate(ins.date)} · 점검자: ${ins.inspector} · ${ins.type}</div>
         </div>
         <p style="font-size:.82rem;line-height:1.9;color:var(--text2);margin-bottom:1rem">
           상기 일자에 실시한 안전보건점검 결과를 아래와 같이 안내드리니, 해당 사항에 대한 개선 조치 후 결과를 회신하여 주시기 바랍니다.
@@ -2505,7 +2506,7 @@ function renderSiteRpt(ins){
         </table>
         </div>`:`
         <div style="padding:1rem;background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:7px;font-size:.82rem;color:var(--ok)">
-          ✅ 보통/미흡 항목 없음
+          ✅ 미흡 항목 없음
         </div>`}
         ${ins.deductCount>0?`
         <div style="margin-top:1rem;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;padding:.85rem">
@@ -2571,7 +2572,8 @@ function buildReportHtml(ins, feedbacks) {
     </tr>`;
   }).join("");
 
-  const issueItems = CHECK_ITEMS_LOCAL.filter(item=>ins.scores[item.key]?.value==="bad"||ins.scores[item.key]?.value==="normal");
+  // 개선 요청 대상은 미흡(bad) 항목만
+  const issueItems = CHECK_ITEMS_LOCAL.filter(item=>ins.scores[item.key]?.value==="bad");
 
   // 개선결과 섹션
   let fbSection = "";
@@ -2634,7 +2636,7 @@ function buildReportHtml(ins, feedbacks) {
   <div>
     <div style="font-size:10px;opacity:.7;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">안전보건점검 결과보고서</div>
     <div style="font-size:17px;font-weight:900">${ins.site}</div>
-    <div style="font-size:11px;opacity:.8;margin-top:3px">${ins.type} · ${ins.date} · 점검자: ${ins.inspector}</div>
+    <div style="font-size:11px;opacity:.8;margin-top:3px">${ins.type} · ${fmtDate(ins.date)} · 점검자: ${ins.inspector}</div>
   </div>
   <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 14px">
     <div style="font-size:9px;opacity:.8;margin-bottom:2px">종합등급</div>
@@ -2706,7 +2708,7 @@ async function downloadSinglePdf(){
   if(!ins) return;
   const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
   const html = buildReportHtml(ins, feedbacks);
-  openPrintWindow(html, `안전보건점검_${ins.site}_${ins.date}.pdf`);
+  openPrintWindow(html, `안전보건점검_${ins.site}_${fmtDate(ins.date)}.pdf`);
 }
 
 // ══ 전체 합본 PDF ══
