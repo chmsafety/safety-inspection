@@ -455,7 +455,7 @@ tbody tr:hover{background:var(--surface2)}
           <div class="fg"><label>이메일</label><input type="email" id="inp-mgr-email" placeholder="manager@company.com"></div>
         </div>
         <div class="form-row">
-          <div class="fg"><label>연락처 (문자 수신용)</label><input type="tel" id="inp-mgr-tel" placeholder="010-0000-0000"></div>
+          <div class="fg"><label>연락처 (문자 수신용)</label><input type="tel" id="inp-mgr-tel" placeholder="010-0000-0000"><div id="inp-mgr-note" style="font-size:.72rem;color:#6b7280;margin-top:.25rem;line-height:1.35"></div></div>
         </div>
       </div>
       <!-- 점수 표시 -->
@@ -1235,6 +1235,76 @@ async function syncFromServer(){
   if(hasValidSession()) syncFromServer();
 })();
 
+// ══ 사업장 담당자 자동 채우기 (site-directory.gs / mode=sites) ══
+// 사업장목록 시트에 등록된 담당자·이메일·연락처를 점검 입력 화면에 자동으로 채운다.
+// 연락처가 비어 있으면 마감 독촉 문자가 발송되지 않으므로 화면에서 바로 알려준다.
+let SITE_DIR = null;          // { 사업장명: {manager,email,tel} }
+let SITE_DIR_LOADING = null;
+let siteDirAutoFilled = { name:"", email:"", tel:"" };
+
+async function loadSiteDirectory(){
+  if(SITE_DIR) return SITE_DIR;
+  if(SITE_DIR_LOADING) return SITE_DIR_LOADING;
+  SITE_DIR_LOADING = (async function(){
+    try {
+      const res  = await apiFetch("?mode=sites");
+      const data = await res.json();
+      const map  = {};
+      if(data && Array.isArray(data.sites)){
+        data.sites.forEach(function(s){ if(s && s.name) map[String(s.name).trim()] = s; });
+      }
+      SITE_DIR = map;
+    } catch(e){
+      SITE_DIR = {};
+    }
+    SITE_DIR_LOADING = null;
+    return SITE_DIR;
+  })();
+  return SITE_DIR_LOADING;
+}
+
+function siteDirNote(msg, warn){
+  const el = document.getElementById("inp-mgr-note");
+  if(!el) return;
+  el.textContent = msg || "";
+  el.style.color = warn ? "#c0392b" : "#6b7280";
+}
+
+async function onInspSiteChange(){
+  const site = document.getElementById("inp-site").value;
+  if(!site){ siteDirNote(""); return; }
+  const dir = await loadSiteDirectory();
+  const info = dir[site.trim()];
+  // 사용자가 직접 입력한 값은 건드리지 않는다.
+  // (비어 있거나, 직전에 자동으로 채워 넣은 값일 때만 덮어쓴다)
+  const setIf = function(id, key, val){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = el.value.trim();
+    if(cur === "" || cur === siteDirAutoFilled[key]){
+      el.value = val || "";
+      siteDirAutoFilled[key] = val || "";
+    }
+  };
+  if(!info){
+    siteDirNote("사업장목록 시트에 '" + site + "' 담당자 정보가 없습니다. 직접 입력해 주세요.", true);
+    return;
+  }
+  setIf("inp-mgr-name",  "name",  info.manager);
+  setIf("inp-mgr-email", "email", info.email);
+  setIf("inp-mgr-tel",   "tel",   info.tel);
+  if(!info.tel){
+    siteDirNote("사업장목록에 연락처가 없어 자동으로 채우지 못했습니다. 번호를 입력해야 마감 독촉 문자가 발송됩니다.", true);
+  } else {
+    siteDirNote("사업장목록에서 담당자 정보를 불러왔습니다.", false);
+  }
+}
+
+(function(){
+  const sel = document.getElementById("inp-site");
+  if(sel) sel.addEventListener("change", onInspSiteChange);
+})();
+
 // ═══ 산업재해관리 ═══
 let accidents = [];
 
@@ -1998,6 +2068,8 @@ function resetInput(){
   document.getElementById("inp-mgr-name").value="";
   document.getElementById("inp-mgr-email").value="";
   document.getElementById("inp-mgr-tel").value="";
+  siteDirAutoFilled = { name:"", email:"", tel:"" };
+  siteDirNote("");
   document.getElementById("inp-date").value=new Date().toISOString().split("T")[0];
   document.querySelectorAll(".check-items-wrap input[type=radio]").forEach(r=>r.checked=false);
   CHECK_ITEMS.forEach(item=>{ const n=document.getElementById("note-"+item.key); if(n) n.value=""; });
