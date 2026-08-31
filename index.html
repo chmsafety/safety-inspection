@@ -428,7 +428,7 @@ tbody tr:hover{background:var(--surface2)}
 <!-- ════ 점검 입력 ════ -->
 <div class="page" id="page-input">
   <div class="page-hd">
-    <div><h1>점검 입력</h1><p>25개 항목 점검 결과 입력 (우수4/보통3/미흡2점, 현장점검 미흡 감점)</p></div>
+    <div><h1>점검 입력</h1><p>25개 항목 점검 결과 입력 (우수4/보통3/미흡2점, 현장점검 미흡 1건당 -3점)</p></div>
   </div>
   <div class="g2">
     <div>
@@ -1100,6 +1100,12 @@ const CHECK_ITEMS = [
 ];
 
 const SCORE_MAP = {good:4, normal:3, bad:2};
+const DEDUCT_PER_ITEM = 3; // 현장점검 미흡사항 1건당 감점
+// 감점 점수(과거 기록은 저장된 기본-최종 차이를 그대로 사용)
+function deductPts(ins){
+  if(ins && typeof ins.baseScore==="number" && typeof ins.finalScore==="number") return Math.max(0, ins.baseScore - ins.finalScore);
+  return (ins && ins.deductCount ? ins.deductCount : 0) * DEDUCT_PER_ITEM;
+}
 const SCORE_LABEL = {good:"우수", normal:"보통", bad:"미흡"};
 
 let inspections = JSON.parse(localStorage.getItem("shi_v3")||"[]");
@@ -1889,7 +1895,7 @@ function renderCheckItems(){
           현장점검 미흡사항 (감점)
         </div>
       </div>
-      <div style="font-size:.75rem;color:var(--danger);margin-bottom:.5rem">미흡사항 1개당 -1점 감점</div>
+      <div style="font-size:.75rem;color:var(--danger);margin-bottom:.5rem">미흡사항 1개당 -3점 감점</div>
       <div class="deduct-counter">
         <span style="font-size:.78rem;font-weight:600;color:var(--text2)">미흡 건수:</span>
         <button class="deduct-btn" onclick="changeDeduct(-1)">−</button>
@@ -1969,13 +1975,13 @@ function updateScore(){
   });
   const maxScore = CHECK_ITEMS.length * 4; // 100점
   const baseScore = selected > 0 ? Math.round(total / maxScore * 100) : 0;
-  const finalScore = Math.max(0, baseScore - deductCount);
+  const finalScore = Math.max(0, baseScore - deductCount * DEDUCT_PER_ITEM);
   if(selected === 0){
     document.getElementById("score-display").textContent = "-";
     document.getElementById("score-detail").textContent = "항목을 선택하세요";
   } else {
     document.getElementById("score-display").textContent = finalScore + "점";
-    document.getElementById("score-detail").textContent = `기본 ${baseScore}점 - 감점 ${deductCount}점 = ${finalScore}점`;
+    document.getElementById("score-detail").textContent = `기본 ${baseScore}점 - 감점 ${deductCount}건×${DEDUCT_PER_ITEM}점 = ${finalScore}점`;
   }
 }
 
@@ -2009,7 +2015,7 @@ async function saveInspection(){
 
   const maxScore = CHECK_ITEMS.length * 4;
   const baseScore = Math.round(totalScore / maxScore * 100);
-  const finalScore = Math.max(0, baseScore - deductCount);
+  const finalScore = Math.max(0, baseScore - deductCount * DEDUCT_PER_ITEM);
 
   const ins = {
     id: Date.now(),
@@ -2020,7 +2026,7 @@ async function saveInspection(){
     mgrEmail: document.getElementById("inp-mgr-email").value.trim(),
     mgrTel: document.getElementById("inp-mgr-tel").value.trim(),
     scores, totalScore, baseScore, finalScore,
-    badCount, deductCount,
+    badCount, deductCount, deductPoints: deductCount * DEDUCT_PER_ITEM,
     deductNote: deductPhotos.map((p,i)=>`미흡${i+1}: ${p.note||"내용없음"}`).join(" / "),
     deductItems: deductPhotos.map((p,i)=>({note:p.note, src:p.src})),
     photos: deductPhotos.map(p=>p.src),
@@ -2490,13 +2496,13 @@ function renderExecRpt(ins){
           <div style="font-size:.72rem;color:var(--danger)">미흡</div>
         </div>
         <div style="text-align:center;padding:.85rem;background:var(--accent-light);border:1px solid #bfdbfe;border-radius:8px">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--accent)">-${ins.deductCount}</div>
+          <div style="font-size:1.4rem;font-weight:900;color:var(--accent)">-${deductPts(ins)}</div>
           <div style="font-size:.72rem;color:var(--accent)">감점</div>
         </div>
       </div>
 
       <div style="background:var(--surface2);border-radius:8px;padding:.85rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:.82rem;color:var(--text2)">기본점수 <strong>${ins.baseScore}점</strong> − 감점 <strong>${ins.deductCount}점</strong> = 최종점수</div>
+        <div style="font-size:.82rem;color:var(--text2)">기본점수 <strong>${ins.baseScore}점</strong> − 감점 <strong>${deductPts(ins)}점</strong>(${ins.deductCount||0}건) = 최종점수</div>
         <div style="font-size:1.5rem;font-weight:900;color:${col};font-family:'IBM Plex Mono',monospace">${ins.finalScore}점</div>
       </div>
 
@@ -2731,13 +2737,13 @@ function buildReportHtml(ins, feedbacks) {
     <div style="font-size:10px;color:#b91c1c">미흡</div>
   </div>
   <div style="text-align:center;padding:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px">
-    <div style="font-size:16px;font-weight:900;color:#1e40af">-${ins.deductCount||0}</div>
+    <div style="font-size:16px;font-weight:900;color:#1e40af">-${deductPts(ins)}</div>
     <div style="font-size:10px;color:#1e40af">감점</div>
   </div>
 </div>
 
 <div style="background:#f8fafc;border-radius:6px;padding:8px 12px;margin-bottom:12px;display:flex;justify-content:space-between">
-  <span style="font-size:11px;color:#475569">기본점수 ${ins.baseScore}점 − 감점 ${ins.deductCount||0}점 = 최종점수</span>
+  <span style="font-size:11px;color:#475569">기본점수 ${ins.baseScore}점 − 감점 ${deductPts(ins)}점(${ins.deductCount||0}건) = 최종점수</span>
   <span style="font-size:15px;font-weight:900;color:${col}">${ins.finalScore}점</span>
 </div>
 
