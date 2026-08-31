@@ -2159,9 +2159,6 @@ function renderCheckItems(){
         <button class="deduct-btn" onclick="changeDeduct(1)">+</button>
         <span style="font-size:.72rem;color:var(--muted)">건</span>
       </div>
-      <div class="fg" style="margin-top:.5rem">
-        <textarea id="note-deduct" placeholder="미흡사항 내용 기재" style="min-height:52px;font-size:.75rem"></textarea>
-      </div>
       <div class="photo-zone" onclick="document.getElementById('photo-input').click()">
         <div style="font-size:.8rem;color:var(--danger)">📷 미흡사항 사진 첨부</div>
         <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">클릭하여 사진 선택 (카메라/갤러리)</div>
@@ -2337,12 +2334,9 @@ function resetInput(){
   document.getElementById("inp-date").value=new Date().toISOString().split("T")[0];
   document.querySelectorAll(".check-items-wrap input[type=radio]").forEach(r=>r.checked=false);
   CHECK_ITEMS.forEach(item=>{ const n=document.getElementById("note-"+item.key); if(n) n.value=""; });
-  document.getElementById("note-deduct").value="";
   deductCount=0; deductPhotos=[];
   document.getElementById("deduct-count").textContent="0";
   document.getElementById("photo-preview").innerHTML="";
-  const noteDeduct = document.getElementById("note-deduct");
-  if(noteDeduct) noteDeduct.value="";
   currentDraftId = null;      // 임시저장본과의 연결 해제 (임시저장 목록은 그대로 둠)
   draftStatus("");
   renderDrafts();
