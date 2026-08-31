@@ -430,6 +430,13 @@ tbody tr:hover{background:var(--surface2)}
   <div class="page-hd">
     <div><h1>점검 입력</h1><p>25개 항목 점검 결과 입력 (우수4/보통3/미흡2점, 현장점검 미흡 1건당 -3점)</p></div>
   </div>
+  <div class="card" id="draft-panel" style="display:none;margin-bottom:.85rem;border-left:3px solid var(--accent)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem">
+      <div class="form-section-title" style="margin:0">📝 임시저장 (작성 중인 점검)</div>
+      <div id="draft-status" style="font-size:.7rem;color:var(--muted)"></div>
+    </div>
+    <div id="draft-list"></div>
+  </div>
   <div class="g2">
     <div>
       <div class="card" style="margin-bottom:.85rem">
@@ -471,6 +478,7 @@ tbody tr:hover{background:var(--surface2)}
   </div>
   <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.5rem">
     <button class="btn btn-outline" onclick="resetInput()">초기화</button>
+    <button class="btn btn-outline" onclick="saveDraft(true)" style="border-color:var(--accent);color:var(--accent)">📝 임시저장</button>
     <button class="btn btn-primary" id="btn-save-report" onclick="saveInspection()">💾 저장 및 보고서 생성</button>
   </div>
 </div>
@@ -1227,6 +1235,253 @@ async function syncFromServer(){
   }
 }
 
+// ══════════════════════════════════════════
+// 임시저장 — 서류점검을 먼저 입력해 두고, 현장을 다녀와서
+// 미흡 건수·사진을 채운 뒤 최종 저장하는 흐름을 위한 기능.
+//
+// 서버(스프레드시트 _Drafts 시트)에 보관하므로 사무실 PC 에서
+// 임시저장한 것을 현장 휴대폰에서 이어서 작성할 수 있다.
+// 브라우저에도 같은 내용을 남겨 두어 오프라인이거나 서버 오류일 때도
+// 작성 중인 내용을 잃지 않는다.
+// ══════════════════════════════════════════
+const DRAFT_KEY = "shi_v3_drafts";
+let currentDraftId = null;
+let draftTimer = null;
+let draftsServer = [];        // 서버 목록(요약만, 본문 JSON 제외)
+
+function loadDrafts(){
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "[]"); } catch(e){ return []; }
+}
+function storeDrafts(arr){
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(arr));
+}
+function draftStatus(msg, warn){
+  const el = document.getElementById("draft-status");
+  if(el){ el.textContent = msg || ""; el.style.color = warn ? "var(--danger)" : "var(--muted)"; }
+}
+
+// 현재 입력 화면의 값을 전부 모은다
+function collectDraft(){
+  const scores = {};
+  CHECK_ITEMS.forEach(item=>{
+    const sel = document.querySelector(`input[name="${item.key}"]:checked`);
+    const note = document.getElementById("note-"+item.key);
+    scores[item.key] = { value: sel ? sel.value : null, note: note ? note.value : "" };
+  });
+  const nd = document.getElementById("note-deduct");
+  return {
+    id: currentDraftId || Date.now(),
+    site: document.getElementById("inp-site").value,
+    date: document.getElementById("inp-date").value,
+    inspector: document.getElementById("inp-inspector").value,
+    type: document.getElementById("inp-type").value,
+    memo: document.getElementById("inp-memo").value,
+    mgrName: document.getElementById("inp-mgr-name").value,
+    mgrEmail: document.getElementById("inp-mgr-email").value,
+    mgrTel: document.getElementById("inp-mgr-tel").value,
+    scores,
+    deductCount,
+    deductNote: nd ? nd.value : "",
+    photos: deductPhotos.map(p=>({src:p.src, note:p.note})),
+    savedAt: new Date().toISOString()
+  };
+}
+
+// 브라우저에 보관 (용량 초과 시 사진 제외)
+function storeDraftLocal(d, manual){
+  let arr = loadDrafts().filter(x=>x.id !== d.id);
+  arr.unshift(d);
+  arr = arr.slice(0, 20);
+  try { storeDrafts(arr); return true; }
+  catch(e){
+    const noPhoto = Object.assign({}, d, {photos:[], photoDropped:true});
+    try {
+      storeDrafts([noPhoto].concat(arr.filter(x=>x.id!==d.id)).slice(0,20));
+      if(manual) draftStatus("이 기기에는 사진 제외하고 저장됨 (용량 초과)", true);
+      return true;
+    } catch(e2){
+      if(manual) draftStatus("브라우저 저장 실패 (저장공간 부족)", true);
+      return false;
+    }
+  }
+}
+
+// manual=true 면 버튼으로 누른 것, false 면 자동 저장
+async function saveDraft(manual){
+  const d = collectDraft();
+  if(!d.site){
+    if(manual) alert("사업장을 먼저 선택해 주세요.");
+    return;
+  }
+  currentDraftId = d.id;
+  storeDraftLocal(d, manual);
+  renderDrafts();
+  draftStatus("저장 중…");
+
+  // 서버 보관 — 사진은 Drive 로 올라가고 링크만 시트에 남는다
+  try {
+    const res = await apiPost({ type:"draft_save", draft:d });
+    if(res && res.status === "ok" && res.draft){
+      const saved = res.draft;
+      // 서버가 돌려준 사진 링크로 교체 (다음 저장 때 다시 업로드하지 않도록)
+      if(currentDraftId === saved.id && Array.isArray(saved.photos)
+         && saved.photos.length === deductPhotos.length){
+        deductPhotos = saved.photos.map(p=>({src:p.src, note:p.note||""}));
+        renderPhotoPreview();
+        deductCount = saved.deductCount || deductCount;
+        document.getElementById("deduct-count").textContent = deductCount;
+        updateScore();
+      }
+      storeDraftLocal(Object.assign({}, saved, {savedAt: saved.updatedAt || d.savedAt}), false);
+      draftStatus("임시저장됨 (서버) · " + new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}));
+      if(saved.photoDropped && manual) alert("사진 용량이 커서 서버 임시저장에는 사진이 포함되지 않았습니다.\n사진은 최종 저장 직전에 다시 첨부해 주세요.");
+    } else {
+      draftStatus("이 기기에만 저장됨 (서버 응답 없음)", true);
+    }
+  } catch(e){
+    draftStatus(e && e.__noSession ? "이 기기에만 저장됨 (로그인 필요)" : "이 기기에만 저장됨 (서버 오류)", true);
+  }
+  fetchServerDrafts();
+}
+
+function scheduleDraftSave(){
+  if(!currentDraftId) return;           // 임시저장을 한 번이라도 한 건만 자동 저장
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(()=>saveDraft(false), 2000);
+}
+
+// 서버 임시저장 목록 가져오기
+async function fetchServerDrafts(){
+  try {
+    const res = await apiFetch("?mode=draft_list");
+    const data = await res.json();
+    if(data && Array.isArray(data.drafts)){
+      draftsServer = data.drafts;
+      renderDrafts();
+    }
+  } catch(e){ /* 미로그인·오프라인이면 로컬 목록만 보여준다 */ }
+}
+
+// 로컬 + 서버 목록을 합쳐서 보여준다
+function draftRows(){
+  const map = {};
+  loadDrafts().forEach(d=>{
+    map[d.id] = {
+      id:d.id, site:d.site, date:d.date, inspector:d.inspector,
+      progress: CHECK_ITEMS.filter(i=>d.scores && d.scores[i.key] && d.scores[i.key].value).length + "/" + CHECK_ITEMS.length,
+      deductCount: d.deductCount||0, photoCount:(d.photos||[]).length,
+      updatedAt: d.savedAt, local:true, server:false, photoDropped:!!d.photoDropped
+    };
+  });
+  draftsServer.forEach(s=>{
+    const cur = map[s.id] || {};
+    map[s.id] = Object.assign({}, cur, s, { local: !!cur.local, server: true });
+  });
+  return Object.keys(map).map(k=>map[k])
+    .sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")));
+}
+
+function renderDrafts(){
+  const rows = draftRows();
+  const panel = document.getElementById("draft-panel");
+  const list = document.getElementById("draft-list");
+  if(!panel || !list) return;
+  if(rows.length === 0){ panel.style.display = "none"; return; }
+  panel.style.display = "";
+  list.innerHTML = rows.map(d=>{
+    const cur = d.id === currentDraftId;
+    const when = d.updatedAt ? new Date(d.updatedAt) : null;
+    const where = d.server ? '<span style="font-size:.66rem;color:var(--accent)">☁ 서버</span>'
+                           : '<span style="font-size:.66rem;color:var(--muted)">📱 이 기기</span>';
+    return `<div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .65rem;border:1px solid ${cur?"var(--accent)":"var(--border)"};background:${cur?"var(--accent-light)":"transparent"};border-radius:7px;margin-bottom:.4rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:.82rem;font-weight:700">${d.site} <span style="font-weight:500;color:var(--text2)">· ${d.date||"-"}</span> ${where}${cur?' <span style="font-size:.66rem;color:var(--accent)">작성 중</span>':''}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.15rem">
+          ${d.inspector?d.inspector+" · ":""}항목 ${d.progress} · 현장미흡 ${d.deductCount||0}건 · 사진 ${d.photoCount||0}장${d.photoDropped?" (사진 미포함)":""}
+          ${when?" · "+when.toLocaleDateString("ko-KR")+" "+when.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}):""}
+        </div>
+      </div>
+      <button class="btn btn-outline" style="padding:.3rem .6rem;font-size:.72rem" onclick="applyDraft(${d.id})">불러오기</button>
+      <button class="btn btn-outline" style="padding:.3rem .6rem;font-size:.72rem;border-color:var(--danger);color:var(--danger)" onclick="deleteDraft(${d.id})">삭제</button>
+    </div>`;
+  }).join("");
+}
+
+// 임시저장본을 입력 화면에 채운다 (로컬에 없으면 서버에서 가져온다)
+async function applyDraft(id){
+  const local = loadDrafts().find(x=>x.id===id);
+  const srv   = draftsServer.find(x=>x.id===id);
+  let d = local;
+  const serverNewer = srv && (!local || String(srv.updatedAt||"") > String(local.savedAt||""));
+  if(!d || serverNewer){
+    draftStatus("서버에서 불러오는 중…");
+    try {
+      const res = await apiFetch("?mode=draft_get&id=" + encodeURIComponent(id));
+      const data = await res.json();
+      if(data && data.status === "ok" && data.draft) d = data.draft;
+    } catch(e){ /* 서버에서 못 가져오면 로컬 사본을 쓴다 */ }
+  }
+  if(!d){ draftStatus("임시저장을 불러오지 못했습니다.", true); return; }
+
+  if(document.getElementById("inp-site").value && currentDraftId !== id
+     && !confirm("입력 중인 내용이 있습니다. 임시저장본으로 바꿀까요?")) { draftStatus(""); return; }
+
+  document.getElementById("inp-site").value = d.site || "";
+  document.getElementById("inp-date").value = d.date || "";
+  document.getElementById("inp-inspector").value = d.inspector || "";
+  document.getElementById("inp-type").value = d.type || "정기점검";
+  document.getElementById("inp-memo").value = d.memo || "";
+  document.getElementById("inp-mgr-name").value = d.mgrName || "";
+  document.getElementById("inp-mgr-email").value = d.mgrEmail || "";
+  document.getElementById("inp-mgr-tel").value = d.mgrTel || "";
+  siteDirAutoFilled = { name:"", email:"", tel:"" };
+  siteDirNote("");
+
+  document.querySelectorAll(".check-items-wrap input[type=radio]").forEach(r=>r.checked=false);
+  CHECK_ITEMS.forEach(item=>{
+    const sc = d.scores ? d.scores[item.key] : null;
+    if(sc && sc.value){
+      const r = document.querySelector(`input[name="${item.key}"][value="${sc.value}"]`);
+      if(r) r.checked = true;
+    }
+    const n = document.getElementById("note-"+item.key);
+    if(n) n.value = (sc && sc.note) || "";
+  });
+
+  const nd = document.getElementById("note-deduct");
+  if(nd) nd.value = d.deductNote || "";
+  deductPhotos = (d.photos || []).map(p=>({src:p.src, note:p.note||""}));
+  renderPhotoPreview();                                  // 사진 목록 다시 그림
+  deductCount = d.deductCount || deductPhotos.length;    // 사진이 없어도 건수는 유지
+  document.getElementById("deduct-count").textContent = deductCount;
+
+  currentDraftId = d.id;
+  storeDraftLocal(Object.assign({}, d, {savedAt: d.updatedAt || d.savedAt || new Date().toISOString()}), false);
+  updateScore();
+  renderDrafts();
+  draftStatus("임시저장본을 불러왔습니다. 현장 미흡사항을 추가한 뒤 저장하세요.");
+  if(d.photoDropped) alert("이 임시저장본은 용량 문제로 사진이 저장되지 않았습니다. 사진을 다시 첨부해 주세요.");
+}
+
+async function deleteDraft(id, silent){
+  if(!silent && !confirm("이 임시저장을 삭제할까요? (서버에서도 지워집니다)")) return;
+  storeDrafts(loadDrafts().filter(x=>x.id!==id));
+  draftsServer = draftsServer.filter(x=>x.id!==id);
+  if(currentDraftId === id) currentDraftId = null;
+  renderDrafts();
+  if(!silent) draftStatus("");
+  try { await apiPost({ type:"draft_delete", id: id }); } catch(e){}
+  fetchServerDrafts();
+}
+
+// 입력값이 바뀌면 자동으로 임시저장본을 갱신
+(function(){
+  const page = document.getElementById("page-input");
+  if(!page) return;
+  page.addEventListener("input",  scheduleDraftSave);
+  page.addEventListener("change", scheduleDraftSave);
+})();
+
 // ══ Init ══
 (function(){
   document.getElementById("hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
@@ -1235,10 +1490,11 @@ async function syncFromServer(){
   const sel = document.getElementById("inp-site");
   SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; sel.appendChild(o); });
   renderCheckItems();
+  renderDrafts();
   updateDashboard();
   updateReportSel();
   // 로그인한 세션이 있을 때만 서버와 동기화한다 (미로그인 상태에서는 요청 자체를 보내지 않음)
-  if(hasValidSession()) syncFromServer();
+  if(hasValidSession()) { syncFromServer(); fetchServerDrafts(); }
 })();
 
 // ══ 사업장 담당자 자동 채우기 (site-directory.gs / mode=sites) ══
@@ -2064,6 +2320,8 @@ async function saveInspection(){
   }
   saveBtn.disabled = false;
   saveBtn.innerHTML = saveBtnOriginal;
+  if(currentDraftId) deleteDraft(currentDraftId, true);   // 최종 저장했으니 임시저장본 제거
+  draftStatus("");
   document.getElementById("modal-saved").classList.add("open");
 }
 
@@ -2085,8 +2343,12 @@ function resetInput(){
   document.getElementById("photo-preview").innerHTML="";
   const noteDeduct = document.getElementById("note-deduct");
   if(noteDeduct) noteDeduct.value="";
+  currentDraftId = null;      // 임시저장본과의 연결 해제 (임시저장 목록은 그대로 둠)
+  draftStatus("");
+  renderDrafts();
   updateScore();
 }
+
 
 // ══ 네비게이션 ══
 function goPage(name){
@@ -2099,6 +2361,7 @@ function goPage(name){
   if(name==="detail") updateDetailPage();
   if(name==="improve") updateImprovePage();
   if(name==="report") updateReportSel();
+  if(name==="input"){ renderDrafts(); fetchServerDrafts(); }
 }
 
 function closeModal(id){ document.getElementById(id).classList.remove("open"); }
