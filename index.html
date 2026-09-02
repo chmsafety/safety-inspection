@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>안전보건점검 관리시스템 v3</title>
+<!-- 앱처럼 설치해서 쓰기 (PWA) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#EAB308">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SAFETY">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap');
 :root {
@@ -307,6 +316,7 @@ tbody tr:hover{background:var(--surface2)}
     <div style="display:flex;align-items:center;gap:.6rem">
         <span class="hd-date" id="hd-inspector"></span>
         <span class="hd-date" id="hd-date"></span>
+        <button id="install-btn" onclick="installApp()" style="display:none;background:#EAB308;color:#111827;border:none;border-radius:6px;padding:.3rem .7rem;font-size:.68rem;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif">⬇ 앱 설치</button>
         <button id="logout-btn" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:.3rem .7rem;font-size:.68rem;cursor:pointer;font-family:'Noto Sans KR',sans-serif">로그아웃</button>
       </div>
   </div>
@@ -3695,6 +3705,40 @@ async function downloadFinalPptx(){
   btn.disabled = false;
 }
 
+</script>
+<script>
+// ══ 앱처럼 설치해서 쓰기 (PWA) ══
+// 노트북·휴대폰 바탕화면에 아이콘으로 추가하면 브라우저 주소창 없이 앱처럼 열린다.
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(e=>console.log("SW 등록 실패", e));
+  });
+}
+
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", e=>{
+  e.preventDefault();
+  deferredInstall = e;
+  const b = document.getElementById("install-btn");
+  if(b) b.style.display = "";
+});
+window.addEventListener("appinstalled", ()=>{
+  deferredInstall = null;
+  const b = document.getElementById("install-btn");
+  if(b) b.style.display = "none";
+});
+async function installApp(){
+  if(deferredInstall){
+    deferredInstall.prompt();
+    await deferredInstall.userChoice;
+    deferredInstall = null;
+    const b = document.getElementById("install-btn");
+    if(b) b.style.display = "none";
+    return;
+  }
+  // iPhone·iPad 사파리는 설치 버튼을 제공하지 않는다
+  alert("설치 방법\n\n• 아이폰·아이패드(사파리): 하단 공유 버튼 → '홈 화면에 추가'\n• 안드로이드(크롬): 메뉴(⋮) → '앱 설치' 또는 '홈 화면에 추가'\n• PC(크롬·엣지): 주소창 오른쪽 설치 아이콘(⊕) 클릭");
+}
 </script>
 </body>
 </html>
