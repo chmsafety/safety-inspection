@@ -175,6 +175,9 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem}
 .photo-thumb{width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
 
 /* Score display */
+/* 보고서 화면 — 띄어쓰기 없는 긴 글이 화면 밖으로 밀려나가지 않게 */
+#rpt-exec,#rpt-site,#rpt-final{overflow-wrap:anywhere;word-break:break-word}
+#rpt-exec table,#rpt-site table{table-layout:fixed}
 .score-display{background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:10px;padding:.85rem 1rem;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-top:.75rem}
 .score-label{font-size:.75rem;opacity:.8}
 .score-value{font-size:1.6rem;font-weight:900;font-family:"IBM Plex Mono",monospace}

@@ -10,21 +10,24 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 *{box-sizing:border-box}
-body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,sans-serif;color:#0f172a}
+body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,sans-serif;color:#0f172a;overflow-x:hidden}
 .hd{background:#1e40af;color:#fff;padding:.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center;gap:.75rem}
 .hd .t{font-size:.95rem;font-weight:800}
 .hd .s{font-size:.72rem;opacity:.8;margin-top:.15rem}
 .hd button{background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:6px;padding:.4rem .8rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
 .wrap{max-width:900px;margin:0 auto;padding:1rem}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1rem;overflow-x:auto}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1rem;overflow-x:hidden}
 .card img{max-width:100%}
 .msg{text-align:center;padding:3.5rem 1.2rem;color:#64748b;font-size:.9rem;line-height:1.7}
 .msg b{display:block;font-size:1rem;color:#0f172a;margin-bottom:.4rem}
 .foot{text-align:center;font-size:.68rem;color:#94a3b8;padding:1rem}
 
 /* ── 보고서 본문(서버가 만든 HTML) 모바일 보정 ── */
+/* 띄어쓰기 없는 긴 글(예: ddddd…)이 화면 밖으로 밀려나가지 않게 한다 */
+#body{overflow-wrap:anywhere;word-break:break-word}
+#body *{max-width:100%;box-sizing:border-box;min-width:0}
 #body table{width:100%!important;table-layout:fixed;border-collapse:collapse}
-#body td,#body th{word-break:break-word;overflow-wrap:anywhere;vertical-align:top}
+#body td,#body th{vertical-align:top}
 #body img{max-width:100%;height:auto}
 .note-box{white-space:pre-wrap}
 .note-box.clamped{max-height:3.2em;overflow:hidden}
