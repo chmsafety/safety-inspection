@@ -2428,7 +2428,9 @@ function rcptStatus(msg, warn){
 }
 
 function fmtTel(t){
-  const n = String(t||"").replace(/[^0-9]/g,"");
+  let n = String(t||"").replace(/[^0-9]/g,"");
+  // 시트가 숫자로 저장해 앞자리 0이 사라진 값 복원 (1051108125 → 01051108125)
+  if(n && n[0] !== "0" && (n.length === 9 || n.length === 10)) n = "0" + n;
   if(n.length === 11) return n.slice(0,3)+"-"+n.slice(3,7)+"-"+n.slice(7);
   if(n.length === 10) return n.slice(0,3)+"-"+n.slice(3,6)+"-"+n.slice(6);
   return n;
