@@ -32,9 +32,16 @@ body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,
 .note-box{white-space:pre-wrap}
 .note-box.clamped{max-height:3.2em;overflow:hidden}
 .note-more{background:none;border:none;color:#1e40af;font-size:.7rem;font-weight:700;padding:.15rem 0 0;cursor:pointer;font-family:inherit}
+/* 모바일용 인쇄 버튼 — 상단 바를 감추는 대신 본문 아래에 둔다 */
+.print-m{display:none}
 @media (max-width:640px){
-  .wrap{padding:.5rem}
-  .card{padding:.6rem;border-radius:8px}
+  /* 상단 바는 아래 보고서 머리글과 내용이 같아 감춘다 */
+  .hd{display:none}
+  /* 표를 화면 폭 가득 쓰도록 좌우 여백을 없앤다 */
+  .wrap{padding:0}
+  .card{padding:0;border:none;border-radius:0;background:transparent}
+  .print-m{display:block;width:calc(100% - 1rem);margin:.7rem .5rem 0;padding:.7rem;border:none;border-radius:8px;
+           background:#1e40af;color:#fff;font-weight:700;font-size:.85rem;font-family:inherit;cursor:pointer}
   #body{font-size:12px}
   /* 사업장 · 점검정보가 등급 상자에 밀려 줄바꿈되지 않도록 */
   #body .rpt-head{padding:12px 14px!important;gap:8px!important;align-items:center!important}
@@ -45,7 +52,7 @@ body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,
 @media (max-width:400px){
   #body .rpt-meta{font-size:9px!important}
 }
-@media print{.hd,.foot{display:none}body{background:#fff}.wrap{padding:0}.card{border:none;padding:0}}
+@media print{.hd,.foot,.print-m{display:none}body{background:#fff}.wrap{padding:0}.card{border:none;padding:0}}
 </style>
 </head>
 <body>
@@ -58,6 +65,7 @@ body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,
 </div>
 <div class="wrap">
   <div id="body" class="msg">보고서를 불러오는 중입니다…</div>
+  <button class="print-m" onclick="window.print()">🖨 인쇄 / PDF</button>
 </div>
 <div class="foot">안전보건점검 관리시스템 · 이 링크는 발송일로부터 30일간 유효합니다</div>
 
