@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안전보건점검 결과보고서</title>
+<meta name="theme-color" content="#1e40af">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,sans-serif;color:#0f172a}
+.hd{background:#1e40af;color:#fff;padding:.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center;gap:.75rem}
+.hd .t{font-size:.95rem;font-weight:800}
+.hd .s{font-size:.72rem;opacity:.8;margin-top:.15rem}
+.hd button{background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:6px;padding:.4rem .8rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.wrap{max-width:900px;margin:0 auto;padding:1rem}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1rem;overflow-x:auto}
+.card img{max-width:100%}
+.msg{text-align:center;padding:3.5rem 1.2rem;color:#64748b;font-size:.9rem;line-height:1.7}
+.msg b{display:block;font-size:1rem;color:#0f172a;margin-bottom:.4rem}
+.foot{text-align:center;font-size:.68rem;color:#94a3b8;padding:1rem}
+@media print{.hd,.foot{display:none}body{background:#fff}.wrap{padding:0}.card{border:none;padding:0}}
+</style>
+</head>
+<body>
+<div class="hd">
+  <div>
+    <div class="t">안전보건점검 결과보고서</div>
+    <div class="s" id="sub">불러오는 중…</div>
+  </div>
+  <button onclick="window.print()">인쇄 / PDF</button>
+</div>
+<div class="wrap">
+  <div id="body" class="msg">보고서를 불러오는 중입니다…</div>
+</div>
+<div class="foot">안전보건점검 관리시스템 · 이 링크는 발송일로부터 30일간 유효합니다</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbxXxTN3i6E8oxjdhYZhGwbc_QD3J016lui6Y8-Okh9b1k2F7rb4ua92W_FJQRE-TwaL0g/exec";
+
+function show(html, plain){
+  const el = document.getElementById("body");
+  el.className = plain ? "msg" : "card";
+  el.innerHTML = html;
+}
+
+(async function(){
+  const t = new URLSearchParams(location.search).get("t");
+  if(!t){ show("<b>잘못된 링크입니다</b>주소가 온전한지 확인해주세요.", true); return; }
+  try{
+    const res  = await fetch(API + "?mode=rpt_open&token=" + encodeURIComponent(t));
+    const data = await res.json();
+    if(!data || data.status !== "ok"){
+      show("<b>링크를 열 수 없습니다</b>" + ((data && data.msg) || "만료되었거나 올바르지 않은 링크입니다."), true);
+      document.getElementById("sub").textContent = "";
+      return;
+    }
+    document.getElementById("sub").textContent = data.site + " · " + data.date;
+    document.title = "점검결과 " + data.site + " (" + data.date + ")";
+    show(data.html, false);
+  }catch(e){
+    show("<b>불러오지 못했습니다</b>네트워크 상태를 확인한 뒤 다시 시도해주세요.", true);
+  }
+})();
+</script>
+</body>
+</html>
