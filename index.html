@@ -26,7 +26,10 @@
   --shadow-md:0 4px 12px rgba(0,0,0,.1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+/* 전체 글자 크기 기준 — 화면의 거의 모든 크기가 rem 이라 여기 한 줄로 같이 커진다 */
+html{font-size:17.5px}
+@media(max-width:640px){html{font-size:16.5px}}
+body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);font-size:15px}
 
 /* Header */
 header{background:var(--accent);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(30,64,175,.3)}
@@ -177,7 +180,9 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem}
 /* Score display */
 /* 보고서 화면 — 띄어쓰기 없는 긴 글이 화면 밖으로 밀려나가지 않게 */
 #rpt-exec,#rpt-site,#rpt-final{overflow-wrap:anywhere;word-break:break-word}
-#rpt-exec table,#rpt-site table{table-layout:fixed}
+/* 보고서 표는 카드 폭을 항상 100% 채운다(비고칸 오른쪽에 빈 여백이 남지 않게) */
+#rpt-exec table,#rpt-site table{table-layout:fixed;width:100%!important}
+#rpt-exec table th,#rpt-exec table td,#rpt-site table th,#rpt-site table td{overflow-wrap:anywhere}
 .score-display{background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:10px;padding:.85rem 1rem;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-top:.75rem}
 .score-label{font-size:.75rem;opacity:.8}
 .score-value{font-size:1.6rem;font-weight:900;font-family:"IBM Plex Mono",monospace}
@@ -2967,10 +2972,11 @@ function renderExecRpt(ins){
         <div style="font-weight:700;color:var(--accent);border-left:3px solid var(--accent);padding-left:.6rem;margin-bottom:.75rem;font-size:.82rem">점검 항목별 결과</div>
         <div style="overflow-x:auto">
         <table style="min-width:520px">
-          <thead><tr><th>점검 항목</th><th style="text-align:center;width:70px">결과</th><th>비고</th></tr></thead>
+          <colgroup><col style="width:32%"><col style="width:84px"><col></colgroup>
+          <thead><tr><th>점검 항목</th><th style="text-align:center">결과</th><th>비고</th></tr></thead>
           <tbody>${rows}
             <tr style="background:var(--surface2)">
-              <td colspan="2" style="font-weight:700">합계 / 최종점수</td>
+              <td style="font-weight:700">합계 / 최종점수</td>
               <td style="font-family:'IBM Plex Mono',monospace;font-weight:900;color:${col};font-size:1rem;text-align:center">${ins.finalScore}점</td>
               <td style="font-size:.72rem;color:var(--muted)">감점 ${ins.deductCount}건 반영</td>
             </tr>
@@ -3027,6 +3033,7 @@ function renderSiteRpt(ins){
         <div style="font-weight:700;color:var(--accent);border-left:3px solid var(--accent);padding-left:.6rem;margin-bottom:.75rem;font-size:.82rem">▶ 개선 요청 사항 (${issueItems.length}건)</div>
         <div style="overflow-x:auto">
         <table style="min-width:480px">
+          <colgroup><col style="width:46px"><col style="width:26%"><col style="width:74px"><col></colgroup>
           <thead><tr><th>No.</th><th>점검 항목</th><th>결과</th><th>내용 및 요청사항</th></tr></thead>
           <tbody>${issueItems.map((item,i)=>{
             const s=ins.scores[item.key];

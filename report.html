@@ -10,6 +10,8 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 *{box-sizing:border-box}
+html{font-size:17.5px}
+@media(max-width:640px){html{font-size:16.5px}}
 body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,sans-serif;color:#0f172a;overflow-x:hidden}
 .hd{background:#1e40af;color:#fff;padding:.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center;gap:.75rem}
 .hd .t{font-size:.95rem;font-weight:800}
@@ -42,15 +44,15 @@ body{margin:0;background:#f4f6f9;font-family:'Noto Sans KR',-apple-system,Arial,
   .card{padding:0;border:none;border-radius:0;background:transparent}
   .print-m{display:block;width:calc(100% - 1rem);margin:.7rem .5rem 0;padding:.7rem;border:none;border-radius:8px;
            background:#1e40af;color:#fff;font-weight:700;font-size:.85rem;font-family:inherit;cursor:pointer}
-  #body{font-size:12px}
+  #body{font-size:13px}
   /* 사업장 · 점검정보가 등급 상자에 밀려 줄바꿈되지 않도록 */
   #body .rpt-head{padding:12px 14px!important;gap:8px!important;align-items:center!important}
-  #body .rpt-site{font-size:16px!important}
-  #body .rpt-meta{font-size:10px!important;line-height:1.5}
-  #body .rpt-tbl th,#body .rpt-tbl td{padding:5px 6px!important;font-size:11px!important}
+  #body .rpt-site{font-size:17px!important}
+  #body .rpt-meta{font-size:11px!important;line-height:1.5}
+  #body .rpt-tbl th,#body .rpt-tbl td{padding:5px 6px!important;font-size:12px!important}
 }
 @media (max-width:400px){
-  #body .rpt-meta{font-size:9px!important}
+  #body .rpt-meta{font-size:10px!important}
 }
 @media print{.hd,.foot,.print-m{display:none}body{background:#fff}.wrap{padding:0}.card{border:none;padding:0}}
 </style>
