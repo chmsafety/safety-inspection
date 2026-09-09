@@ -208,6 +208,13 @@ tbody tr:hover{background:var(--surface2)}
 .inner-tab{padding:.45rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}
 .inner-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .inner-page{display:none}.inner-page.active{display:block}
+/* 설정 화면 탭 — 결과보고서 탭(.inner-tab)과 이름을 나눠 서로 영향을 주지 않게 한다 */
+.set-tab{padding:.45rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}
+.set-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.set-page{display:none}.set-page.active{display:block}
+.usr-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:.1rem .45rem;border-radius:20px}
+.menu-top-btn2{right:6.6rem}
+@media(max-width:520px){.menu-top-btn2{right:5.8rem;padding:.4rem .55rem}}
 
 /* Modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
@@ -309,7 +316,30 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
-<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div></button><button class="category-card" onclick="selectCategory('hazard')"><div class="cc-icon">📷</div><div class="cc-label">현장위험도 분석</div></button><button class="category-card" onclick="selectCategory('ai')"><div class="cc-icon">🤖</div><div class="cc-label">AI 검색</div></button></div></div></div><div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
+<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><button class="menu-top-btn menu-top-btn2" onclick="openPwModal()">🔑 비밀번호 변경</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div></button><button class="category-card" onclick="selectCategory('hazard')"><div class="cc-icon">📷</div><div class="cc-label">현장위험도 분석</div></button><button class="category-card" onclick="selectCategory('ai')"><div class="cc-icon">🤖</div><div class="cc-label">AI 검색</div></button></div></div></div><!-- ════ 내 비밀번호 변경 (모든 사용자) ════ -->
+<div class="modal-overlay" id="pw-modal" style="z-index:700">
+  <div class="modal" style="width:420px">
+    <div class="modal-hd">
+      <div class="modal-title">🔑 내 비밀번호 변경</div>
+      <button class="modal-close" onclick="closeModal('pw-modal')">✕</button>
+    </div>
+    <div style="font-size:.78rem;color:var(--text2);margin-bottom:.9rem">
+      <strong id="pw-who"></strong> 님의 로그인 비밀번호를 바꿉니다. 변경하면 모든 기기에서 다시 로그인해야 합니다.
+    </div>
+    <div class="fg" style="margin-bottom:.6rem"><label>현재 비밀번호</label>
+      <input type="password" id="pw-cur" maxlength="32" autocomplete="current-password"></div>
+    <div class="fg" style="margin-bottom:.6rem"><label>새 비밀번호 (6자 이상)</label>
+      <input type="password" id="pw-new" maxlength="32" autocomplete="new-password"></div>
+    <div class="fg"><label>새 비밀번호 확인</label>
+      <input type="password" id="pw-new2" maxlength="32" autocomplete="new-password"></div>
+    <div id="pw-status" style="font-size:.75rem;color:var(--muted);margin-top:.6rem;min-height:1em"></div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('pw-modal')">취소</button>
+      <button class="btn btn-primary" id="pw-save-btn" onclick="savePwChange()">변경</button>
+    </div>
+  </div>
+</div>
+<div class="placeholder-screen" id="placeholder-screen"><div class="ph-icon">🚧</div><h2 id="placeholder-title">준비 중입니다</h2><p>해당 메뉴는 아직 준비 중입니다. 곧 이용하실 수 있습니다.</p><button class="btn btn-primary" onclick="showCategoryMenu()">← 메뉴로 돌아가기</button></div><div id="app-safety" style="display:none"><header>
   <div class="hd-top">
     <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
       <img src="data:image/png;base64,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" alt="CHM" style="height:28px;width:auto;display:block">
@@ -502,11 +532,17 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
-<!-- ════ 설정 — 결과보고 수신자 ════ -->
+<!-- ════ 설정 — 결과보고 수신자 · 계정 관리 ════ -->
 <div class="page" id="page-settings">
   <div class="page-hd">
-    <div><h1>설정</h1><p>점검 완료 시 결과보고를 받을 사람 (관리자 전용)</p></div>
+    <div><h1>설정</h1><p>관리자 전용 — 결과보고 수신자와 로그인 계정을 관리합니다</p></div>
   </div>
+  <div class="inner-tabs">
+    <button class="set-tab active" onclick="switchSet('rcpt',this)">결과보고 수신자</button>
+    <button class="set-tab" onclick="switchSet('user',this)">계정 관리</button>
+  </div>
+
+  <div class="set-page active" id="set-rcpt">
   <div class="card" style="margin-bottom:.85rem">
     <div class="form-section-title">결과보고 수신자</div>
     <div style="font-size:.76rem;color:var(--text2);line-height:1.7;margin-bottom:.75rem">
@@ -552,6 +588,57 @@ tbody tr:hover{background:var(--surface2)}
     </div>
     <div id="rcpt-status" style="font-size:.75rem;color:var(--muted);margin-top:.5rem;text-align:right"></div>
   </div>
+  </div><!-- /set-rcpt -->
+
+  <!-- ── 계정 관리 ── -->
+  <div class="set-page" id="set-user">
+    <div class="card" style="margin-bottom:.85rem">
+      <div class="form-section-title">사용자 계정</div>
+      <div style="font-size:.76rem;color:var(--text2);line-height:1.7;margin-bottom:.75rem">
+        시스템에 로그인할 수 있는 계정입니다. <strong>관리자</strong>는 설정 메뉴(수신자·계정)까지 쓸 수 있고,
+        <strong>일반</strong>은 점검·재해·MSDS 등 업무 기능만 씁니다.<br>
+        비밀번호는 서버에 <strong>암호화(해시)</strong>로만 저장되어 관리자도 볼 수 없습니다. 잊었을 때는 새 비밀번호로 재설정하세요.<br>
+        퇴사자는 <strong>비활성</strong>으로 두면 로그인만 막히고 지난 점검 기록의 담당자 이름은 그대로 남습니다.
+      </div>
+      <div style="overflow-x:auto">
+        <table style="min-width:620px">
+          <thead><tr>
+            <th>이름</th><th style="width:90px">권한</th><th style="width:80px">상태</th>
+            <th style="width:120px">로그인 실패</th><th>최근 변경</th><th style="width:140px"></th>
+          </tr></thead>
+          <tbody id="usr-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.2rem">불러오는 중…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="form-section-title" id="usr-form-title">계정 추가</div>
+      <input type="hidden" id="usr-orig">
+      <div class="form-row">
+        <div class="fg"><label>이름 *</label><input type="text" id="usr-name" maxlength="20" placeholder="점검자 이름" autocomplete="off"></div>
+        <div class="fg"><label>권한 *</label>
+          <select id="usr-role">
+            <option value="user">일반 (점검·재해·MSDS)</option>
+            <option value="admin">관리자 (설정 포함 전체)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>비밀번호 <span id="usr-pw-hint" style="font-weight:400;color:var(--muted)">(6자 이상)</span></label>
+          <input type="password" id="usr-pin" maxlength="32" autocomplete="new-password" placeholder="6자 이상"></div>
+        <div class="fg"><label>비밀번호 확인</label>
+          <input type="password" id="usr-pin2" maxlength="32" autocomplete="new-password" placeholder="한 번 더 입력"></div>
+      </div>
+      <div style="display:flex;gap:1.2rem;flex-wrap:wrap;margin:.6rem 0 .9rem;font-size:.8rem">
+        <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer"><input type="checkbox" id="usr-active" checked> 활성 (로그인 허용)</label>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:.5rem">
+        <button class="btn btn-outline" onclick="resetUsrForm()">취소</button>
+        <button class="btn btn-primary" id="usr-save-btn" onclick="saveUser()">저장</button>
+      </div>
+      <div id="usr-status" style="font-size:.75rem;color:var(--muted);margin-top:.5rem;text-align:right"></div>
+    </div>
+  </div><!-- /set-user -->
 </div>
 
 <!-- ════ 결과보고서 ════ -->
@@ -1148,7 +1235,26 @@ function logout(){
   location.reload();
 }
 const CATEGORY_TITLES = {budget:"예산관리"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("app-ai").style.display = "none";document.getElementById("app-hazard").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else if(cat === "ai"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-ai").style.display = "block";initAiChat();} else if(cat === "hazard"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-hazard").style.display = "block";initHazardApp();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!hasValidSession()){
-  document.getElementById("login-gate").style.display = "flex";}else{showCategoryMenu();
+  document.getElementById("login-gate").style.display = "flex";
+  // DASHBOARD_SYNC_URL 이 아래에서 선언되므로 스크립트를 다 읽은 뒤에 부른다.
+  setTimeout(loadLoginNames, 0);}else{showCategoryMenu();
+}
+
+// 로그인 화면의 이름 목록을 서버(_Users 시트)에서 받아 채운다.
+// 설정 > 계정 관리에서 계정을 추가하면 별도 수정 없이 여기에 나타난다.
+// 서버가 응답하지 않으면 화면에 적혀 있는 기존 목록을 그대로 쓴다.
+async function loadLoginNames(){
+  const sel = document.getElementById("login-name");
+  if(!sel) return;
+  try{
+    const res  = await fetch(DASHBOARD_SYNC_URL + "?mode=login_names");
+    const data = await res.json();
+    const names = (data && Array.isArray(data.names)) ? data.names.filter(n=>!!n) : [];
+    if(names.length === 0) return;
+    const prev = sel.value;
+    sel.innerHTML = names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+    if(names.indexOf(prev) >= 0) sel.value = prev;
+  }catch(e){ /* 기존 목록 유지 */ }
 }
 document.getElementById("login-btn").addEventListener("click", doLogin);
 document.getElementById("logout-btn").addEventListener("click", logout);document.getElementById("menu-logout-btn").addEventListener("click", logout);
@@ -2551,6 +2657,192 @@ async function deleteRecipient(id){
   }
 }
 
+// ══════════════════════════════════════════
+// 사용자 계정 관리 (관리자 전용)
+// 서버(_Users 시트)에 보관하며, 목록·저장·잠금해제 모두 서버에서 admin 권한을 다시 확인한다.
+// 비밀번호는 서버에서 해시로만 보관되므로 화면에서는 '재설정'만 가능하다.
+// ══════════════════════════════════════════
+let userAccounts = [];
+
+function switchSet(tab, el){
+  document.querySelectorAll(".set-tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".set-page").forEach(p=>p.classList.remove("active"));
+  const pg = document.getElementById("set-" + tab);
+  if(pg) pg.classList.add("active");
+  if(el) el.classList.add("active");
+  if(tab === "user") loadUsers();
+  if(tab === "rcpt") loadRecipients();
+}
+
+function usrStatus(msg, warn){
+  const el = document.getElementById("usr-status");
+  if(el){ el.textContent = msg || ""; el.style.color = warn ? "var(--danger)" : "var(--muted)"; }
+}
+
+function fmtWhen(ts){
+  if(!ts) return "-";
+  const d = new Date(Number(ts));
+  if(isNaN(d.getTime())) return "-";
+  const p = n => String(n).padStart(2,"0");
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
+}
+
+async function loadUsers(){
+  const tb = document.getElementById("usr-tbody");
+  if(!tb) return;
+  try{
+    const res  = await apiFetch("?mode=user_list");
+    const data = await res.json();
+    userAccounts = (data && data.users) || [];
+    renderUsers();
+  }catch(e){
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:1.2rem">계정 목록을 불러오지 못했습니다.</td></tr>`;
+  }
+}
+
+function renderUsers(){
+  const tb = document.getElementById("usr-tbody");
+  if(!tb) return;
+  if(userAccounts.length === 0){
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.2rem">등록된 계정이 없습니다.</td></tr>`;
+    return;
+  }
+  const me = currentInspector();
+  tb.innerHTML = userAccounts.map(u=>{
+    const isMe  = u.name === me;
+    const role  = u.role === "admin"
+      ? `<span class="usr-badge" style="background:rgba(37,99,235,.12);color:var(--accent)">관리자</span>`
+      : `<span class="usr-badge" style="background:var(--surface2);color:var(--text2)">일반</span>`;
+    const state = u.active
+      ? `<span style="color:var(--ok);font-weight:700">활성</span>`
+      : `<span style="color:var(--muted)">비활성</span>`;
+    const fail = u.locked
+      ? `<span style="color:var(--danger);font-weight:700">잠김 (${u.failures}회)</span>`
+      : (u.failures ? `${u.failures}회` : `-`);
+    return `
+    <tr style="${u.active?"":"opacity:.55"}">
+      <td style="font-weight:600">${escapeHtml(u.name)}${isMe?` <span style="font-size:.68rem;color:var(--muted)">(나)</span>`:""}</td>
+      <td>${role}</td>
+      <td>${state}</td>
+      <td style="font-size:.75rem">${fail}</td>
+      <td style="font-size:.72rem;color:var(--text2)">${fmtWhen(u.updatedAt)}${u.updatedBy?" · "+escapeHtml(u.updatedBy):""}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-outline" style="padding:.25rem .55rem;font-size:.7rem" onclick="editUser('${escapeHtml(u.name)}')">수정</button>
+        ${u.locked?`<button class="btn btn-outline" style="padding:.25rem .55rem;font-size:.7rem;border-color:var(--warn,#f59e0b);color:#b45309" onclick="unlockUser('${escapeHtml(u.name)}')">잠금해제</button>`:""}
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function resetUsrForm(){
+  document.getElementById("usr-orig").value = "";
+  document.getElementById("usr-name").value = "";
+  document.getElementById("usr-name").readOnly = false;
+  document.getElementById("usr-role").value = "user";
+  document.getElementById("usr-pin").value = "";
+  document.getElementById("usr-pin2").value = "";
+  document.getElementById("usr-active").checked = true;
+  document.getElementById("usr-form-title").textContent = "계정 추가";
+  document.getElementById("usr-pw-hint").textContent = "(6자 이상)";
+  usrStatus("");
+}
+
+function editUser(name){
+  const u = userAccounts.find(x=>x.name === name);
+  if(!u) return;
+  document.getElementById("usr-orig").value = u.name;
+  document.getElementById("usr-name").value = u.name;
+  // 이름은 지난 점검·재해 기록의 담당자와 연결되어 있어 바꾸지 않는다.
+  document.getElementById("usr-name").readOnly = true;
+  document.getElementById("usr-role").value = u.role;
+  document.getElementById("usr-active").checked = !!u.active;
+  document.getElementById("usr-pin").value = "";
+  document.getElementById("usr-pin2").value = "";
+  document.getElementById("usr-form-title").textContent = "계정 수정 — " + u.name;
+  document.getElementById("usr-pw-hint").textContent = "(비우면 기존 비밀번호 유지)";
+  usrStatus("");
+  document.getElementById("usr-role").focus();
+}
+
+async function saveUser(){
+  const orig   = document.getElementById("usr-orig").value;
+  const name   = document.getElementById("usr-name").value.trim();
+  const role   = document.getElementById("usr-role").value;
+  const active = document.getElementById("usr-active").checked;
+  const pin    = document.getElementById("usr-pin").value.trim();
+  const pin2   = document.getElementById("usr-pin2").value.trim();
+
+  if(!name){ usrStatus("이름을 입력하세요.", true); return; }
+  if(!orig && !pin){ usrStatus("새 계정의 비밀번호를 입력하세요.", true); return; }
+  if(pin && pin.length < 6){ usrStatus("비밀번호는 6자 이상이어야 합니다.", true); return; }
+  if(pin && pin !== pin2){ usrStatus("비밀번호 확인이 일치하지 않습니다.", true); return; }
+  if(orig && pin && !confirm(`"${name}" 님의 비밀번호를 새로 설정합니다.\n해당 사용자는 다시 로그인해야 합니다. 진행할까요?`)) return;
+
+  const btn = document.getElementById("usr-save-btn");
+  btn.disabled = true; usrStatus("저장 중…");
+  try{
+    const res = await apiPost({ type:"user_save", user:{ orig:orig, name:name, role:role, active:active, pin:pin } });
+    if(res && res.status === "ok"){
+      usrStatus(res.msg || "저장되었습니다.");
+      resetUsrForm();
+      await loadUsers();
+    } else {
+      usrStatus((res && res.msg) ? res.msg : "저장하지 못했습니다.", true);
+    }
+  }catch(e){
+    usrStatus(e && e.__auth ? "권한이 없습니다. (관리자만 계정을 만들 수 있습니다)" : "서버에 연결하지 못했습니다.", true);
+  }
+  btn.disabled = false;
+}
+
+async function unlockUser(name){
+  if(!confirm(`"${name}" 계정의 로그인 잠금을 풀까요?`)) return;
+  try{
+    const res = await apiPost({ type:"user_unlock", name:name });
+    if(res && res.status === "ok"){ usrStatus(res.msg || "잠금을 풀었습니다."); await loadUsers(); }
+    else usrStatus((res && res.msg) ? res.msg : "처리하지 못했습니다.", true);
+  }catch(e){
+    usrStatus(e && e.__auth ? "권한이 없습니다." : "서버에 연결하지 못했습니다.", true);
+  }
+}
+
+// ── 내 비밀번호 변경 (모든 사용자) ──
+function openPwModal(){
+  ["pw-cur","pw-new","pw-new2"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+  const s = document.getElementById("pw-status"); if(s) s.textContent = "";
+  const who = document.getElementById("pw-who"); if(who) who.textContent = currentInspector() || "";
+  document.getElementById("pw-modal").classList.add("open");
+  setTimeout(()=>{ const el=document.getElementById("pw-cur"); if(el) el.focus(); }, 60);
+}
+
+async function savePwChange(){
+  const cur  = document.getElementById("pw-cur").value.trim();
+  const nw   = document.getElementById("pw-new").value.trim();
+  const nw2  = document.getElementById("pw-new2").value.trim();
+  const st   = document.getElementById("pw-status");
+  const set  = (m,warn)=>{ st.textContent = m||""; st.style.color = warn ? "var(--danger)" : "var(--muted)"; };
+
+  if(!cur){ set("현재 비밀번호를 입력하세요.", true); return; }
+  if(nw.length < 6){ set("새 비밀번호는 6자 이상이어야 합니다.", true); return; }
+  if(nw !== nw2){ set("새 비밀번호 확인이 일치하지 않습니다.", true); return; }
+
+  const btn = document.getElementById("pw-save-btn");
+  btn.disabled = true; set("변경 중…");
+  try{
+    const res = await apiPost({ type:"pw_change", current:cur, next:nw });
+    if(res && res.status === "ok"){
+      alert(res.msg || "비밀번호를 바꿨습니다. 다시 로그인해주세요.");
+      clearSession();
+      location.reload();
+      return;
+    }
+    set((res && res.msg) ? res.msg : "변경하지 못했습니다.", true);
+  }catch(e){
+    set("서버에 연결하지 못했습니다.", true);
+  }
+  btn.disabled = false;
+}
+
 // ══ 네비게이션 ══
 function goPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -2563,7 +2855,10 @@ function goPage(name){
   if(name==="improve") updateImprovePage();
   if(name==="report") updateReportSel();
   if(name==="input"){ renderDrafts(); fetchServerDrafts(); }
-  if(name==="settings") loadRecipients();
+  if(name==="settings"){
+    const userTabOn = document.getElementById("set-user") && document.getElementById("set-user").classList.contains("active");
+    if(userTabOn) loadUsers(); else loadRecipients();
+  }
 }
 
 function closeModal(id){ document.getElementById(id).classList.remove("open"); }
