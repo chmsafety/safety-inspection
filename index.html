@@ -346,6 +346,7 @@ tbody tr:hover{background:var(--surface2)}
       <span class="logo-text">안전보건 관리시스템</span></div>
     <nav>
       <button class="nav-btn active" onclick="goPage('dashboard')">대시보드</button>
+      <button class="nav-btn" onclick="goPage('schedule')">점검일정</button>
       <button class="nav-btn" onclick="goPage('detail')">세부내용</button>
       <button class="nav-btn" onclick="goPage('improve')">개선현황</button>
       <button class="nav-btn" onclick="goPage('report')">결과보고서</button>
@@ -429,6 +430,124 @@ tbody tr:hover{background:var(--surface2)}
   <div class="card" style="margin-top:.85rem">
     <div class="card-title">사업장별 점검 현황</div>
     <div class="site-grid" id="site-grid"></div>
+  </div>
+</div>
+
+<!-- ════ 점검일정 ════ -->
+<style>
+.sch-wrap{display:grid;grid-template-columns:262px 1fr;gap:.85rem;align-items:start}
+.sch-side{padding:.9rem}
+.sch-side-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.6rem}
+.sch-count{font-size:.68rem;color:var(--muted);font-weight:600}
+.sch-assign-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
+.sch-assign-row label{font-size:.68rem;font-weight:700;color:var(--text2);white-space:nowrap}
+.sch-assign-row select{flex:1;min-width:0;padding:.3rem .4rem;border:1px solid var(--border2);border-radius:6px;font-size:.74rem;font-family:"Noto Sans KR",sans-serif;background:#fff}
+.sch-search{width:100%;padding:.35rem .5rem;border:1px solid var(--border2);border-radius:6px;font-size:.74rem;font-family:"Noto Sans KR",sans-serif;margin-bottom:.45rem}
+.sch-filters{display:flex;gap:.25rem;margin-bottom:.5rem}
+.sch-chip{flex:1;padding:.25rem 0;border:1px solid var(--border2);background:#fff;border-radius:6px;font-size:.68rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:"Noto Sans KR",sans-serif}
+.sch-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.sch-hint{font-size:.66rem;color:var(--muted);line-height:1.45;margin-bottom:.5rem}
+.sch-sitelist{max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:.22rem}
+.sch-site{display:flex;align-items:center;gap:.35rem;padding:.32rem .45rem;border:1px solid var(--border);border-radius:6px;background:var(--surface2);font-size:.74rem;cursor:grab;user-select:none}
+.sch-site:hover{border-color:var(--accent);background:var(--accent-light)}
+.sch-site.picked{background:var(--accent);border-color:var(--accent);color:#fff}
+.sch-site.picked .sch-site-when{color:rgba(255,255,255,.85)}
+.sch-site-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.sch-site-when{font-size:.64rem;color:var(--muted);font-weight:600;white-space:nowrap}
+.sch-site.has .sch-site-when{color:var(--accent)}
+.sch-main{padding:.9rem}
+.sch-cal-hd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem}
+.sch-nav{display:flex;align-items:center;gap:.35rem}
+.sch-month{font-size:.95rem;font-weight:800;min-width:8.2rem;text-align:center}
+.sch-legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.68rem;color:var(--text2)}
+.sch-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:.22rem;vertical-align:-1px}
+.sch-dow,.sch-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.sch-dow{margin-bottom:3px}
+.sch-dow div{text-align:center;font-size:.68rem;font-weight:700;color:var(--text2);padding:.15rem 0}
+.sch-dow div:first-child{color:#dc2626}.sch-dow div:last-child{color:#2563eb}
+.sch-day{min-height:96px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);padding:.25rem;display:flex;flex-direction:column;gap:.15rem}
+.sch-day.out{background:#fbfcfd;opacity:.55}
+.sch-day.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.sch-day.drop{background:var(--accent-light);border-color:var(--accent);border-style:dashed}
+.sch-day.pickable{cursor:copy}
+.sch-dnum{font-size:.68rem;font-weight:700;color:var(--text2);padding:0 .1rem}
+.sch-day.sun .sch-dnum{color:#dc2626}.sch-day.sat .sch-dnum{color:#2563eb}
+.sch-ev{display:block;width:100%;text-align:left;border:none;border-radius:4px;padding:.16rem .3rem;font-size:.66rem;font-weight:700;color:#fff;cursor:pointer;font-family:"Noto Sans KR",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35}
+.sch-ev.done{opacity:.62}
+.sch-ev.pending{opacity:.5;font-style:italic}
+.sch-ev:active{cursor:grabbing}
+.sch-ev small{font-weight:600;opacity:.9}
+.sch-foot{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.6rem;font-size:.68rem;color:var(--muted)}
+.sch-foot .sch-note{text-align:right}
+@media(max-width:900px){
+  .sch-wrap{grid-template-columns:1fr}
+  .sch-sitelist{max-height:200px}
+  .sch-day{min-height:74px}
+  .sch-foot .sch-note{text-align:left}
+}
+</style>
+<div class="page" id="page-schedule">
+  <div class="sch-wrap">
+    <aside class="sch-side card">
+      <div class="sch-side-hd">
+        <div class="card-title" style="margin:0">점검대상 사업장</div>
+        <span class="sch-count" id="sch-site-count"></span>
+      </div>
+      <div class="sch-assign-row" id="sch-assign-row">
+        <label>배정 점검자</label>
+        <select id="sch-inspector"></select>
+      </div>
+      <input type="search" id="sch-search" class="sch-search" placeholder="사업장 검색" oninput="schRenderSites()">
+      <div class="sch-filters">
+        <button class="sch-chip active" onclick="schSetFilter('all',this)">전체</button>
+        <button class="sch-chip" onclick="schSetFilter('none',this)">미배정</button>
+        <button class="sch-chip" onclick="schSetFilter('set',this)">배정됨</button>
+      </div>
+      <div class="sch-hint" id="sch-hint"></div>
+      <div class="sch-sitelist" id="sch-sitelist"></div>
+    </aside>
+
+    <section class="sch-main card">
+      <div class="sch-cal-hd">
+        <div class="sch-nav">
+          <button class="btn btn-outline btn-sm" onclick="schMoveMonth(-1)">◀</button>
+          <div class="sch-month" id="sch-month">—</div>
+          <button class="btn btn-outline btn-sm" onclick="schMoveMonth(1)">▶</button>
+          <button class="btn btn-outline btn-sm" onclick="schMoveMonth(0)">오늘</button>
+        </div>
+        <div class="sch-legend" id="sch-legend"></div>
+      </div>
+      <div class="sch-dow"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
+      <div class="sch-grid" id="sch-grid"></div>
+      <div class="sch-foot">
+        <span id="sch-status"></span>
+        <span class="sch-note">일정표의 날짜는 <b>예정일</b>입니다. 대시보드·보고서의 점검일자는 점검 입력 때 넣은 실제 날짜를 그대로 씁니다.</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="modal-overlay" id="sch-modal" style="z-index:650">
+  <div class="modal" style="width:400px">
+    <div class="modal-hd">
+      <div class="modal-title" id="sch-modal-title">일정 수정</div>
+      <button class="modal-close" onclick="closeModal('sch-modal')">✕</button>
+    </div>
+    <div class="fg" style="margin-bottom:.6rem"><label>사업장</label>
+      <input type="text" id="sch-m-site" readonly style="background:var(--surface2)"></div>
+    <div class="fg" style="margin-bottom:.6rem"><label>점검 예정일</label>
+      <input type="date" id="sch-m-date"></div>
+    <div class="fg"><label>점검자</label>
+      <select id="sch-m-inspector"></select></div>
+    <div id="sch-m-done" style="font-size:.72rem;color:var(--ok);margin-top:.6rem;min-height:1em"></div>
+    <div id="sch-m-status" style="font-size:.74rem;color:var(--muted);margin-top:.3rem;min-height:1em"></div>
+    <div class="modal-ft" style="justify-content:space-between">
+      <button class="btn btn-outline btn-sm" id="sch-m-del" onclick="schDeleteFromModal()" style="color:var(--danger);border-color:var(--danger-border)">일정 삭제</button>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-outline" onclick="closeModal('sch-modal')">취소</button>
+        <button class="btn btn-primary" id="sch-m-save" onclick="schSaveFromModal()">저장</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2843,14 +2962,394 @@ async function savePwChange(){
   btn.disabled = false;
 }
 
+// ══════════════════════════════════════════
+// 점검일정 — 예정일을 달력에서 짠다 (schedule.gs / _Schedule 시트)
+//
+//  · 여기에 찍는 날짜는 "예정일"이다. 대시보드·보고서의 점검일자는
+//    점검 입력 화면에서 넣은 실제 날짜를 그대로 쓰며, 일정을 옮겨도 바뀌지 않는다.
+//  · 등록·이동·삭제는 관리자만. 나머지 계정은 달력을 보기만 한다.
+// ══════════════════════════════════════════
+const SCH_COLORS = ["#1e40af","#b45309","#15803d","#7c3aed","#be185d","#0f766e","#c2410c","#4338ca"];
+const SCH = { items:[], cur:null, filter:"all", picked:null, inspectors:[], editId:null,
+              drag:null, overCell:null, bound:false, loaded:false };
+
+function schCanEdit(){ return isAdmin(); }
+function schKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function schParse(s){ const m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})/); return m? new Date(+m[1],+m[2]-1,+m[3]) : null; }
+function schDiffDays(a,b){ const x=schParse(a), y=schParse(b); if(!x||!y) return 1e9; return Math.round((x-y)/86400000); }
+function schStatus(msg, warn){
+  const el=document.getElementById("sch-status");
+  if(!el) return;
+  el.textContent = msg||"";
+  el.style.color = warn ? "var(--danger)" : "var(--muted)";
+}
+function schColor(name){
+  const n=String(name||"").trim();
+  if(!n) return "#64748b";
+  let idx=SCH.inspectors.indexOf(n);
+  if(idx<0){ let h=0; for(let i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))>>>0; idx=h; }
+  return SCH_COLORS[idx % SCH_COLORS.length];
+}
+// 실제 점검 기록과 맞춰 본다. 예정일 ±30일 안에 그 사업장 점검이 저장돼 있으면 완료로 표시한다.
+function schDoneInfo(it){
+  let best=null, bd=1e9;
+  (inspections||[]).forEach(ins=>{
+    if(!ins || String(ins.site||"").trim() !== it.site) return;
+    const d=Math.abs(schDiffDays(fmtDate(ins.date), it.date));
+    if(d<bd){ bd=d; best=ins; }
+  });
+  return (best && bd<=30) ? { date: fmtDate(best.date) } : null;
+}
+
+async function openSchedulePage(){
+  if(!SCH.cur) SCH.cur=new Date();
+  schRender();
+  if(!SCH.loaded){ await schLoadInspectors(); }
+  await schLoad();
+  schSyncInspectorOptions();
+}
+
+async function schLoad(){
+  schStatus("일정을 불러오는 중…");
+  try{
+    const res  = await apiFetch("?mode=sched_list");
+    const data = await res.json();
+    if(data && Array.isArray(data.items)){
+      SCH.items = data.items.filter(i=>i && i.id && i.date && i.site);
+      SCH.loaded = true;
+      schStatus(SCH.items.length ? `일정 ${SCH.items.length}건` : "등록된 일정이 없습니다.");
+    } else {
+      schStatus((data && data.msg) || "일정을 불러오지 못했습니다.", true);
+    }
+  }catch(e){
+    if(e && e.__noSession) return;
+    schStatus("일정을 불러오지 못했습니다. schedule.gs 배포를 확인하세요.", true);
+  }
+  schRender();
+}
+
+async function schLoadInspectors(){
+  let names=[];
+  try{
+    const res  = await fetch(DASHBOARD_SYNC_URL + "?mode=login_names");
+    const data = await res.json();
+    if(data && Array.isArray(data.names)) names = data.names.filter(n=>!!n);
+  }catch(e){ /* 아래에서 로그인 화면 목록으로 대체 */ }
+  if(names.length===0){
+    const sel=document.getElementById("login-name");
+    if(sel) names=Array.from(sel.options).map(o=>o.value).filter(v=>!!v);
+  }
+  SCH.inspectors = names;
+  schSyncInspectorOptions();
+}
+
+// 계정에 없는 이름이 일정에 들어 있어도 목록에서 사라지지 않게 합친다.
+function schSyncInspectorOptions(){
+  SCH.items.forEach(i=>{ if(i.inspector && SCH.inspectors.indexOf(i.inspector)<0) SCH.inspectors.push(i.inspector); });
+  const me = (typeof getSession==="function" && getSession() && getSession().name) || "";
+  const opts = SCH.inspectors.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+  const a=document.getElementById("sch-inspector");
+  if(a){ const prev=a.value; a.innerHTML=opts; a.value = (SCH.inspectors.indexOf(prev)>=0? prev : (SCH.inspectors.indexOf(me)>=0? me : (SCH.inspectors[0]||""))); }
+  const b=document.getElementById("sch-m-inspector");
+  if(b){ const prev=b.value; b.innerHTML=`<option value="">(미지정)</option>`+opts; b.value=prev; }
+}
+
+// ── 그리기 ──
+function schRender(){ schBind(); schRenderCal(); schRenderSites(); schRenderLegend(); schRenderHint(); }
+
+function schRenderHint(){
+  const hint=document.getElementById("sch-hint");
+  const row =document.getElementById("sch-assign-row");
+  if(row) row.style.display = schCanEdit() ? "" : "none";
+  if(!hint) return;
+  if(!schCanEdit()){ hint.textContent="일정은 관리자만 등록·수정할 수 있습니다."; return; }
+  if(SCH.picked){
+    hint.innerHTML = `<b>${escapeHtml(SCH.picked)}</b> 선택됨 — 달력에서 날짜를 클릭하세요. (다시 클릭하면 취소)`;
+  } else {
+    hint.textContent = "사업장을 달력 날짜로 끌어다 놓으세요. 클릭한 뒤 날짜를 클릭해도 됩니다. 등록된 일정은 달력 안에서 끌어 옮기거나 클릭해 고칠 수 있습니다.";
+  }
+}
+
+function schRenderCal(){
+  const grid=document.getElementById("sch-grid");
+  if(!grid) return;
+  const cur=SCH.cur||new Date(), y=cur.getFullYear(), m=cur.getMonth();
+  const lbl=document.getElementById("sch-month");
+  if(lbl) lbl.textContent = `${y}년 ${m+1}월`;
+  const first=new Date(y,m,1);
+  const days=new Date(y,m+1,0).getDate();
+  const cells=Math.ceil((first.getDay()+days)/7)*7;
+  const start=new Date(y,m,1-first.getDay());
+  const todayKey=schKey(new Date());
+  const byDate={};
+  SCH.items.forEach(i=>{ (byDate[i.date]=byDate[i.date]||[]).push(i); });
+  let html="";
+  for(let i=0;i<cells;i++){
+    const dd=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);
+    const key=schKey(dd);
+    const cls=["sch-day"];
+    if(dd.getMonth()!==m) cls.push("out");
+    if(key===todayKey) cls.push("today");
+    if(dd.getDay()===0) cls.push("sun");
+    if(dd.getDay()===6) cls.push("sat");
+    if(SCH.picked && schCanEdit()) cls.push("pickable");
+    const evs=(byDate[key]||[]).slice().sort((a,b)=>String(a.site).localeCompare(String(b.site)));
+    html += `<div class="${cls.join(" ")}" data-date="${key}"><div class="sch-dnum">${dd.getDate()}</div>${evs.map(schEvHtml).join("")}</div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function schEvHtml(it){
+  const done=schDoneInfo(it);
+  const who = it.inspector ? ` <small>${escapeHtml(it.inspector)}</small>` : "";
+  const title = it.site + (it.inspector? " · "+it.inspector : "") + (done? " · 점검완료 "+done.date : "");
+  return `<button class="sch-ev${done?" done":""}${it.__pending?" pending":""}" data-id="${escapeHtml(String(it.id))}"`
+       + `${schCanEdit()?' draggable="true"':''} style="background:${schColor(it.inspector)}"`
+       + ` title="${escapeHtml(title)}">${done?"✔ ":""}${escapeHtml(it.site)}${who}</button>`;
+}
+
+function schRenderSites(){
+  const box=document.getElementById("sch-sitelist");
+  if(!box) return;
+  const qEl=document.getElementById("sch-search");
+  const q=(qEl? qEl.value : "").trim().toLowerCase();
+  const today=schKey(new Date());
+  const byS={};
+  SCH.items.forEach(i=>{ (byS[i.site]=byS[i.site]||[]).push(i); });
+  let shown=0;
+  const rows=SITES.map(site=>{
+    const list=(byS[site]||[]).slice().sort((a,b)=> a.date<b.date? -1:1);
+    const has=list.length>0;
+    if(SCH.filter==="none" && has) return "";
+    if(SCH.filter==="set"  && !has) return "";
+    if(q && site.toLowerCase().indexOf(q)<0) return "";
+    shown++;
+    const next=list.filter(i=>i.date>=today)[0] || list[list.length-1];
+    const when=next ? (next.date.slice(5).replace("-","/") + (list.length>1? ` +${list.length-1}` : "")) : "미배정";
+    return `<div class="sch-site${has?" has":""}${SCH.picked===site?" picked":""}" data-site="${escapeHtml(site)}"`
+         + `${schCanEdit()?' draggable="true"':''}><span class="sch-site-name">${escapeHtml(site)}</span>`
+         + `<span class="sch-site-when">${escapeHtml(when)}</span></div>`;
+  }).join("");
+  box.innerHTML = rows || `<div style="font-size:.72rem;color:var(--muted);padding:.5rem 0">해당하는 사업장이 없습니다.</div>`;
+  const cnt=document.getElementById("sch-site-count");
+  if(cnt) cnt.textContent = `${shown} / ${SITES.length}곳`;
+}
+
+function schRenderLegend(){
+  const el=document.getElementById("sch-legend");
+  if(!el) return;
+  const cur=SCH.cur||new Date();
+  const pre=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,"0")}`;
+  const cnt={};
+  SCH.items.forEach(i=>{ if(i.date.indexOf(pre)===0){ const k=i.inspector||"(미지정)"; cnt[k]=(cnt[k]||0)+1; } });
+  const keys=Object.keys(cnt);
+  el.innerHTML = keys.length
+    ? keys.map(k=>`<span><i style="background:${schColor(k==="(미지정)"?"":k)}"></i>${escapeHtml(k)} ${cnt[k]}건</span>`).join("")
+        + `<span><i style="background:#94a3b8"></i>✔ 점검완료</span>`
+    : `<span>이 달에 등록된 일정이 없습니다.</span>`;
+}
+
+function schSetFilter(f, el){
+  SCH.filter=f;
+  document.querySelectorAll("#page-schedule .sch-chip").forEach(b=>b.classList.remove("active"));
+  if(el) el.classList.add("active");
+  schRenderSites();
+}
+function schMoveMonth(delta){
+  const cur=SCH.cur||new Date();
+  SCH.cur = delta===0 ? new Date() : new Date(cur.getFullYear(), cur.getMonth()+delta, 1);
+  schRenderCal(); schRenderLegend();
+}
+
+// ── 마우스 조작 ──
+function schClearDrop(){ if(SCH.overCell){ SCH.overCell.classList.remove("drop"); SCH.overCell=null; } }
+function schClosest(e, sel){ const t=e.target; return (t && t.closest) ? t.closest(sel) : null; }
+
+function schBind(){
+  if(SCH.bound) return;
+  const grid=document.getElementById("sch-grid");
+  const list=document.getElementById("sch-sitelist");
+  if(!grid || !list) return;
+  SCH.bound=true;
+
+  list.addEventListener("dragstart", e=>{
+    const row=schClosest(e,".sch-site");
+    if(!row || !schCanEdit()) return;
+    SCH.drag={kind:"site", site:row.dataset.site};
+    try{ e.dataTransfer.effectAllowed="copy"; e.dataTransfer.setData("text/plain", row.dataset.site); }catch(_){}
+  });
+  list.addEventListener("dragend", ()=>{ SCH.drag=null; schClearDrop(); });
+  list.addEventListener("click", e=>{
+    const row=schClosest(e,".sch-site");
+    if(!row) return;
+    if(!schCanEdit()) return;
+    SCH.picked = (SCH.picked===row.dataset.site) ? null : row.dataset.site;
+    schRenderSites(); schRenderCal(); schRenderHint();
+  });
+
+  grid.addEventListener("dragstart", e=>{
+    const ev=schClosest(e,".sch-ev");
+    if(!ev || !schCanEdit()) return;
+    SCH.drag={kind:"ev", id:ev.dataset.id};
+    try{ e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain", ev.dataset.id); }catch(_){}
+  });
+  grid.addEventListener("dragend", ()=>{ SCH.drag=null; schClearDrop(); });
+  grid.addEventListener("dragover", e=>{
+    if(!SCH.drag) return;
+    const cell=schClosest(e,".sch-day");
+    if(!cell) return;
+    e.preventDefault();
+    try{ e.dataTransfer.dropEffect = SCH.drag.kind==="ev" ? "move" : "copy"; }catch(_){}
+    if(SCH.overCell!==cell){ schClearDrop(); SCH.overCell=cell; cell.classList.add("drop"); }
+  });
+  grid.addEventListener("dragleave", e=>{
+    const cell=schClosest(e,".sch-day");
+    if(cell && cell===SCH.overCell && !cell.contains(e.relatedTarget)) schClearDrop();
+  });
+  grid.addEventListener("drop", e=>{
+    const cell=schClosest(e,".sch-day");
+    if(!cell || !SCH.drag) return;
+    e.preventDefault();
+    const d=SCH.drag; SCH.drag=null; schClearDrop();
+    if(d.kind==="site") schPlace(cell.dataset.date, d.site);
+    else schMoveItem(d.id, cell.dataset.date);
+  });
+  grid.addEventListener("click", e=>{
+    const ev=schClosest(e,".sch-ev");
+    if(ev){ schOpenEvent(ev.dataset.id); return; }
+    const cell=schClosest(e,".sch-day");
+    if(cell && SCH.picked && schCanEdit()){
+      const site=SCH.picked; SCH.picked=null;
+      schPlace(cell.dataset.date, site);
+    }
+  });
+}
+
+// ── 저장 ──
+async function schPost(payload){
+  try{ return await apiPost(payload); }
+  catch(e){
+    if(e && (e.__auth || e.__noSession)) return null;
+    return { status:"error", msg:"서버에 연결하지 못했습니다." };
+  }
+}
+
+async function schPlace(dateStr, site){
+  if(!schCanEdit()) return;
+  if(SCH.items.some(i=>i.date===dateStr && i.site===site)){
+    schStatus(`${site} 은(는) 이미 ${dateStr} 에 등록되어 있습니다.`, true);
+    schRenderSites(); schRenderCal(); schRenderHint();
+    return;
+  }
+  const inspector=(document.getElementById("sch-inspector")||{}).value || "";
+  const tmp={ id:"tmp_"+Date.now(), date:dateStr, site:site, inspector:inspector, __pending:true };
+  SCH.items.push(tmp);
+  schRender(); schStatus("저장 중…");
+  const data=await schPost({ type:"sched_save", item:{ date:dateStr, site:site, inspector:inspector } });
+  if(data===null){ await schLoad(); return; }
+  if(data && data.status==="ok" && data.item){
+    const i=SCH.items.indexOf(tmp);
+    if(i>=0) SCH.items[i]=data.item;
+    schStatus(`${site} — ${dateStr} 등록`);
+  } else {
+    SCH.items=SCH.items.filter(x=>x!==tmp);
+    schStatus((data && data.msg) || "저장하지 못했습니다.", true);
+  }
+  schRender();
+}
+
+async function schMoveItem(id, dateStr){
+  if(!schCanEdit()) return;
+  const it=SCH.items.filter(x=>String(x.id)===String(id))[0];
+  if(!it || it.date===dateStr) return;
+  if(SCH.items.some(x=>x!==it && x.date===dateStr && x.site===it.site)){
+    schStatus(`${it.site} 은(는) 이미 ${dateStr} 에 등록되어 있습니다.`, true);
+    return;
+  }
+  const prev=it.date;
+  it.date=dateStr;
+  schRender(); schStatus("이동 중…");
+  const data=await schPost({ type:"sched_save", item:{ id:it.id, date:dateStr, site:it.site, inspector:it.inspector||"" } });
+  if(data===null){ await schLoad(); return; }
+  if(data && data.status==="ok"){
+    schStatus(`${it.site} — ${prev} → ${dateStr}`);
+  } else {
+    it.date=prev;
+    schStatus((data && data.msg) || "이동하지 못했습니다.", true);
+  }
+  schRender();
+}
+
+// ── 일정 상세 ──
+function schOpenEvent(id){
+  const it=SCH.items.filter(x=>String(x.id)===String(id))[0];
+  if(!it) return;
+  SCH.editId=it.id;
+  schSyncInspectorOptions();
+  document.getElementById("sch-modal-title").textContent = schCanEdit()? "일정 수정" : "일정";
+  document.getElementById("sch-m-site").value = it.site;
+  document.getElementById("sch-m-date").value = it.date;
+  const sel=document.getElementById("sch-m-inspector");
+  sel.value = it.inspector || "";
+  const done=schDoneInfo(it);
+  document.getElementById("sch-m-done").textContent = done ? `✔ 실제 점검 저장됨 — ${done.date}` : "";
+  document.getElementById("sch-m-status").textContent = "";
+  const editable=schCanEdit();
+  document.getElementById("sch-m-date").disabled = !editable;
+  sel.disabled = !editable;
+  document.getElementById("sch-m-save").style.display = editable? "" : "none";
+  document.getElementById("sch-m-del").style.display  = editable? "" : "none";
+  document.getElementById("sch-modal").classList.add("open");
+}
+
+async function schSaveFromModal(){
+  const it=SCH.items.filter(x=>String(x.id)===String(SCH.editId))[0];
+  if(!it) return closeModal("sch-modal");
+  const date=document.getElementById("sch-m-date").value;
+  const inspector=document.getElementById("sch-m-inspector").value;
+  if(!date){ document.getElementById("sch-m-status").textContent="점검 예정일을 입력하세요."; return; }
+  const btn=document.getElementById("sch-m-save");
+  btn.disabled=true;
+  document.getElementById("sch-m-status").textContent="저장 중…";
+  const data=await schPost({ type:"sched_save", item:{ id:it.id, date:date, site:it.site, inspector:inspector } });
+  btn.disabled=false;
+  if(data===null){ closeModal("sch-modal"); await schLoad(); return; }
+  if(data && data.status==="ok"){
+    it.date=date; it.inspector=inspector;
+    closeModal("sch-modal");
+    schStatus(`${it.site} 일정 수정됨`);
+    schRender();
+  } else {
+    document.getElementById("sch-m-status").textContent=(data && data.msg) || "저장하지 못했습니다.";
+  }
+}
+
+async function schDeleteFromModal(){
+  const it=SCH.items.filter(x=>String(x.id)===String(SCH.editId))[0];
+  if(!it) return closeModal("sch-modal");
+  if(!confirm(`${it.site} (${it.date}) 일정을 삭제할까요?\n저장된 점검 기록은 지워지지 않습니다.`)) return;
+  document.getElementById("sch-m-status").textContent="삭제 중…";
+  const data=await schPost({ type:"sched_delete", id:it.id });
+  if(data===null){ closeModal("sch-modal"); await schLoad(); return; }
+  if(data && data.status==="ok"){
+    SCH.items=SCH.items.filter(x=>x!==it);
+    closeModal("sch-modal");
+    schStatus(`${it.site} 일정 삭제됨`);
+    schRender();
+  } else {
+    document.getElementById("sch-m-status").textContent=(data && data.msg) || "삭제하지 못했습니다.";
+  }
+}
+
 // ══ 네비게이션 ══
 function goPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("page-"+name).classList.add("active");
-  const idx=["dashboard","detail","improve","report","input","settings"].indexOf(name);
+  const idx=["dashboard","schedule","detail","improve","report","input","settings"].indexOf(name);
   document.querySelectorAll(".nav-btn")[idx].classList.add("active");
   if(name==="dashboard") updateDashboard();
+  if(name==="schedule") openSchedulePage();
   if(name==="detail") updateDetailPage();
   if(name==="improve") updateImprovePage();
   if(name==="report") updateReportSel();
