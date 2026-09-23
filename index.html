@@ -5160,5 +5160,41 @@ async function installApp(){
   alert("설치 방법\n\n• 아이폰·아이패드(사파리): 하단 공유 버튼 → '홈 화면에 추가'\n• 안드로이드(크롬): 메뉴(⋮) → '앱 설치' 또는 '홈 화면에 추가'\n• PC(크롬·엣지): 주소창 오른쪽 설치 아이콘(⊕) 클릭");
 }
 </script>
+
+<!-- ════ 다른 시스템 바로가기 카드 (각 화면 머리의 점검자 이름 왼쪽) ════ -->
+<style>
+.sys-links{display:flex;align-items:center;gap:.4rem}
+.sys-link{display:inline-flex;align-items:center;gap:.4rem;padding:2px .7rem 2px 2px;border-radius:8px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.74rem;font-weight:700;
+  text-decoration:none;white-space:nowrap;font-family:"Noto Sans KR",sans-serif;transition:background .12s,transform .12s}
+.sys-link:hover{background:rgba(255,255,255,.24);transform:translateY(-1px)}
+.sys-link .sl-ic{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:.85rem;background:var(--sl-c)}
+.sys-link.sl-work{--sl-c:#16a34a}
+.sys-link.sl-edu{--sl-c:#8b3fea}
+.sys-links.in-menu{position:fixed;top:1rem;left:1.25rem;z-index:600}
+@media(max-width:768px){.sys-link{padding:2px;gap:0}.sys-link .sl-tx{display:none}}
+</style>
+<script>
+(function(){
+  var HTML = '<a class="sys-link sl-work" href="https://c01764-stack.github.io/team-schedule/" title="업무관리 대시보드(으)로 이동"><span class="sl-ic" aria-hidden="true">📋</span><span class="sl-tx">업무관리</span></a><a class="sys-link sl-edu" href="https://chmsafety.github.io/chmedu/" title="교육관리 시스템(으)로 이동"><span class="sl-ic" aria-hidden="true">🎓</span><span class="sl-tx">교육관리</span></a>';
+  function put(anchor, cls){
+    if(!anchor || !anchor.parentNode || anchor.parentNode.querySelector(':scope > .sys-links')) return;
+    var box = document.createElement('div');
+    box.className = 'sys-links' + (cls ? ' ' + cls : '');
+    box.innerHTML = HTML;
+    anchor.parentNode.insertBefore(box, anchor);
+  }
+  function run(){
+    // 각 모듈 머리(점검·재해·MSDS·서류·AI·위험도)의 점검자 이름 칸 앞에
+    document.querySelectorAll('span.hd-date[id$="hd-inspector"]').forEach(function(el){ put(el); });
+    // 업무 선택 메뉴 화면에는 왼쪽 위에
+    var menu = document.getElementById('category-menu');
+    if(menu && !menu.querySelector('.sys-links')){
+      var box = document.createElement('div'); box.className = 'sys-links in-menu'; box.innerHTML = HTML; menu.insertBefore(box, menu.firstChild);
+    }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();
+</script>
 </body>
 </html>
