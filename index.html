@@ -212,6 +212,17 @@ tbody tr:hover{background:var(--surface2)}
 .set-tab{padding:.45rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:"Noto Sans KR",sans-serif;white-space:nowrap}
 .set-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .set-page{display:none}.set-page.active{display:block}
+/* 접속 기록 */
+.alog-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.5rem;align-items:end}
+.alog-filters .fg{margin:0}
+.alog-quick{display:flex;gap:.35rem;flex-wrap:wrap;margin:.6rem 0 .2rem}
+.alog-quick button{font-size:.72rem;padding:.25rem .6rem;border:1px solid var(--border);background:#fff;border-radius:20px;cursor:pointer;color:var(--text2);font-family:inherit}
+.alog-quick button:hover{border-color:var(--accent);color:var(--accent)}
+#alog-tbody td,#alog-sum-tbody td{font-size:.76rem;vertical-align:top}
+#alog-tbody td.alog-t{white-space:nowrap;color:var(--text2);font-variant-numeric:tabular-nums}
+.alog-kind-change{color:var(--accent);font-weight:600}
+.alog-kind-auth{font-weight:600}
+.alog-kind-nav{color:var(--muted)}
 .usr-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:.1rem .45rem;border-radius:20px}
 .menu-top-btn2{right:6.6rem}
 @media(max-width:520px){.menu-top-btn2{right:5.8rem;padding:.4rem .55rem}}
@@ -649,11 +660,12 @@ tbody tr:hover{background:var(--surface2)}
 <!-- ════ 설정 — 결과보고 수신자 · 계정 관리 ════ -->
 <div class="page" id="page-settings">
   <div class="page-hd">
-    <div><h1>설정</h1><p>관리자 전용 — 결과보고 수신자와 로그인 계정을 관리합니다</p></div>
+    <div><h1>설정</h1><p>관리자 전용 — 결과보고 수신자·로그인 계정·접속 기록을 관리합니다</p></div>
   </div>
   <div class="inner-tabs">
     <button class="set-tab active" onclick="switchSet('rcpt',this)">결과보고 수신자</button>
     <button class="set-tab" onclick="switchSet('user',this)">계정 관리</button>
+    <button class="set-tab" onclick="switchSet('log',this)">접속 기록</button>
   </div>
 
   <div class="set-page active" id="set-rcpt">
@@ -753,6 +765,70 @@ tbody tr:hover{background:var(--surface2)}
       <div id="usr-status" style="font-size:.75rem;color:var(--muted);margin-top:.5rem;text-align:right"></div>
     </div>
   </div><!-- /set-user -->
+
+  <!-- ── 접속 기록 (관리자 전용) ── -->
+  <div class="set-page" id="set-log">
+    <div class="card" style="margin-bottom:.85rem">
+      <div class="form-section-title">접속·사용 기록</div>
+      <div style="font-size:.76rem;color:var(--text2);line-height:1.7;margin-bottom:.75rem">
+        누가 언제 로그인했는지, 어떤 <strong>업무</strong>에서 어떤 <strong>기능</strong>을 썼는지 서버에 남은 기록입니다.
+        관리자만 볼 수 있고, 기록은 화면에서 지우거나 고칠 수 없습니다.
+      </div>
+      <div class="alog-filters">
+        <div class="fg"><label>시작일</label><input type="date" id="alog-from"></div>
+        <div class="fg"><label>종료일</label><input type="date" id="alog-to"></div>
+        <div class="fg"><label>사용자</label><select id="alog-name"><option value="">전체</option></select></div>
+        <div class="fg"><label>업무</label><select id="alog-biz"><option value="">전체</option></select></div>
+        <div class="fg"><label>결과</label>
+          <select id="alog-result">
+            <option value="">전체</option>
+            <option value="OK">성공</option>
+            <option value="FAILALL">실패·차단·잠김</option>
+          </select></div>
+        <div class="fg"><button class="btn btn-primary" style="width:100%" onclick="loadAccessLog()">조회</button></div>
+      </div>
+      <div class="alog-quick">
+        <button onclick="alogRange(0)">오늘</button>
+        <button onclick="alogRange(6)">최근 7일</button>
+        <button onclick="alogRange(29)">최근 30일</button>
+        <button onclick="alogRange(89)">최근 90일</button>
+        <span style="flex:1"></span>
+        <label style="display:flex;align-items:center;gap:.3rem;font-size:.74rem;cursor:pointer"><input type="checkbox" id="alog-nav" checked onchange="loadAccessLog()"> 화면 이동 포함</label>
+        <label style="display:flex;align-items:center;gap:.3rem;font-size:.74rem;cursor:pointer"><input type="checkbox" id="alog-auto" onchange="loadAccessLog()"> 자동 요청 포함(사진·목록 갱신 등)</label>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:.85rem">
+      <div class="form-section-title">사용자별 요약 <span id="alog-period" style="font-weight:400;color:var(--muted);font-size:.74rem"></span></div>
+      <div style="overflow-x:auto">
+        <table style="min-width:640px">
+          <thead><tr>
+            <th>사용자</th><th style="width:70px;text-align:center">로그인</th><th style="width:70px;text-align:center">실패</th>
+            <th style="width:130px">마지막 로그인</th><th style="width:130px">마지막 활동</th>
+            <th style="width:80px;text-align:center">사용 건수</th><th>많이 쓴 업무</th>
+          </tr></thead>
+          <tbody id="alog-sum-tbody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.2rem">조회를 눌러주세요.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">
+        <div class="form-section-title" style="margin:0;flex:1">상세 기록 <span id="alog-count" style="font-weight:400;color:var(--muted);font-size:.74rem"></span></div>
+        <button class="btn btn-outline" onclick="downloadAccessLogCsv()">⬇ 엑셀(CSV)</button>
+      </div>
+      <div style="overflow-x:auto;max-height:65vh;overflow-y:auto">
+        <table style="min-width:700px">
+          <thead style="position:sticky;top:0;background:#fff;z-index:1"><tr>
+            <th style="width:140px">시각</th><th style="width:90px">사용자</th><th style="width:120px">업무</th>
+            <th>기능</th><th style="width:64px;text-align:center">결과</th><th>비고</th>
+          </tr></thead>
+          <tbody id="alog-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.2rem">조회를 눌러주세요.</td></tr></tbody>
+        </table>
+      </div>
+      <div id="alog-status" style="font-size:.75rem;color:var(--muted);margin-top:.5rem;text-align:right"></div>
+    </div>
+  </div><!-- /set-log -->
 </div>
 
 <!-- ════ 결과보고서 ════ -->
@@ -1495,7 +1571,7 @@ function logout(){
   }
   location.reload();
 }
-const CATEGORY_TITLES = {budget:"예산관리"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("app-ai").style.display = "none";document.getElementById("app-hazard").style.display = "none";document.getElementById("app-docs").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else if(cat === "ai"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-ai").style.display = "block";initAiChat();} else if(cat === "hazard"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-hazard").style.display = "block";initHazardApp();} else if(cat === "docs"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-docs").style.display = "block";openDocsApp();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!hasValidSession()){
+const CATEGORY_TITLES = {budget:"예산관리"};function showCategoryMenu(){document.getElementById("category-menu").style.display = "flex";document.getElementById("app-safety").style.display = "none";document.getElementById("app-accident").style.display = "none";document.getElementById("app-msds").style.display = "none";document.getElementById("app-ai").style.display = "none";document.getElementById("app-hazard").style.display = "none";document.getElementById("app-docs").style.display = "none";document.getElementById("placeholder-screen").style.display = "none";}function selectCategory(cat){logNav("cat:"+cat);if(cat === "safety"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-safety").style.display = "block";} else if(cat === "accident"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-accident").style.display = "block";initAccidentForm();loadAccidents();} else if(cat === "msds"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-msds").style.display = "block";initMsdsForm();loadMsds();} else if(cat === "ai"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-ai").style.display = "block";initAiChat();} else if(cat === "hazard"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-hazard").style.display = "block";initHazardApp();} else if(cat === "docs"){document.getElementById("category-menu").style.display = "none";document.getElementById("app-docs").style.display = "block";openDocsApp();} else {document.getElementById("placeholder-title").textContent = CATEGORY_TITLES[cat] || "준비 중입니다";document.getElementById("category-menu").style.display = "none";document.getElementById("placeholder-screen").style.display = "flex";}}if(!hasValidSession()){
   document.getElementById("login-gate").style.display = "flex";
   // DASHBOARD_SYNC_URL 이 아래에서 선언되므로 스크립트를 다 읽은 뒤에 부른다.
   setTimeout(loadLoginNames, 0);}else{showCategoryMenu();
@@ -2311,6 +2387,7 @@ async function saveAccidentForm(){
 }
 
 function goAccPage(name){
+  logNav("acc:" + name);
   document.querySelectorAll(".acc-page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".acc-nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("acc-page-"+name).classList.add("active");
@@ -2556,6 +2633,7 @@ async function deleteMsdsRow(id){
 }
 
 function goMsdsPage(name){
+  logNav("msds:" + name);
   document.querySelectorAll(".msds-page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".msds-nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("msds-page-"+name).classList.add("active");
@@ -2919,6 +2997,127 @@ async function deleteRecipient(id){
 }
 
 // ══════════════════════════════════════════
+// 접속·사용 기록
+//  logNav  — 화면을 옮길 때마다 서버에 한 줄 남긴다 (응답을 기다리지 않음, 실패해도 무시)
+//  접속 기록 탭 — 관리자만 (서버 log_list 가 admin 권한을 다시 확인한다)
+// ══════════════════════════════════════════
+const _navLast = {};
+function logNav(key){
+  try{
+    const token = getSessionToken();
+    if(!token || !DASHBOARD_SYNC_URL) return;
+    const now = Date.now();
+    if(_navLast[key] && now - _navLast[key] < 30000) return;   // 같은 화면을 30초 안에 다시 열면 한 번만
+    _navLast[key] = now;
+    fetch(DASHBOARD_SYNC_URL + "?mode=nav&page=" + encodeURIComponent(key) + "&token=" + encodeURIComponent(token), { keepalive:true }).catch(function(){});
+  }catch(e){}
+}
+
+let accessLogData = null;
+function _alogYmd(d){ const p=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
+function _alogDT(ms){
+  if(!ms) return "-";
+  const d = new Date(Number(ms)); if(isNaN(d.getTime())) return "-";
+  const p=n=>String(n).padStart(2,"0");
+  return _alogYmd(d)+" "+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+}
+function alogRange(days){
+  const to = new Date(), from = new Date(Date.now() - days*864e5);
+  document.getElementById("alog-from").value = _alogYmd(from);
+  document.getElementById("alog-to").value   = _alogYmd(to);
+  loadAccessLog();
+}
+function openAccessLog(){
+  const f = document.getElementById("alog-from");
+  if(f && !f.value){ alogRange(6); return; }
+  if(!accessLogData) loadAccessLog();
+}
+function alogStatus(msg, warn){
+  const el = document.getElementById("alog-status");
+  if(el){ el.textContent = msg || ""; el.style.color = warn ? "var(--danger)" : "var(--muted)"; }
+}
+function _alogFillSelect(id, list){
+  const sel = document.getElementById(id); if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">전체</option>' + (list||[]).map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+  if(cur && (list||[]).indexOf(cur) >= 0) sel.value = cur;
+}
+async function loadAccessLog(){
+  const tb = document.getElementById("alog-tbody");
+  if(!tb) return;
+  const q = new URLSearchParams({
+    mode: "log_list",
+    from: document.getElementById("alog-from").value || "",
+    to:   document.getElementById("alog-to").value || "",
+    name: document.getElementById("alog-name").value || "",
+    biz:  document.getElementById("alog-biz").value || "",
+    result: document.getElementById("alog-result").value || "",
+    auto: document.getElementById("alog-auto").checked ? "1" : "0",
+    nav:  document.getElementById("alog-nav").checked ? "1" : "0"
+  });
+  alogStatus("불러오는 중…");
+  tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.2rem">불러오는 중…</td></tr>`;
+  try{
+    const res  = await apiFetch("?" + q.toString());
+    const data = await res.json();
+    if(!data || data.status !== "ok") throw new Error((data && data.msg) || "fail");
+    accessLogData = data;
+    _alogFillSelect("alog-name", data.names);
+    _alogFillSelect("alog-biz",  data.bizList);
+    renderAccessLog();
+    alogStatus("");
+  }catch(e){
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:1.2rem">접속 기록을 불러오지 못했습니다.</td></tr>`;
+    alogStatus(e && /권한/.test(e.message||"") ? "권한이 없습니다. (관리자만 조회 가능)" : "서버에 연결하지 못했습니다. 서버(accesslog.gs) 배포 여부를 확인하세요.", true);
+  }
+}
+function renderAccessLog(){
+  const d = accessLogData; if(!d) return;
+  document.getElementById("alog-period").textContent = "(" + d.from + " ~ " + d.to + ")";
+  const sb = document.getElementById("alog-sum-tbody");
+  sb.innerHTML = (d.summary && d.summary.length) ? d.summary.map(s=>`<tr>
+      <td><strong>${escapeHtml(s.name)}</strong></td>
+      <td style="text-align:center">${s.logins}</td>
+      <td style="text-align:center;${s.fails? 'color:var(--danger);font-weight:600':''}">${s.fails}</td>
+      <td>${_alogDT(s.lastLogin)}</td>
+      <td>${_alogDT(s.lastSeen)}</td>
+      <td style="text-align:center">${s.actions}${s.changes? ` <span style="color:var(--muted);font-size:.7rem">(변경 ${s.changes})</span>`:''}</td>
+      <td>${(s.topBiz||[]).map(escapeHtml).join(" · ") || "-"}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.2rem">이 기간에 기록이 없습니다.</td></tr>`;
+
+  const tb = document.getElementById("alog-tbody");
+  const rows = d.rows || [];
+  document.getElementById("alog-count").textContent = rows.length + "건" + (d.truncated ? " (최근 1,000건만 표시 — 기간을 줄이거나 필터를 쓰세요)" : "");
+  const badge = r => r.rc === "OK" ? '<span class="badge badge-ok">성공</span>'
+                   : r.rc === "LOCKED" ? '<span class="badge badge-warn">잠김</span>'
+                   : `<span class="badge badge-danger">${escapeHtml(r.result||r.rc)}</span>`;
+  tb.innerHTML = rows.length ? rows.map(r=>`<tr>
+      <td class="alog-t">${_alogDT(r.t)}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.biz)}</td>
+      <td class="alog-kind-${r.kind}">${escapeHtml(r.fn)}</td>
+      <td style="text-align:center">${badge(r)}</td>
+      <td style="color:var(--text2);word-break:break-all">${escapeHtml(r.note||"")}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.2rem">조건에 맞는 기록이 없습니다.</td></tr>`;
+}
+function downloadAccessLogCsv(){
+  const d = accessLogData;
+  if(!d || !(d.rows||[]).length){ alogStatus("내려받을 기록이 없습니다. 먼저 조회하세요.", true); return; }
+  const kind = {auth:"접속", view:"조회", change:"등록·수정·삭제", nav:"화면 이동", auto:"자동"};
+  const q = v => '"' + String(v==null?"":v).replace(/"/g,'""') + '"';
+  const lines = [["시각","사용자","업무","기능","구분","결과","비고"].map(q).join(",")]
+    .concat(d.rows.map(r=>[_alogDT(r.t), r.name, r.biz, r.fn, kind[r.kind]||r.kind, r.result, r.note].map(q).join(",")));
+  const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "접속기록_" + d.from + "_" + d.to + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+// ══════════════════════════════════════════
 // 사용자 계정 관리 (관리자 전용)
 // 서버(_Users 시트)에 보관하며, 목록·저장·잠금해제 모두 서버에서 admin 권한을 다시 확인한다.
 // 비밀번호는 서버에서 해시로만 보관되므로 화면에서는 '재설정'만 가능하다.
@@ -2933,6 +3132,8 @@ function switchSet(tab, el){
   if(el) el.classList.add("active");
   if(tab === "user") loadUsers();
   if(tab === "rcpt") loadRecipients();
+  if(tab === "log")  openAccessLog();
+  logNav("set:" + tab);
 }
 
 function usrStatus(msg, warn){
@@ -3770,6 +3971,7 @@ function docDeleteFromModal(){
 
 // ══ 네비게이션 ══
 function goPage(name){
+  logNav("safety:" + name);
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("page-"+name).classList.add("active");
