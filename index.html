@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>안전보건점검 관리시스템 v3</title>
+<title>안전보건관리 시스템 v3</title>
 <!-- 앱처럼 설치해서 쓰기 (PWA) -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#EAB308">
@@ -309,7 +309,7 @@ tbody tr:hover{background:var(--surface2)}
 <div class="login-gate" id="login-gate" style="display:none">
   <div class="login-box">
     <img src="data:image/png;base64,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" alt="CHM" style="height:48px;width:auto;display:block;margin:0 auto .75rem">
-    <h2>안전보건 관리시스템</h2>
+    <h2>안전보건관리 시스템</h2>
     <p>점검자를 선택하고 비밀번호를 입력하세요</p>
     <div class="fg">
       <label>점검자</label>
@@ -327,7 +327,7 @@ tbody tr:hover{background:var(--surface2)}
   </div>
 </div>
 
-<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><button class="menu-top-btn menu-top-btn2" onclick="openPwModal()">🔑 비밀번호 변경</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건 관리시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div></button><button class="category-card" onclick="selectCategory('docs')"><div class="cc-icon">📁</div><div class="cc-label">서류관리</div></button><button class="category-card" onclick="selectCategory('hazard')"><div class="cc-icon">📷</div><div class="cc-label">현장위험도 분석</div></button><button class="category-card" onclick="selectCategory('ai')"><div class="cc-icon">🤖</div><div class="cc-label">AI 검색</div></button></div></div></div><!-- ════ 내 비밀번호 변경 (모든 사용자) ════ -->
+<div class="category-menu" id="category-menu" style="display:none"><button class="menu-top-btn" id="menu-logout-btn">로그아웃</button><button class="menu-top-btn menu-top-btn2" onclick="openPwModal()">🔑 비밀번호 변경</button><div class="category-menu-inner"><img class="cm-logo" src="data:image/png;base64,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" alt="CHM"><h1>CHM 안전보건관리 시스템</h1><div class="cm-sub">업무를 선택하세요</div><div class="category-grid"><button class="category-card" onclick="selectCategory('safety')"><div class="cc-icon">🦺</div><div class="cc-label">안전보건 점검</div></button><button class="category-card" onclick="selectCategory('accident')"><div class="cc-icon">🚑</div><div class="cc-label">산업재해관리</div></button><button class="category-card" onclick="selectCategory('budget')"><div class="cc-icon">💰</div><div class="cc-label">예산관리</div><div class="cc-badge">준비중</div></button><button class="category-card" onclick="selectCategory('msds')"><div class="cc-icon">🧪</div><div class="cc-label">MSDS관리</div></button><button class="category-card" onclick="selectCategory('docs')"><div class="cc-icon">📁</div><div class="cc-label">서류관리</div></button><button class="category-card" onclick="selectCategory('hazard')"><div class="cc-icon">📷</div><div class="cc-label">현장위험도 분석</div></button><button class="category-card" onclick="selectCategory('ai')"><div class="cc-icon">🤖</div><div class="cc-label">AI 검색</div></button></div></div></div><!-- ════ 내 비밀번호 변경 (모든 사용자) ════ -->
 <div class="modal-overlay" id="pw-modal" style="z-index:700">
   <div class="modal" style="width:420px">
     <div class="modal-hd">
@@ -354,7 +354,7 @@ tbody tr:hover{background:var(--surface2)}
   <div class="hd-top">
     <div class="logo" onclick="showCategoryMenu()" style="cursor:pointer" title="메뉴로 돌아가기">
       <img src="data:image/png;base64,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" alt="CHM" style="height:28px;width:auto;display:block">
-      <span class="logo-text">안전보건 관리시스템</span></div>
+      <span class="logo-text">안전보건관리 시스템</span></div>
     <nav>
       <button class="nav-btn active" onclick="goPage('dashboard')">대시보드</button>
       <button class="nav-btn" onclick="goPage('schedule')">점검일정</button>
@@ -1218,18 +1218,16 @@ tbody tr:hover{background:var(--surface2)}
       <div class="form-section-title">처리 현황</div>
       <div class="form-row">
         <div class="fg"><label>조사표 제출일</label><input type="date" id="acc-inp-reportdate"></div>
+        <div class="fg"><label>조사표 제출자</label><input type="text" id="acc-inp-reportby" placeholder="조사표를 제출한 사람"></div>
+      </div>
+      <div class="form-row">
         <div class="fg"><label>위험성평가 반영</label>
           <select id="acc-inp-riskassess"><option value="">— 선택 —</option><option>반영완료</option><option>반영예정</option><option>해당없음</option></select>
         </div>
+        <div class="fg"><label>진행상황</label>
+          <select id="acc-inp-status"><option>진행중</option><option>종결</option></select>
+        </div>
       </div>
-      <div class="fg"><label>진행상황</label>
-        <select id="acc-inp-status"><option>진행중</option><option>종결</option></select>
-      </div>
-      <div class="form-row">
-        <div class="fg"><label>휴직 시작일</label><input type="date" id="acc-inp-leavestart" onchange="calcLeaveDays()"></div>
-        <div class="fg"><label>휴직 종료일</label><input type="date" id="acc-inp-leaveend" onchange="calcLeaveDays()"></div>
-      </div>
-      <div class="fg"><label>휴직일수</label><input type="number" id="acc-inp-leavedays" placeholder="자동 계산 (직접 입력 가능)"></div>
       <div class="fg"><label>비고</label><textarea id="acc-inp-note" placeholder="기타 특이사항"></textarea></div>
     </div>
   </div>
@@ -1259,7 +1257,7 @@ tbody tr:hover{background:var(--surface2)}
   <div class="card">
     <div style="overflow-x:auto">
       <table>
-        <thead><tr><th>발생일</th><th>사업장</th><th>성명</th><th>직군</th><th>재해유형</th><th>사고내용</th><th>진행상황</th><th>휴직일수</th><th style="text-align:center">관리</th></tr></thead>
+        <thead><tr><th>발생일</th><th>사업장</th><th>성명</th><th>직군</th><th>재해유형</th><th>사고내용</th><th>진행상황</th><th>조사표 제출자</th><th style="text-align:center">관리</th></tr></thead>
         <tbody id="acc-list-body"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1.5rem">등록된 재해가 없습니다</td></tr></tbody>
       </table>
     </div>
@@ -2095,16 +2093,6 @@ function escapeHtml(str){
   return String(str==null?"":str).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-function calcLeaveDays(){
-  const s = document.getElementById("acc-inp-leavestart").value;
-  const e = document.getElementById("acc-inp-leaveend").value;
-  if(s && e){
-    const d1 = new Date(s), d2 = new Date(e);
-    const days = Math.round((d2-d1)/86400000) + 1;
-    if(days > 0) document.getElementById("acc-inp-leavedays").value = days;
-  }
-}
-
 function initAccidentForm(){
   const dateEl = document.getElementById("acc-inp-date");
   if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split("T")[0];
@@ -2225,7 +2213,7 @@ function renderAccList(){
       <td>${escapeHtml(a.accType)}</td>
       <td class="acc-detail-cell" title="클릭하여 전체 내용 보기" onclick="showAccDetail(${i})">${escapeHtml(a.detail)}</td>
       <td><span class="badge" style="background:${a.status==='종결'?'#dcfce7':'#fef3c7'};color:${a.status==='종결'?'#166534':'#92400e'}">${escapeHtml(a.status||'진행중')}</span></td>
-      <td>${a.leaveDays || '-'}</td>
+      <td>${escapeHtml(a.reportBy || '-')}</td>
       <td style="text-align:center"><button class="btn btn-outline btn-sm" onclick="editAccident(${i})">수정</button></td>
     </tr>`).join("");
 }
@@ -2275,9 +2263,7 @@ function editAccident(i){
   put("acc-inp-reportdate", fmtDate(a.reportDate));
   put("acc-inp-riskassess", a.riskAssess);
   put("acc-inp-status",     a.status || "진행중");
-  put("acc-inp-leavestart", fmtDate(a.leaveStart));
-  put("acc-inp-leaveend",   fmtDate(a.leaveEnd));
-  put("acc-inp-leavedays",  a.leaveDays);
+  put("acc-inp-reportby",   a.reportBy);
   put("acc-inp-note",       a.note);
 
   accEditingId = a.id;
@@ -2319,7 +2305,7 @@ function cancelAccEdit(){
 }
 
 function resetAccidentForm(){
-  ["acc-inp-site","acc-inp-date","acc-inp-name","acc-inp-job","acc-inp-acctype","acc-inp-category","acc-inp-detail","acc-inp-reportdate","acc-inp-riskassess","acc-inp-leavestart","acc-inp-leaveend","acc-inp-leavedays","acc-inp-note"].forEach(id=>{
+  ["acc-inp-site","acc-inp-date","acc-inp-name","acc-inp-job","acc-inp-acctype","acc-inp-category","acc-inp-detail","acc-inp-reportdate","acc-inp-reportby","acc-inp-riskassess","acc-inp-note"].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.value = "";
   });
@@ -2350,9 +2336,7 @@ async function saveAccidentForm(){
     reportDate: document.getElementById("acc-inp-reportdate").value,
     riskAssess: document.getElementById("acc-inp-riskassess").value,
     status: document.getElementById("acc-inp-status").value,
-    leaveStart: document.getElementById("acc-inp-leavestart").value,
-    leaveEnd: document.getElementById("acc-inp-leaveend").value,
-    leaveDays: document.getElementById("acc-inp-leavedays").value,
+    reportBy: document.getElementById("acc-inp-reportby").value.trim(),
     note: document.getElementById("acc-inp-note").value.trim(),
     registrant: currentInspector()
   };
@@ -4434,7 +4418,7 @@ function renderExecRpt(ins){
       </div>`:""}
 
       <div style="text-align:center;font-size:.7rem;color:var(--muted);padding:.75rem;border-top:1px solid var(--border)">
-        본 보고서는 안전보건점검 관리시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
+        본 보고서는 안전보건관리 시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
       </div>
     </div>`;
 }
@@ -4496,7 +4480,7 @@ function renderSiteRpt(ins){
         </div>
       </div>
       <div style="text-align:center;font-size:.7rem;color:var(--muted);padding:.75rem;margin-top:.5rem">
-        본 문서는 안전보건점검 관리시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
+        본 문서는 안전보건관리 시스템에서 자동 생성되었습니다. · ${new Date().toLocaleString("ko-KR")}
       </div>
     </div>`;
 }
@@ -4662,7 +4646,7 @@ ${ins.memo?`<div style="border-left:3px solid #1e40af;padding:8px 10px;backgroun
 ${fbSection}
 
 <div style="margin-top:16px;text-align:center;font-size:9px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px">
-  안전보건점검 관리시스템 자동 생성 · ${new Date().toLocaleString("ko-KR")}
+  안전보건관리 시스템 자동 생성 · ${new Date().toLocaleString("ko-KR")}
 </div>
 </body></html>`;
 }
