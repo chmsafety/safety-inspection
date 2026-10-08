@@ -11,7 +11,7 @@
   --accent:#1e40af;--accent-light:#eff6ff;
   --ok:#15803d;--ok-bg:#f0fdf4;--ok-border:#bbf7d0;
   --danger:#b91c1c;--danger-bg:#fef2f2;--danger-border:#fecaca;
-  --warn:#b45309;--warn-bg:#fffbeb;
+  --warn:#b45309;--warn-bg:#fffbeb;--warn-border:#fde68a;--surface2:#f8fafc;
   --text:#0f172a;--text2:#475569;--muted:#94a3b8;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -53,6 +53,37 @@ main{max-width:720px;margin:0 auto;padding:1.5rem}
 
 /* 상태 배지 */
 .status-select{padding:.3rem .65rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:"Noto Sans KR",sans-serif}
+
+/* 개선 결과 선택 (2026-10-08) — 개선완료 체크를 빠뜨리지 않도록 크게 표시 */
+.st-box{margin-top:.85rem;border:2px solid var(--danger-border);background:#fff7f7;border-radius:10px;padding:.7rem .75rem;transition:all .15s}
+.st-box.st-done{border-color:var(--ok-border);background:var(--ok-bg)}
+.st-box.st-inprogress{border-color:var(--warn-border);background:var(--warn-bg)}
+.st-label{font-size:.78rem;font-weight:800;color:var(--danger);margin-bottom:.5rem;display:flex;align-items:center;gap:.35rem}
+.st-box.st-done .st-label{color:var(--ok)}
+.st-box.st-inprogress .st-label{color:var(--warn)}
+.st-seg{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:.4rem}
+@media(max-width:420px){.st-btn{font-size:.76rem}}
+.st-btn{padding:.7rem .3rem;border-radius:8px;border:2px solid var(--border2);background:#fff;font-size:.86rem;white-space:nowrap;font-weight:800;cursor:pointer;font-family:"Noto Sans KR",sans-serif;color:var(--text2);transition:all .12s}
+.st-btn:hover{border-color:var(--accent)}
+.st-btn.on[data-v="done"]{background:var(--ok);border-color:var(--ok);color:#fff;box-shadow:0 2px 8px rgba(21,128,61,.3)}
+.st-btn.on[data-v="inprogress"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.st-btn.on[data-v="pending"]{background:var(--danger);border-color:var(--danger);color:#fff}
+.st-pill{font-size:.72rem;font-weight:800;padding:.22rem .6rem;border-radius:20px;white-space:nowrap}
+.st-pill.done{background:var(--ok);color:#fff}
+.st-pill.inprogress{background:var(--warn);color:#fff}
+.st-pill.pending{background:#fff;color:var(--danger);border:1px solid var(--danger-border)}
+.st-warn{display:none;margin-top:.55rem;background:#fff3cd;border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:.55rem .7rem;font-size:.78rem;font-weight:600;line-height:1.55}
+.st-warn button{margin-top:.4rem;background:var(--ok);color:#fff;border:none;border-radius:6px;padding:.4rem .8rem;font-weight:800;font-size:.78rem;cursor:pointer;font-family:"Noto Sans KR",sans-serif}
+.issue-card.need-check{box-shadow:0 0 0 3px rgba(245,158,11,.35)}
+.submit-sum{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;margin-bottom:.75rem;font-size:.82rem;display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center}
+.submit-sum b{font-family:"IBM Plex Mono",monospace}
+.chk-ov{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.chk-ov.open{display:flex}
+.chk-box{background:#fff;border-radius:14px;max-width:460px;width:100%;padding:1.25rem;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
+.chk-box h3{font-size:1rem;margin-bottom:.6rem;color:#92400e}
+.chk-box ul{margin:.5rem 0 .8rem 1.1rem;font-size:.82rem;line-height:1.7}
+.chk-btns{display:flex;flex-direction:column;gap:.45rem}
+.chk-btns .btn{width:100%;padding:.7rem}
 
 /* 완료 화면 */
 .success-screen{display:none;text-align:center;padding:3rem 1.5rem}
@@ -183,10 +214,25 @@ main{max-width:720px;margin:0 auto;padding:1.5rem}
   </div>
 
   <div class="no-print" style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:.7rem 1rem;font-size:.8rem;color:#b45309;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem">⚠️ 제출 버튼을 누른 후 저장이 완료될 때까지 5~10초 정도 걸릴 수 있습니다. 완료 화면이 나올 때까지 버튼을 여러 번 누르지 말고 잠시 기다려주세요.</div>
+  <div class="submit-sum no-print" id="submit-sum" style="display:none"></div>
   <div style="display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap" class="no-print">
     <button class="btn btn-outline" onclick="resetForm()">초기화</button>
     <button class="btn btn-outline" onclick="printResult()">🖨 출력/PDF</button>
     <button class="btn btn-primary" id="fb-submit-btn" onclick="submitFeedback()">📤 개선결과 제출</button>
+  </div>
+</div>
+
+<!-- 개선완료 체크 확인 창 -->
+<div class="chk-ov" id="chk-ov">
+  <div class="chk-box">
+    <h3>⚠ 개선완료 체크를 확인해주세요</h3>
+    <div style="font-size:.83rem;color:var(--text2);line-height:1.6">아래 항목은 <b>개선 조치 내용은 입력</b>됐지만 <b>개선완료로 체크되지 않았습니다.</b><br>이대로 제출하면 <b>미완료/진행중</b>으로 집계됩니다.</div>
+    <ul id="chk-list"></ul>
+    <div class="chk-btns">
+      <button class="btn btn-primary" id="chk-all" style="background:var(--ok)">✅ 모두 개선완료로 체크하고 제출</button>
+      <button class="btn btn-outline" id="chk-back">돌아가서 항목별로 확인</button>
+      <button class="btn btn-outline" id="chk-keep" style="color:var(--text2);font-size:.78rem">아직 개선 중 — 지금 상태 그대로 제출</button>
+    </div>
   </div>
 </div>
 
@@ -372,6 +418,10 @@ function renderIssues(data){
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     </div>
+    <div style="background:var(--ok-bg);border:1px solid var(--ok-border);color:var(--ok);border-radius:8px;padding:.6rem .8rem;font-size:.8rem;font-weight:600;margin-bottom:1rem;line-height:1.6">
+      ✅ 항목마다 개선 조치 내용을 적은 뒤, 개선이 끝났으면 <b>[✅ 개선완료]</b> 버튼을 꼭 눌러주세요.<br>
+      <span style="font-weight:400;color:var(--text2)">버튼을 누르지 않으면 내용을 적어도 <b>미완료</b>로 제출됩니다.</span>
+    </div>
   ` + currentIssues.map((issue,i)=>{
     const isDeduct = issue.key && issue.key.startsWith('deduct');
 
@@ -384,12 +434,7 @@ function renderIssues(data){
             <div class="issue-num" style="background:var(--danger)">${i+1}</div>
             <div class="issue-name" style="color:var(--danger)">${issue.name}</div>
           </div>
-          <select class="status-select" id="status-${i}" onchange="updateProgress()"
-            style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
-            <option value="pending">⏳ 미완료</option>
-            <option value="done">✅ 개선완료</option>
-            <option value="inprogress">🔄 진행중</option>
-          </select>
+          <span class="st-pill pending" id="st-pill-${i}">⏳ 미완료</span>
         </div>
         <div class="issue-body">
           ${issue.originalNote?`<div class="issue-original" style="border-color:var(--danger)">📋 지적내용: ${issue.originalNote}</div>`:""}
@@ -412,6 +457,7 @@ function renderIssues(data){
             <label>개선 조치 내용 *</label>
             <textarea id="imp-text-${i}" placeholder="현장점검 미흡사항에 대한 개선 조치 내용을 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
           </div>
+          ${statusBoxHtml(i)}
         </div>
       </div>`;
     } else {
@@ -423,12 +469,7 @@ function renderIssues(data){
             <div class="issue-num">${i+1}</div>
             <div class="issue-name">${issue.name}</div>
           </div>
-          <select class="status-select" id="status-${i}" onchange="updateProgress()"
-            style="background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border)">
-            <option value="pending">⏳ 미완료</option>
-            <option value="done">✅ 개선완료</option>
-            <option value="inprogress">🔄 진행중</option>
-          </select>
+          <span class="st-pill pending" id="st-pill-${i}">⏳ 미완료</span>
         </div>
         <div class="issue-body">
           ${issue.originalNote?`<div class="issue-original">📋 지적내용: ${issue.originalNote}</div>`:""}
@@ -436,10 +477,12 @@ function renderIssues(data){
             <label>개선 조치 내용 *</label>
             <textarea id="imp-text-${i}" placeholder="어떻게 개선했는지 구체적으로 작성해주세요" oninput="updateProgress()"></textarea>
           </div>
+          ${statusBoxHtml(i)}
         </div>
       </div>`;
     }
   }).join("");
+  updateProgress();
 }
 
 function handlePhoto(idx, input){
@@ -472,23 +515,113 @@ function removeImpPhoto(idx, pi){
   renderPhotoList(idx);
 }
 
+const ST_LABEL = {done:"✅ 개선완료", inprogress:"🔄 진행중", pending:"⏳ 미완료"};
+
+function statusBoxHtml(i){
+  return `
+          <div class="st-box" id="st-box-${i}">
+            <div class="st-label" id="st-label-${i}">👇 개선 결과를 선택해주세요 (필수)</div>
+            <input type="hidden" id="status-${i}" value="pending">
+            <div class="st-seg">
+              <button type="button" class="st-btn" data-v="done" onclick="setStatus(${i},'done')">✅ 개선완료</button>
+              <button type="button" class="st-btn" data-v="inprogress" onclick="setStatus(${i},'inprogress')">🔄 진행중</button>
+              <button type="button" class="st-btn on" data-v="pending" onclick="setStatus(${i},'pending')">⏳ 미완료</button>
+            </div>
+            <div class="st-warn" id="st-warn-${i}">
+              ✍ 개선 조치 내용이 입력됐는데 아직 <b>개선완료</b>가 선택되지 않았습니다.<br>
+              개선이 끝났다면 개선완료를 눌러주세요.<br>
+              <button type="button" onclick="setStatus(${i},'done')">✅ 개선완료로 체크</button>
+            </div>
+          </div>`;
+}
+
+function setStatus(i, v){
+  const el = document.getElementById(`status-${i}`);
+  if(!el) return;
+  el.value = v;
+  updateProgress();
+}
+
+// 항목별 상태: 내용은 있는데 개선완료가 아닌 항목 = 체크 누락 의심
+function issueStates(){
+  return currentIssues.map((_,i)=>{
+    const status = document.getElementById(`status-${i}`)?.value || "pending";
+    const text = (document.getElementById(`imp-text-${i}`)?.value || "").trim();
+    return {i, status, text, needCheck: !!text && status!=="done", doneNoText: status==="done" && !text};
+  });
+}
+
 function updateProgress(){
   const total = currentIssues.length;
   if(total===0) return;
+  const states = issueStates();
   let done = 0;
-  currentIssues.forEach((_,i)=>{
-    const status = document.getElementById(`status-${i}`)?.value;
-    const text = document.getElementById(`imp-text-${i}`)?.value.trim();
-    if(status==="done"&&text) done++;
-    // 카드 테두리 색상
+  states.forEach(st=>{
+    const i = st.i;
+    if(st.status==="done"&&st.text) done++;
     const card = document.getElementById(`issue-card-${i}`);
     if(card){
-      card.style.borderColor = status==="done"?"var(--ok-border)":status==="inprogress"?"var(--warn-border)":"var(--border)";
+      card.style.borderColor = st.status==="done"?"var(--ok-border)":st.status==="inprogress"?"var(--warn-border)":"var(--border)";
+      card.classList.toggle("need-check", st.needCheck);
     }
+    const pill = document.getElementById(`st-pill-${i}`);
+    if(pill){ pill.className = "st-pill " + st.status; pill.textContent = ST_LABEL[st.status]; }
+    const box = document.getElementById(`st-box-${i}`);
+    if(box){
+      box.className = "st-box" + (st.status==="done"?" st-done":st.status==="inprogress"?" st-inprogress":"");
+      box.querySelectorAll(".st-btn").forEach(b=>b.classList.toggle("on", b.dataset.v===st.status));
+    }
+    const label = document.getElementById(`st-label-${i}`);
+    if(label){
+      label.textContent = st.status==="done"
+        ? (st.text ? "✅ 개선완료로 체크됨" : "⚠ 개선완료를 선택했습니다 — 위에 개선 조치 내용을 입력해주세요")
+        : st.status==="inprogress" ? "🔄 진행중으로 체크됨 (개선이 끝나면 개선완료로 바꿔주세요)"
+        : "👇 개선 결과를 선택해주세요 (필수)";
+    }
+    const warn = document.getElementById(`st-warn-${i}`);
+    if(warn) warn.style.display = st.needCheck ? "block" : "none";
   });
   const pct = Math.round(done/total*100);
   document.getElementById("progress-fill").style.width = pct+"%";
   document.getElementById("progress-text").textContent = `${done} / ${total}건 완료`;
+  renderSubmitSummary(states);
+}
+
+function renderSubmitSummary(states){
+  const box = document.getElementById("submit-sum");
+  if(!box) return;
+  states = states || issueStates();
+  if(!states.length){ box.style.display="none"; return; }
+  const c = {done:0,inprogress:0,pending:0};
+  states.forEach(s=>{ c[s.status]=(c[s.status]||0)+1; });
+  const need = states.filter(s=>s.needCheck).length;
+  box.style.display = "flex";
+  box.innerHTML = `
+    <span style="font-weight:700">제출 전 확인</span>
+    <span style="color:var(--ok)">✅ 개선완료 <b>${c.done}</b></span>
+    <span style="color:var(--warn)">🔄 진행중 <b>${c.inprogress}</b></span>
+    <span style="color:var(--danger)">⏳ 미완료 <b>${c.pending}</b></span>
+    ${need?`<span style="background:#fff3cd;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:.15rem .5rem;font-weight:700;cursor:pointer" onclick="scrollToIssue(${states.find(s=>s.needCheck).i})">⚠ 개선완료 체크 확인 필요 ${need}건</span>`:""}`;
+}
+
+function scrollToIssue(i){
+  const card = document.getElementById(`issue-card-${i}`);
+  if(card) card.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+// 제출 전 확인 창 — 내용은 있는데 개선완료가 아닌 항목이 있으면 묻는다
+function askCheckBeforeSubmit(states){
+  return new Promise(resolve=>{
+    const need = states.filter(s=>s.needCheck);
+    const ov = document.getElementById("chk-ov");
+    document.getElementById("chk-list").innerHTML = need.map(s=>
+      `<li><b>${escapeHtml(currentIssues[s.i].name)}</b> — 현재 ${ST_LABEL[s.status]}</li>`).join("");
+    ov.classList.add("open");
+    const done = v=>{ ov.classList.remove("open"); resolve(v); };
+    document.getElementById("chk-all").onclick  = ()=>{ need.forEach(s=>setStatus(s.i,"done")); done("submit"); };
+    document.getElementById("chk-keep").onclick = ()=>done("submit");
+    document.getElementById("chk-back").onclick = ()=>{ done("back"); scrollToIssue(need[0].i); };
+  });
 }
 
 async function submitFeedback(){
@@ -497,6 +630,21 @@ async function submitFeedback(){
   const date = document.getElementById("fb-date").value;
   if(!site||!manager||!date){ alert("사업장, 담당자명, 개선완료일을 입력하세요."); return; }
   if(currentIssues.length===0){ alert("미흡 항목이 없습니다."); return; }
+
+  // 개선완료를 골랐는데 내용이 없으면 제출하지 않는다
+  const states = issueStates();
+  const noText = states.find(st=>st.doneNoText);
+  if(noText){
+    alert(`"${currentIssues[noText.i].name}" 항목은 개선완료로 체크됐지만 개선 조치 내용이 비어 있습니다.\n내용을 입력해주세요.`);
+    scrollToIssue(noText.i);
+    document.getElementById(`imp-text-${noText.i}`)?.focus();
+    return;
+  }
+  // 내용은 적었는데 개선완료 체크를 안 한 항목이 있으면 확인한다
+  if(states.some(st=>st.needCheck)){
+    const ans = await askCheckBeforeSubmit(states);
+    if(ans!=="submit") return;
+  }
 
   const submitBtn = document.getElementById("fb-submit-btn");
   if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = "⏳ 제출 중... (5~10초 소요)"; }
@@ -748,6 +896,7 @@ function resetForm(){
   currentIssues=[];
   photoData={};
   clearSig();
+  const sum=document.getElementById("submit-sum"); if(sum) sum.style.display="none";
 }
 </script>
 </div><!-- main-screen -->

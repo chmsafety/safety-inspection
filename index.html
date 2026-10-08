@@ -236,6 +236,23 @@ tbody tr:hover{background:var(--surface2)}
 .modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)}
 .modal-ft{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
 
+/* 개선현황 상세·수정 (2026-10-08) */
+.imp-item{border:1px solid var(--border);border-radius:10px;margin-bottom:.7rem;overflow:hidden}
+.imp-item.need{border-color:#fcd34d;box-shadow:0 0 0 2px rgba(245,158,11,.25)}
+.imp-item-hd{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.55rem .8rem;background:var(--surface2);border-bottom:1px solid var(--border);font-weight:700;font-size:.82rem}
+.imp-item-bd{padding:.7rem .8rem}
+.imp-orig{font-size:.74rem;color:var(--text2);background:var(--bg);border-left:3px solid var(--danger);border-radius:4px;padding:.4rem .6rem;margin-bottom:.55rem;white-space:pre-wrap}
+.imp-seg{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem}
+.imp-seg button{flex:1;min-width:5.5rem;padding:.45rem .3rem;border-radius:7px;border:2px solid var(--border2);background:#fff;font-weight:800;font-size:.76rem;cursor:pointer;font-family:inherit;color:var(--text2)}
+.imp-seg button.on[data-v="done"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.imp-seg button.on[data-v="inprogress"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.imp-seg button.on[data-v="pending"]{background:var(--danger);border-color:var(--danger);color:#fff}
+.imp-seg button:disabled{cursor:default;opacity:.85}
+.imp-photos{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem}
+.imp-photos img{width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:zoom-in}
+.imp-warn{display:none;font-size:.72rem;font-weight:700;color:#92400e;background:#fff3cd;border:1px solid #fcd34d;border-radius:6px;padding:.3rem .55rem;margin-top:.45rem}
+.imp-chk-badge{display:inline-block;font-size:.6rem;font-weight:800;color:#92400e;background:#fff3cd;border:1px solid #fcd34d;border-radius:4px;padding:.08rem .35rem;margin-top:.2rem;white-space:nowrap}
+
 /* Deduct counter */
 .deduct-counter{display:flex;align-items:center;gap:.5rem;margin-top:.5rem}
 .deduct-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:#fff;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
@@ -595,6 +612,35 @@ tbody tr:hover{background:var(--surface2)}
   <div class="card">
     <div id="improvement-list">
       <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.8rem">점검 데이터가 없습니다</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="imp-modal" style="z-index:660">
+  <div class="modal" style="width:720px">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="imp-m-title">개선결과</div>
+        <div id="imp-m-sub" style="font-size:.72rem;color:var(--muted);margin-top:.2rem"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('imp-modal')">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem">
+      <div class="fg"><label>담당자</label><input type="text" id="imp-m-manager" maxlength="40"></div>
+      <div class="fg"><label>연락처</label><input type="tel" id="imp-m-tel" maxlength="30"></div>
+      <div class="fg"><label>개선완료일</label><input type="date" id="imp-m-date"></div>
+    </div>
+    <div class="fg" style="margin-top:.5rem"><label>종합 의견</label><textarea id="imp-m-memo" rows="2" maxlength="3000"></textarea></div>
+    <div id="imp-m-sum" style="display:flex;gap:.8rem;flex-wrap:wrap;font-size:.78rem;margin:.8rem 0 .6rem"></div>
+    <div id="imp-m-items"></div>
+    <div id="imp-m-sig"></div>
+    <div id="imp-m-status" style="font-size:.74rem;color:var(--muted);margin-top:.5rem;min-height:1em"></div>
+    <div class="modal-ft" style="justify-content:space-between">
+      <button class="btn btn-outline btn-sm" id="imp-m-rpt">📄 보고서 보기</button>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-outline" onclick="closeModal('imp-modal')">닫기</button>
+        <button class="btn btn-primary" id="imp-m-save" onclick="impSaveFromModal()">저장</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4171,13 +4217,14 @@ function updateImprovePage(){
 
   impList.innerHTML = `
     <div style="overflow-x:auto">
-    <table style="min-width:900px">
+    <table style="min-width:980px">
       <thead><tr>
         <th>사업장</th><th>점검일</th><th>담당자</th>
         <th style="text-align:center">미흡</th><th style="text-align:center">개선완료</th><th style="text-align:center">진행률</th>
         <th>마감일</th><th>제출일</th>
         <th style="text-align:center">독촉알림(7·3·1일전)</th>
         <th style="text-align:center">상태</th>
+        <th style="text-align:center">개선내용</th>
       </tr></thead>
       <tbody>${rows.map(r=>{
         const pct = r.totalIssues>0 ? Math.round(r.doneCount/r.totalIssues*100) : 100;
@@ -4212,11 +4259,178 @@ function updateImprovePage(){
           <td style="font-size:.72rem;color:${r.overdue?"var(--danger)":"var(--muted)"};font-weight:${r.overdue?700:400}">${deadlineStr}</td>
           <td style="font-size:.72rem;color:var(--muted)">${r.fb&&r.fb.date?fmtDate(r.fb.date):"-"}</td>
           <td style="text-align:center">${badges}</td>
-          <td style="text-align:center">${statusHtml}</td>
+          <td style="text-align:center">${statusHtml}${impNeedCheckCount(r.fb)?`<br><span class="imp-chk-badge" title="개선 내용은 있는데 개선완료로 체크되지 않은 항목">⚠ 체크 확인 ${impNeedCheckCount(r.fb)}건</span>`:""}</td>
+          <td style="text-align:center" onclick="event.stopPropagation()">${
+            r.submitted
+              ? `<button class="btn btn-outline btn-sm" style="font-size:.62rem;padding:.15rem .5rem;white-space:nowrap" onclick="openImpModal(${r.ins.id})">${isAdmin()?"📝 보기·수정":"🔍 보기"}</button>`
+              : (isAdmin() ? `<button class="btn btn-outline btn-sm" style="font-size:.62rem;padding:.15rem .5rem;white-space:nowrap" onclick="openImpModal(${r.ins.id})">✏ 대신 입력</button>` : `<span style="color:var(--muted);font-size:.65rem">-</span>`)
+          }</td>
         </tr>`;
       }).join("")}</tbody>
     </table>
     </div>`;
+}
+
+// ══ 개선현황 상세 보기·수정 (관리자) ══
+// 사업장이 개선 내용을 적고도 개선완료 체크를 빠뜨린 경우를 관리자가 바로잡을 수 있게 한다.
+// 저장은 서버 improve.gs (type:'imp_save', 관리자만). 사진·서명은 보기만 한다.
+const IMP_ST_LABEL = {done:"✅ 개선완료", inprogress:"🔄 진행중", pending:"⏳ 미완료"};
+let impEdit = null; // {ins, fb, items:[{key,name,originalNote,status,improvementText,photos,beforePhotos}]}
+
+function impNeedCheckCount(fb){
+  if(!fb || !Array.isArray(fb.results)) return 0;
+  return fb.results.filter(r=>r && r.status!=="done" && String(r.improvementText||"").trim()).length;
+}
+
+// 점검 기록에서 미흡 항목 목록을 만든다 (feedback.html 과 같은 규칙: 미흡 항목 + 현장점검 미흡 건수만큼)
+function impIssuesFromInspection(ins){
+  const list = [];
+  CHECK_ITEMS.forEach(item=>{
+    const sc = (ins.scores||{})[item.key];
+    if(sc && (sc.value==="bad"||sc.value==="미흡")) list.push({key:item.key, name:item.name, originalNote:sc.note||""});
+  });
+  const dc = Number(ins.deductCount)||0;
+  const photos = ins.deductItems||[];
+  const parts = String(ins.deductNote||"").split(" / ").map(x=>x.trim());
+  for(let di=0; di<dc; di++){
+    const p = photos[di];
+    list.push({key:`deduct_${di}`, name: dc>1?`현장점검 미흡사항 ${di+1}`:"현장점검 미흡사항",
+      originalNote:(p&&p.note)||parts[di]||(dc===1?(ins.deductNote||""):"")});
+  }
+  return list;
+}
+
+function openImpModal(insId){
+  const ins = inspections.find(x=>x.id===insId);
+  if(!ins) return;
+  const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
+  const fb = feedbacks[ins.site] || null;
+  if(!fb && !isAdmin()) return;
+  const base = (fb && Array.isArray(fb.results) && fb.results.length)
+    ? fb.results.map(r=>({key:r.key||"", name:r.name||"", originalNote:r.originalNote||"",
+        status:r.status||"pending", improvementText:r.improvementText||"", photos:r.photos||[]}))
+    : impIssuesFromInspection(ins).map(r=>({...r, status:"pending", improvementText:"", photos:[]}));
+  // 현장점검 미흡사항의 개선 전 사진
+  const dItems = ins.deductItems||[];
+  base.forEach(r=>{
+    if(String(r.key).startsWith("deduct")){
+      const idx = parseInt(String(r.key).split("_")[1],10);
+      const p = dItems[isNaN(idx)?0:idx];
+      r.beforePhotos = p && p.src ? [p] : [];
+    } else r.beforePhotos = [];
+  });
+  impEdit = {ins, fb, items: base};
+
+  const ro = !isAdmin();
+  document.getElementById("imp-m-title").textContent = `${ins.site} 개선결과 ${fb ? (ro?"보기":"보기·수정") : "대신 입력"}`;
+  document.getElementById("imp-m-sub").textContent = `점검일 ${fmtDate(ins.date)} · 미흡 ${base.length}건`
+    + (fb ? ` · 제출 ${fmtDate(fb.date)}` : " · 사업장 미제출 (저장하면 제출 완료로 처리되고, 사업장 링크는 더 이상 제출할 수 없습니다)")
+    + (fb && fb.editedBy ? ` · 최근 수정 ${fb.editedBy} ${fb.editedAt||""}` : "");
+  const setv=(id,v)=>{ const el=document.getElementById(id); el.value=v||""; el.readOnly=ro; };
+  setv("imp-m-manager", fb ? fb.manager : "");
+  setv("imp-m-tel", fb ? fb.tel : "");
+  setv("imp-m-date", fb ? fmtDate(fb.date) : ymdLocal(new Date()));
+  setv("imp-m-memo", fb ? fb.memo : "");
+  document.getElementById("imp-m-save").style.display = ro ? "none" : "";
+  document.getElementById("imp-m-save").disabled = false;
+  document.getElementById("imp-m-status").textContent = ro ? "수정은 관리자만 할 수 있습니다." : "";
+  document.getElementById("imp-m-rpt").onclick = ()=>{ closeModal("imp-modal"); loadRptById(ins.id); };
+  const sig = fb && fb.signature;
+  document.getElementById("imp-m-sig").innerHTML = sig
+    ? `<div style="font-size:.72rem;color:var(--text2);margin-top:.4rem">담당자 서명</div><img src="${escapeHtml(driveImg(sig))}" style="max-height:70px;border:1px solid var(--border);border-radius:6px;background:#fff;margin-top:.2rem">`
+    : "";
+  renderImpItems();
+  document.getElementById("imp-modal").classList.add("open");
+}
+
+function renderImpItems(){
+  if(!impEdit) return;
+  const ro = !isAdmin();
+  const photoHtml = (arr, label, color)=> arr && arr.length ? `<div style="font-size:.66rem;font-weight:800;color:${color};margin-top:.5rem">${label}</div><div class="imp-photos">${arr.map(p=>{const u=escapeHtml(driveImg(p.url||p.src)); return `<img src="${u}" title="${escapeHtml(p.note||"")}" onclick="window.open('${u}','_blank')">`;}).join("")}</div>` : "";
+  document.getElementById("imp-m-items").innerHTML = impEdit.items.map((r,i)=>`
+    <div class="imp-item" id="imp-item-${i}">
+      <div class="imp-item-hd"><span>${i+1}. ${escapeHtml(r.name)}</span><span id="imp-pill-${i}"></span></div>
+      <div class="imp-item-bd">
+        ${r.originalNote?`<div class="imp-orig">📋 지적내용: ${escapeHtml(r.originalNote)}</div>`:""}
+        <div class="fg" style="margin:0"><label>개선 조치 내용</label>
+          <textarea id="imp-text-${i}" rows="2" maxlength="3000" ${ro?"readonly":""} oninput="impEdit.items[${i}].improvementText=this.value;impRefresh()">${escapeHtml(r.improvementText)}</textarea></div>
+        <div class="imp-seg">${["done","inprogress","pending"].map(v=>`<button type="button" data-v="${v}" ${ro?"disabled":""} onclick="impEdit.items[${i}].status='${v}';impRefresh()">${IMP_ST_LABEL[v]}</button>`).join("")}</div>
+        <div class="imp-warn" id="imp-warn-${i}">⚠ 개선 내용은 있는데 개선완료로 체크되지 않았습니다.</div>
+        ${photoHtml(r.beforePhotos,"◀ 개선 전 사진","var(--danger)")}
+        ${photoHtml(r.photos,"개선 후 사진 ▶","var(--ok)")}
+      </div>
+    </div>`).join("");
+  impRefresh();
+}
+
+function impRefresh(){
+  if(!impEdit) return;
+  const c = {done:0,inprogress:0,pending:0}; let need = 0;
+  impEdit.items.forEach((r,i)=>{
+    c[r.status] = (c[r.status]||0)+1;
+    const n = r.status!=="done" && String(r.improvementText||"").trim();
+    if(n) need++;
+    const box = document.getElementById(`imp-item-${i}`);
+    if(box){
+      box.classList.toggle("need", !!n);
+      box.querySelectorAll(".imp-seg button").forEach(b=>b.classList.toggle("on", b.dataset.v===r.status));
+    }
+    const w = document.getElementById(`imp-warn-${i}`); if(w) w.style.display = n ? "block" : "none";
+    const pill = document.getElementById(`imp-pill-${i}`);
+    if(pill){
+      const col = r.status==="done"?"var(--ok)":r.status==="inprogress"?"var(--warn)":"var(--danger)";
+      pill.innerHTML = `<span style="font-size:.68rem;color:${col}">${IMP_ST_LABEL[r.status]}</span>`;
+    }
+  });
+  const total = impEdit.items.length;
+  document.getElementById("imp-m-sum").innerHTML = `
+    <span style="font-weight:700">개선완료 ${c.done} / ${total}건 (${total?Math.round(c.done/total*100):0}%)</span>
+    <span style="color:var(--warn)">🔄 진행중 ${c.inprogress}</span>
+    <span style="color:var(--danger)">⏳ 미완료 ${c.pending}</span>
+    ${need?`<span class="imp-chk-badge" style="font-size:.7rem">⚠ 체크 확인 필요 ${need}건</span>`:""}`;
+}
+
+async function impSaveFromModal(){
+  if(!impEdit || !isAdmin()) return;
+  const stEl = document.getElementById("imp-m-status");
+  const noText = impEdit.items.findIndex(r=>r.status==="done" && !String(r.improvementText||"").trim());
+  if(noText>=0){
+    stEl.style.color="var(--danger)";
+    stEl.textContent = `"${impEdit.items[noText].name}" 항목은 개선완료인데 개선 조치 내용이 비어 있습니다.`;
+    document.getElementById(`imp-item-${noText}`)?.scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  const date = document.getElementById("imp-m-date").value;
+  if(!date){ stEl.style.color="var(--danger)"; stEl.textContent="개선완료일을 입력해주세요."; return; }
+  if(!impEdit.fb && !confirm(`"${impEdit.ins.site}" 개선결과를 관리자가 대신 입력합니다.\n저장하면 제출 완료로 처리되고, 사업장에 보낸 제출 링크로는 더 이상 제출할 수 없습니다.\n계속할까요?`)) return;
+  const btn = document.getElementById("imp-m-save");
+  btn.disabled = true; stEl.style.color="var(--muted)"; stEl.textContent = "저장 중...";
+  try{
+    const data = await apiPost({
+      type:"imp_save",
+      site: impEdit.ins.site,
+      manager: document.getElementById("imp-m-manager").value.trim(),
+      tel: document.getElementById("imp-m-tel").value.trim(),
+      date,
+      memo: document.getElementById("imp-m-memo").value.trim(),
+      results: impEdit.items.map(r=>({key:r.key, name:r.name, originalNote:r.originalNote, status:r.status, improvementText:String(r.improvementText||"").trim()}))
+    });
+    if(!data){ throw new Error("서버 응답을 확인하지 못했습니다. 새로고침 후 저장됐는지 확인해주세요."); }
+    if(data.status!=="ok"){ throw new Error(data.msg || "저장하지 못했습니다."); }
+    const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
+    feedbacks[impEdit.ins.site] = data.feedback;
+    try{ localStorage.setItem("shi_feedbacks", JSON.stringify(feedbacks)); }catch(e){}
+    const ins = inspections.find(x=>x.site===impEdit.ins.site); if(ins) ins.feedbackSent = true;
+    closeModal("imp-modal");
+    updateDashboard();
+    updateImprovePage();
+    alert(`저장했습니다. (개선완료 ${data.feedback.doneCount}/${data.feedback.totalIssues}건)`);
+  }catch(e){
+    stEl.style.color="var(--danger)";
+    stEl.textContent = e.message || String(e);
+  }finally{
+    btn.disabled = false;
+  }
 }
 
 // 마감일이 지난 특정 사업장 한 곳에만 독촉 알림(SMS/이메일/카카오)을 발송한다.
