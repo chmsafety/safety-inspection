@@ -408,7 +408,7 @@ tbody tr:hover{background:var(--surface2)}
       </div>
       <div class="hero-stats">
         <div class="hero-stat">
-          <div class="hero-stat-val">52</div>
+          <div class="hero-stat-val" id="kpi-total">52</div>
           <div class="hero-stat-lbl">총 점검 사업장</div>
         </div>
         <div class="hero-stat">
@@ -422,7 +422,7 @@ tbody tr:hover{background:var(--surface2)}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:.62rem;color:rgba(255,255,255,.55);margin-bottom:.3rem">
         <span id="kpi-progress-sub">0 / 52 사업장</span>
-        <span>목표 52개소</span>
+        <span id="kpi-goal">목표 52개소</span>
       </div>
       <div class="hero-prog-wrap"><div class="hero-prog-fill" id="kpi-prog-bar" style="width:0%"></div></div>
     </div>
@@ -4252,20 +4252,28 @@ function switchRpt(tab,el){
 
 // ══ 대시보드 ══
 function updateDashboard(){
-  const done = inspections.length;
-  const pct = Math.round(done/52*100);
+  // 총 점검 사업장·완료·진행률은 현재 점검 사업장 명단(설정 › 점검 사업장) 기준.
+  // 명단에서 제외한 사업장의 기록은 시트에 남지만 대시보드 집계에는 넣지 않는다.
+  const total = SITES.length;
+  const siteSet = {}; SITES.forEach(s=>{ siteSet[s]=1; });
+  const cur = inspections.filter(i=>siteSet[i.site]);
+  const doneSites = {}; cur.forEach(i=>{ doneSites[i.site]=1; });
+  const done = Object.keys(doneSites).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const kpiTotal = document.getElementById("kpi-total"); if(kpiTotal) kpiTotal.textContent = total;
+  const kpiGoal = document.getElementById("kpi-goal"); if(kpiGoal) kpiGoal.textContent = "목표 "+total+"개소";
   document.getElementById("kpi-progress").textContent = pct+"%";
-  document.getElementById("kpi-progress-sub").textContent = done+" / 52 사업장";
+  document.getElementById("kpi-progress-sub").textContent = done+" / "+total+" 사업장";
   document.getElementById("kpi-prog-bar").style.width = pct+"%";
   document.getElementById("kpi-done").textContent = done;
-  const okCount = inspections.filter(i=>i.badCount===0&&i.deductCount===0).length;
+  const okCount = cur.filter(i=>i.badCount===0&&i.deductCount===0).length;
   const kpiOk = document.getElementById("kpi-ok"); if(kpiOk) kpiOk.textContent = okCount;
-  const badTotal = inspections.reduce((s,i)=>s+(i.badCount||0)+(i.deductCount||0),0);
+  const badTotal = cur.reduce((s,i)=>s+(i.badCount||0)+(i.deductCount||0),0);
   document.getElementById("kpi-bad").textContent = badTotal;
-  const noFb = inspections.filter(i=>!i.feedbackSent).length;
+  const noFb = cur.filter(i=>!i.feedbackSent).length;
   const kpiNofb = document.getElementById("kpi-nofb"); if(kpiNofb) kpiNofb.textContent = noFb;
-  const avgSum = inspections.reduce((s,i)=>s+i.finalScore,0);
-  document.getElementById("kpi-avg").textContent = done ? Math.round(avgSum/done)+"점" : "-";
+  const avgSum = cur.reduce((s,i)=>s+(i.finalScore||0),0);
+  document.getElementById("kpi-avg").textContent = cur.length ? Math.round(avgSum/cur.length)+"점" : "-";
 
   // Site grid
   const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
