@@ -65,7 +65,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem}
 /* Buttons */
 .btn{padding:.45rem 1rem;border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:"Noto Sans KR",sans-serif}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1e3a8a}
-.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border2)}.orb-co.active{background:var(--accent);color:#fff;border-color:var(--accent)}.orb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:.35rem}.orb-grid label{display:flex;align-items:center;gap:.4rem;font-size:.78rem;padding:.32rem .5rem;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;min-width:0}.orb-grid label:hover{border-color:var(--accent)}.orb-grid label input{flex:none;margin:0}.orb-grid .orb-nm{flex:0 0 auto;white-space:nowrap}.orb-grid .orb-sub{flex:1 1 auto;min-width:0;text-align:right;font-size:.64rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
 .btn-sm{padding:.28rem .65rem;font-size:.73rem}
 
 /* Cards */
@@ -706,10 +706,11 @@ tbody tr:hover{background:var(--surface2)}
 <!-- ════ 설정 — 결과보고 수신자 · 계정 관리 ════ -->
 <div class="page" id="page-settings">
   <div class="page-hd">
-    <div><h1>설정</h1><p>관리자 전용 — 결과보고 수신자·로그인 계정·접속 기록을 관리합니다</p></div>
+    <div><h1>설정</h1><p>관리자 전용 — 점검 사업장 명단·결과보고 수신자·로그인 계정·접속 기록을 관리합니다</p></div>
   </div>
   <div class="inner-tabs">
     <button class="set-tab active" onclick="switchSet('rcpt',this)">결과보고 수신자</button>
+    <button class="set-tab" onclick="switchSet('sites',this)">점검 사업장</button>
     <button class="set-tab" onclick="switchSet('user',this)">계정 관리</button>
     <button class="set-tab" onclick="switchSet('log',this)">접속 기록</button>
   </div>
@@ -763,6 +764,55 @@ tbody tr:hover{background:var(--surface2)}
   </div><!-- /set-rcpt -->
 
   <!-- ── 계정 관리 ── -->
+  <!-- ── 점검 사업장 명단 (관리자 전용) — ORB 통합정보 사업장 명단에서 점검 대상 선택 ── -->
+  <div class="set-page" id="set-sites">
+    <div class="card" style="margin-bottom:.85rem">
+      <div class="form-section-title" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+        <span>점검 사업장 명단</span>
+        <span class="badge badge-blue" id="isites-count">—</span>
+        <span style="flex:1"></span>
+        <input type="search" id="isites-q" placeholder="사업장 검색" style="max-width:200px;font-size:.78rem;padding:.3rem .55rem" oninput="renderInspectSites()">
+      </div>
+      <div style="font-size:.76rem;color:var(--text2);line-height:1.7;margin-bottom:.75rem">
+        이번 점검 대상 사업장입니다. 점검 입력·대시보드·점검일정·개선현황의 사업장 선택은 이 명단을 따릅니다.<br>
+        <strong>제외</strong>하면 점검 대상에서만 빠지고, 이미 저장된 점검·개선 기록은 시트에 그대로 남습니다
+        (결과보고서·AI 검색에서는 계속 조회됩니다). 다시 필요하면 아래 ORB 명단에서 추가하세요.
+      </div>
+      <div style="overflow-x:auto">
+        <table style="min-width:560px">
+          <thead><tr>
+            <th style="width:92px">ORB 코드</th><th>사업장</th><th style="width:70px">회사</th><th style="width:150px">등록</th><th style="width:80px"></th>
+          </tr></thead>
+          <tbody id="isites-tbody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.2rem">불러오는 중…</td></tr></tbody>
+        </table>
+      </div>
+      <div id="isites-status" style="font-size:.75rem;color:var(--muted);margin-top:.5rem;text-align:right"></div>
+    </div>
+
+    <div class="card">
+      <div class="form-section-title" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+        <span>ORB 통합정보 사업장 명단에서 추가</span>
+        <span class="badge" id="orb-count" style="background:var(--bg2,#f3f4f6);color:var(--text2);border:1px solid var(--border)">—</span>
+        <span style="flex:1"></span>
+        <button class="btn btn-outline btn-sm" onclick="loadInspectSites(true, true)">↻ ORB 새로 받기</button>
+      </div>
+      <div style="font-size:.76rem;color:var(--text2);line-height:1.7;margin-bottom:.6rem">
+        전체 사업장 명단은 <strong>ORB › 설정 › 사업장 명단</strong>에서 관리합니다. 여기에는 운영 중인 CHM·CHMS 사업장 중
+        아직 점검 대상이 아닌 곳만 보입니다. 체크한 뒤 <strong>선택한 사업장 추가</strong>를 누르세요.
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-bottom:.6rem">
+        <button class="btn btn-outline btn-sm orb-co active" data-co="" onclick="orbSetCo('',this)">전체</button>
+        <button class="btn btn-outline btn-sm orb-co" data-co="CHM" onclick="orbSetCo('CHM',this)">CHM</button>
+        <button class="btn btn-outline btn-sm orb-co" data-co="CHMS" onclick="orbSetCo('CHMS',this)">CHMS</button>
+        <input type="search" id="orb-q" placeholder="사업장·고객사 검색" style="max-width:220px;font-size:.78rem;padding:.3rem .55rem" oninput="renderOrbPick()">
+        <span style="flex:1"></span>
+        <button class="btn btn-primary btn-sm" id="orb-add-btn" onclick="addInspectSites()" disabled>선택한 사업장 추가 (0)</button>
+      </div>
+      <div id="orb-msg" style="font-size:.74rem;color:var(--danger);margin-bottom:.4rem"></div>
+      <div id="orb-pick" class="orb-grid" style="max-height:360px;overflow:auto;padding:.1rem"></div>
+    </div>
+  </div><!-- /set-sites -->
+
   <div class="set-page" id="set-user">
     <div class="card" style="margin-bottom:.85rem">
       <div class="form-section-title">사용자 계정</div>
@@ -1591,6 +1641,7 @@ async function doLogin(){
       showCategoryMenu();
       fillInspectorField();
       // 로그인 전에는 동기화를 건너뛰므로, 로그인 직후 한 번 서버 데이터를 받아온다.
+      loadInspectSites();
       syncFromServer();
     } else {
       errEl.textContent = (data && data.msg) ? data.msg : "이름 또는 비밀번호가 올바르지 않습니다.";
@@ -1642,7 +1693,9 @@ document.getElementById("logout-btn").addEventListener("click", logout);document
 document.getElementById("login-pin").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
 
 // ══ 데이터 ══
-const SITES = ["T-타워","서린","둔산","보라매","분당","인재개발원","종로타워","부암","성수","테크원","판교","우산","KT&G","관훈","태평","유타워","삼화타워","전주","무의연수원","청주","서산공장","원주","본리","부사","L7호텔","데이터","제주","ICN10","인천","안락","장안","모비언트 광주","수유","신천","송정","센터원 서울사무소","용인","영시티","현대위아 평택","행복나눔","넥실리스","인천석유화학","11번가","중동","센트로시티","오토에버 광주","오리온용암수","고려대 거점오피스","서강대","스타크빌딩","명륜","분당N타워"];
+// 점검 사업장 명단 — 서버 _InspectSites 시트(설정 › 점검 사업장)에서 받아 덮어쓴다.
+// 아래 배열은 서버가 응답하지 않을 때 쓰는 기본값(2026년 하반기 52곳)이다.
+let SITES = ["T-타워","서린","둔산","보라매","분당","인재개발원","종로타워","부암","성수","테크원","판교","우산","KT&G","관훈","태평","유타워","삼화타워","전주","무의연수원","청주","서산공장","원주","본리","부사","L7호텔","데이터","제주","ICN10","인천","안락","장안","모비언트 광주","수유","신천","송정","센터원 서울사무소","용인","영시티","현대위아 평택","행복나눔","넥실리스","인천석유화학","11번가","중동","센트로시티","오토에버 광주","오리온용암수","고려대 거점오피스","서강대","스타크빌딩","명륜","분당N타워"];
 
 const CHECK_ITEMS = [
   {key:"c01",name:"관리감독자 지정"},
@@ -2047,6 +2100,172 @@ async function deleteDraft(id, silent){
   page.addEventListener("change", scheduleDraftSave);
 })();
 
+// ══ 점검 사업장 명단 (sites-master.gs / mode=isites_list) ══
+// 전체 사업장 명단은 ORB 통합정보(허브)의 「사업장 명단」이 기준이고,
+// 이 앱은 그중 점검하는 사업장만 _InspectSites 시트에 둔다. (설정 › 점검 사업장)
+let ISITES = [];            // [{code,name,company,addedAt,addedBy}]  점검 사업장
+let ORB_SITES = [];         // [{code,name,company,client,status}]    ORB 전체 명단(운영 중)
+let ORB_INFO = { ok:false, msg:"", at:"" };
+let ISITES_LOADING = null;
+const ORB_PICK = { co:"", checked:{} };
+
+/** 산업재해·MSDS·현장위험도에서 쓰는 전체 사업장 — ORB 명단 + 점검 명단(+ 지금 선택된 값) 합집합 */
+function allSites(extra){
+  const seen = {}; const out = [];
+  const push = n => { n = String(n||"").trim(); if(n && !seen[n]){ seen[n]=1; out.push(n); } };
+  ORB_SITES.filter(s=>s.company==="CHM").forEach(s=>push(s.name));
+  SITES.forEach(push);
+  ORB_SITES.filter(s=>s.company!=="CHM").forEach(s=>push(s.name));
+  (Array.isArray(extra)?extra:[]).forEach(push);
+  return out;
+}
+
+/** 서버에서 점검 사업장 명단(+ORB 전체 명단)을 받아 SITES 를 교체하고 화면의 선택 목록을 다시 채운다 */
+async function loadInspectSites(force, refreshOrb){
+  if(ISITES_LOADING && !force) return ISITES_LOADING;
+  ISITES_LOADING = (async function(){
+    try {
+      const res  = await apiFetch("?mode=isites_list" + (refreshOrb ? "&refresh=1" : ""));
+      const data = await res.json();
+      if(!data || data.status !== "ok" || !Array.isArray(data.sites)) throw new Error((data && data.msg) || "명단 응답 오류");
+      ISITES = data.sites.filter(s=>s && s.name);
+      if(Array.isArray(data.orb)){ ORB_SITES = data.orb; }
+      ORB_INFO = { ok: !!data.orbOk, msg: data.orbMsg || "", at: data.orbAt || "" };
+      if(ISITES.length){ SITES = ISITES.map(s=>s.name); }
+      applySiteLists();
+      return true;
+    } catch(e){
+      if(!(e && e.__noSession)) console.warn("점검 사업장 명단을 받지 못해 기본 명단을 씁니다:", e);
+      return false;
+    } finally { ISITES_LOADING = null; }
+  })();
+  return ISITES_LOADING;
+}
+
+/** select 의 첫 안내 항목만 남기고 다시 채운다 (선택값 유지) */
+function refillSiteSelect(id, list){
+  const sel = document.getElementById(id);
+  if(!sel) return;
+  const prev = sel.value;
+  const first = sel.options.length && sel.options[0].value === "" ? sel.options[0].outerHTML : "";
+  sel.innerHTML = first + list.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+  if(prev && list.indexOf(prev) >= 0) sel.value = prev;
+}
+
+/** 명단이 바뀐 뒤 화면 곳곳의 사업장 선택을 새로 그린다 */
+function applySiteLists(){
+  refillSiteSelect("inp-site", SITES);
+  const all = allSites();
+  refillSiteSelect("acc-inp-site", all);
+  refillSiteSelect("acc-filter-site", all);
+  refillSiteSelect("msds-filter-site", all);
+  refillSiteSelect("hazard-site", all);
+  const grid = document.getElementById("msds-site-checks");
+  if(grid){
+    const on = {}; grid.querySelectorAll("input:checked").forEach(c=>{ on[c.value]=1; });
+    grid.innerHTML = all.map(s=>`<label><input type="checkbox" value="${escapeHtml(s)}" ${on[s]?"checked":""}> ${escapeHtml(s)}</label>`).join("");
+  }
+  try { updateDashboard(); } catch(e){}
+  try { if(document.getElementById("page-schedule") && document.getElementById("page-schedule").classList.contains("active")) schRenderSites(); } catch(e){}
+  try { if(document.getElementById("page-improve") && document.getElementById("page-improve").classList.contains("active")) updateImprovePage(); } catch(e){}
+  try { if(document.getElementById("set-sites") && document.getElementById("set-sites").classList.contains("active")){ renderInspectSites(); renderOrbPick(); } } catch(e){}
+}
+
+// ── 설정 › 점검 사업장 ──
+function isitesStatus(msg, warn){
+  const el = document.getElementById("isites-status");
+  if(el){ el.textContent = msg || ""; el.style.color = warn ? "var(--danger)" : "var(--muted)"; }
+}
+async function openInspectSitesTab(){
+  renderInspectSites(); renderOrbPick();
+  isitesStatus("불러오는 중…");
+  const ok = await loadInspectSites(true);
+  isitesStatus(ok ? "" : "서버에서 명단을 받지 못했습니다. 화면의 기본 명단을 표시합니다.", !ok);
+  renderInspectSites(); renderOrbPick();
+}
+function renderInspectSites(){
+  const tb = document.getElementById("isites-tbody");
+  if(!tb) return;
+  const list = ISITES.length ? ISITES : SITES.map(n=>({ code:"", name:n, company:"", addedAt:"", addedBy:"" }));
+  const q = (document.getElementById("isites-q") || {}).value || "";
+  const ql = q.trim().toLowerCase();
+  const rows = list.filter(s=> !ql || (s.name + " " + (s.code||"")).toLowerCase().indexOf(ql) >= 0);
+  const cnt = document.getElementById("isites-count");
+  if(cnt) cnt.textContent = list.length + "곳" + (ql ? ` · 검색 ${rows.length}` : "");
+  if(!rows.length){ tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.2rem">맞는 사업장이 없습니다</td></tr>`; return; }
+  tb.innerHTML = rows.map(s=>`<tr>
+      <td style="font-family:ui-monospace,monospace;font-size:.72rem;color:var(--text2)">${escapeHtml(s.code||"—")}</td>
+      <td><strong>${escapeHtml(s.name)}</strong>${s.code ? "" : ' <span class="badge badge-warn" title="ORB 명단에서 같은 이름을 찾지 못해 이름으로만 저장돼 있습니다">ORB 미연결</span>'}</td>
+      <td>${escapeHtml(s.company||"")}</td>
+      <td style="font-size:.72rem;color:var(--text2)">${escapeHtml((s.addedAt||"").slice(0,10))}${s.addedBy ? "<br>"+escapeHtml(s.addedBy) : ""}</td>
+      <td style="text-align:right"><button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger-border,#fecaca)" data-code="${escapeHtml(s.code||"")}" data-name="${escapeHtml(s.name)}" onclick="removeInspectSite(this.dataset.code,this.dataset.name)">제외</button></td>
+    </tr>`).join("");
+}
+async function removeInspectSite(code, name){
+  if(!isAdmin()){ alert("이 기능은 관리자만 사용할 수 있습니다."); return; }
+  if(!confirm(`"${name}" 을(를) 점검 대상 명단에서 제외할까요?\n\n저장된 점검·개선 기록은 지워지지 않고, 대시보드·점검일정·점검 입력의 사업장 목록에서만 빠집니다.\n다시 필요하면 ORB 명단에서 추가할 수 있습니다.`)) return;
+  isitesStatus("제외하는 중…");
+  try {
+    const r = await apiPost({ type:"isites_remove", code: code || "", name: name });
+    if(!r || r.status !== "ok") throw new Error((r && r.msg) || "제외 실패");
+    ISITES = r.sites || ISITES.filter(s=>s.name !== name);
+    SITES = ISITES.map(s=>s.name);
+    applySiteLists();
+    renderInspectSites(); renderOrbPick();
+    isitesStatus(`"${r.removed || name}" 을(를) 점검 대상에서 제외했습니다. (현재 ${ISITES.length}곳)`);
+  } catch(e){ isitesStatus("제외하지 못했습니다: " + (e.message || e), true); }
+}
+function orbSetCo(co, el){
+  ORB_PICK.co = co || "";
+  document.querySelectorAll(".orb-co").forEach(b=>b.classList.toggle("active", (b.getAttribute("data-co")||"") === ORB_PICK.co));
+  renderOrbPick();
+}
+function orbToggle(code, on){ if(on) ORB_PICK.checked[code] = 1; else delete ORB_PICK.checked[code]; orbUpdateBtn(); }
+function orbUpdateBtn(){
+  const n = Object.keys(ORB_PICK.checked).length;
+  const b = document.getElementById("orb-add-btn");
+  if(b){ b.disabled = n === 0; b.textContent = `선택한 사업장 추가 (${n})`; }
+}
+function renderOrbPick(){
+  const box = document.getElementById("orb-pick");
+  if(!box) return;
+  const msg = document.getElementById("orb-msg");
+  const inUse = {}; (ISITES.length ? ISITES.map(s=>s.name) : SITES).forEach(n=>{ inUse[n]=1; });
+  const codeUse = {}; ISITES.forEach(s=>{ if(s.code) codeUse[s.code]=1; });
+  const q = ((document.getElementById("orb-q") || {}).value || "").trim().toLowerCase();
+  const cand = ORB_SITES.filter(s=> !inUse[s.name] && !codeUse[s.code])
+    .filter(s=> !ORB_PICK.co || s.company === ORB_PICK.co)
+    .filter(s=> !q || (s.name + " " + (s.client||"") + " " + (s.code||"")).toLowerCase().indexOf(q) >= 0);
+  Object.keys(ORB_PICK.checked).forEach(c=>{ if(!ORB_SITES.some(s=>s.code===c && !inUse[s.name])) delete ORB_PICK.checked[c]; });
+  const cnt = document.getElementById("orb-count");
+  if(cnt) cnt.textContent = ORB_SITES.length ? `ORB ${ORB_SITES.length}곳 · 추가 가능 ${cand.length}곳` : "—";
+  if(msg) msg.textContent = ORB_INFO.ok ? "" : (ORB_INFO.msg ? "ORB 명단을 받지 못했습니다: " + ORB_INFO.msg : (ORB_SITES.length ? "" : "ORB 명단을 아직 받지 못했습니다."));
+  if(!cand.length){ box.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:1rem;font-size:.78rem">${ORB_SITES.length ? "추가할 수 있는 사업장이 없습니다" : "ORB 명단이 비어 있습니다"}</div>`; orbUpdateBtn(); return; }
+  box.innerHTML = cand.map(s=>`<label title="${escapeHtml(s.code)}${s.client ? " · " + escapeHtml(s.client) : ""}">
+      <input type="checkbox" value="${escapeHtml(s.code)}" ${ORB_PICK.checked[s.code]?"checked":""} onchange="orbToggle(this.value,this.checked)">
+      <span class="orb-nm">${escapeHtml(s.name)}</span><span class="orb-sub">${escapeHtml(s.company)}${s.client ? " · " + escapeHtml(s.client) : ""}</span>
+    </label>`).join("");
+  orbUpdateBtn();
+}
+async function addInspectSites(){
+  if(!isAdmin()){ alert("이 기능은 관리자만 사용할 수 있습니다."); return; }
+  const codes = Object.keys(ORB_PICK.checked);
+  if(!codes.length) return;
+  const picks = ORB_SITES.filter(s=>codes.indexOf(s.code) >= 0).map(s=>({ code:s.code, name:s.name, company:s.company }));
+  isitesStatus(`${picks.length}곳 추가하는 중…`);
+  const btn = document.getElementById("orb-add-btn"); if(btn) btn.disabled = true;
+  try {
+    const r = await apiPost({ type:"isites_add", sites: picks });
+    if(!r || r.status !== "ok") throw new Error((r && r.msg) || "추가 실패");
+    ISITES = r.sites || ISITES; SITES = ISITES.map(s=>s.name);
+    ORB_PICK.checked = {};
+    applySiteLists();
+    renderInspectSites(); renderOrbPick();
+    const added = (r.added||[]).length, skipped = (r.skipped||[]).length;
+    isitesStatus(`${added}곳을 점검 대상에 추가했습니다${skipped ? ` (이미 있어 건너뜀 ${skipped}곳)` : ""}. (현재 ${ISITES.length}곳)`);
+  } catch(e){ isitesStatus("추가하지 못했습니다: " + (e.message || e), true); orbUpdateBtn(); }
+}
+
 // ══ Init ══
 (function(){
   document.getElementById("hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
@@ -2059,7 +2278,7 @@ async function deleteDraft(id, silent){
   updateDashboard();
   updateReportSel();
   // 로그인한 세션이 있을 때만 서버와 동기화한다 (미로그인 상태에서는 요청 자체를 보내지 않음)
-  if(hasValidSession()) { syncFromServer(); fetchServerDrafts(); }
+  if(hasValidSession()) { loadInspectSites(); syncFromServer(); fetchServerDrafts(); }
 })();
 
 // ══ 사업장 담당자 자동 채우기 (site-directory.gs / mode=sites) ══
@@ -2145,10 +2364,10 @@ function initAccidentForm(){
   const siteSelInp = document.getElementById("acc-inp-site");
   const siteSelFilter = document.getElementById("acc-filter-site");
   if(siteSelInp && siteSelInp.options.length <= 1){
-    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSelInp.appendChild(o); });
+    allSites().forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSelInp.appendChild(o); });
   }
   if(siteSelFilter && siteSelFilter.options.length <= 1){
-    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSelFilter.appendChild(o); });
+    allSites().forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSelFilter.appendChild(o); });
   }
   document.getElementById("acc-hd-date").textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
   document.getElementById("acc-hd-inspector").textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
@@ -2433,11 +2652,11 @@ let msdsSelectedFile = null;
 function initMsdsForm(){
   const grid = document.getElementById("msds-site-checks");
   if(grid && grid.children.length === 0){
-    grid.innerHTML = SITES.map(s=>`<label><input type="checkbox" value="${escapeHtml(s)}"> ${escapeHtml(s)}</label>`).join("");
+    grid.innerHTML = allSites().map(s=>`<label><input type="checkbox" value="${escapeHtml(s)}"> ${escapeHtml(s)}</label>`).join("");
   }
   const filterSel = document.getElementById("msds-filter-site");
   if(filterSel && filterSel.options.length <= 1){
-    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; filterSel.appendChild(o); });
+    allSites().forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; filterSel.appendChild(o); });
   }
   const dateEl = document.getElementById("msds-hd-date");
   if(dateEl) dateEl.textContent = new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"});
@@ -2599,7 +2818,7 @@ function editMsdsRow(id){
   if(!m) return;
   const row = document.getElementById("msds-row-"+id);
   if(!row) return;
-  const siteOptions = SITES.map(s=>`<label style="display:inline-flex;align-items:center;gap:.2rem;font-size:.68rem;margin:.1rem .3rem 0 0"><input type="checkbox" value="${escapeHtml(s)}" ${m.sites && m.sites.includes(s) ? 'checked':''}> ${escapeHtml(s)}</label>`).join("");
+  const siteOptions = allSites(m.sites).map(s=>`<label style="display:inline-flex;align-items:center;gap:.2rem;font-size:.68rem;margin:.1rem .3rem 0 0"><input type="checkbox" value="${escapeHtml(s)}" ${m.sites && m.sites.includes(s) ? 'checked':''}> ${escapeHtml(s)}</label>`).join("");
   row.innerHTML = `
     <td><input type="text" id="edit-name-${id}" value="${escapeHtml(m.productName||'')}" style="width:100%;font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border2);border-radius:5px"></td>
     <td><input type="text" id="edit-mfr-${id}" value="${escapeHtml(m.manufacturer||'')}" style="width:100%;font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border2);border-radius:5px"></td>
@@ -3161,6 +3380,7 @@ function switchSet(tab, el){
   if(pg) pg.classList.add("active");
   if(el) el.classList.add("active");
   if(tab === "user") loadUsers();
+  if(tab === "sites") openInspectSitesTab();
   if(tab === "rcpt") loadRecipients();
   if(tab === "log")  openAccessLog();
   logNav("set:" + tab);
@@ -4014,8 +4234,9 @@ function goPage(name){
   if(name==="report") updateReportSel();
   if(name==="input"){ renderDrafts(); fetchServerDrafts(); }
   if(name==="settings"){
-    const userTabOn = document.getElementById("set-user") && document.getElementById("set-user").classList.contains("active");
-    if(userTabOn) loadUsers(); else loadRecipients();
+    const userTabOn  = document.getElementById("set-user")  && document.getElementById("set-user").classList.contains("active");
+    const sitesTabOn = document.getElementById("set-sites") && document.getElementById("set-sites").classList.contains("active");
+    if(userTabOn) loadUsers(); else if(sitesTabOn) openInspectSitesTab(); else loadRecipients();
   }
 }
 
@@ -5010,7 +5231,7 @@ function initHazardApp(){
   document.getElementById("hazard-hd-inspector").textContent = currentInspector() ? ("👤 " + currentInspector()) : "";
   const siteSel = document.getElementById("hazard-site");
   if(siteSel && siteSel.options.length <= 1){
-    SITES.forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSel.appendChild(o); });
+    allSites().forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; siteSel.appendChild(o); });
   }
   loadHazardHistory();
 }
