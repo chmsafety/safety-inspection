@@ -250,6 +250,11 @@ tbody tr:hover{background:var(--surface2)}
 .imp-seg button:disabled{cursor:default;opacity:.85}
 .imp-photos{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem}
 .imp-photos img{width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:zoom-in}
+.imp-ph{position:relative}
+.imp-ph .imp-ph-x{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:none;background:var(--danger);color:#fff;font-size:.7rem;font-weight:800;cursor:pointer;line-height:22px;padding:0;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.imp-ph .imp-ph-new{position:absolute;left:3px;bottom:3px;background:var(--accent);color:#fff;font-size:.55rem;font-weight:800;border-radius:3px;padding:0 .25rem}
+.imp-ph-add{width:84px;height:84px;border:2px dashed var(--border2);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;cursor:pointer;color:var(--text2);font-size:.66rem;font-weight:700;background:var(--surface2)}
+.imp-ph-add:hover{border-color:var(--ok);color:var(--ok)}
 .imp-warn{display:none;font-size:.72rem;font-weight:700;color:#92400e;background:#fff3cd;border:1px solid #fcd34d;border-radius:6px;padding:.3rem .55rem;margin-top:.45rem}
 .imp-chk-badge{display:inline-block;font-size:.6rem;font-weight:800;color:#92400e;background:#fff3cd;border:1px solid #fcd34d;border-radius:4px;padding:.08rem .35rem;margin-top:.2rem;white-space:nowrap}
 
@@ -4586,10 +4591,80 @@ function renderImpItems(){
         <div class="imp-seg">${["done","inprogress","pending"].map(v=>`<button type="button" data-v="${v}" ${ro?"disabled":""} onclick="impEdit.items[${i}].status='${v}';impRefresh()">${IMP_ST_LABEL[v]}</button>`).join("")}</div>
         <div class="imp-warn" id="imp-warn-${i}">⚠ 개선 내용은 있는데 개선완료로 체크되지 않았습니다.</div>
         ${photoHtml(r.beforePhotos,"◀ 개선 전 사진","var(--danger)")}
-        ${photoHtml(r.photos,"개선 후 사진 ▶","var(--ok)")}
+        ${ro ? photoHtml(r.photos,"개선 후 사진 ▶","var(--ok)") : impAfterPhotoEditHtml(r,i)}
       </div>
     </div>`).join("");
   impRefresh();
+}
+
+// 개선 후 사진 — 관리자는 추가·삭제할 수 있다 (새 사진은 저장할 때 Drive 에 올라간다)
+const IMP_MAX_PHOTOS = 10;
+function impAfterPhotoEditHtml(r, i){
+  const list = r.photos || [];
+  const thumbs = list.map((p,pi)=>{
+    const u = escapeHtml(p.src && p.src.startsWith("data:") ? p.src : driveImg(p.url||p.src));
+    const isNew = !!(p.src && p.src.startsWith("data:"));
+    return `<div class="imp-ph"><img src="${u}" title="${escapeHtml(p.note||"")}" onclick="impOpenPhoto(${i},${pi})">${isNew?`<span class="imp-ph-new">새 사진</span>`:""}<button type="button" class="imp-ph-x" title="사진 빼기" onclick="impRemovePhoto(${i},${pi})">✕</button></div>`;
+  }).join("");
+  const add = list.length < IMP_MAX_PHOTOS
+    ? `<label class="imp-ph-add" title="사진 추가 (여러 장 선택 가능)"><span style="font-size:1.2rem">📷</span>사진 추가<input type="file" accept="image/*" multiple style="display:none" onchange="impAddPhotos(${i},this)"></label>`
+    : "";
+  return `<div style="font-size:.66rem;font-weight:800;color:var(--ok);margin-top:.5rem">개선 후 사진 ▶ <span style="font-weight:400;color:var(--muted)">(${list.length}/${IMP_MAX_PHOTOS}장 · 저장할 때 올라갑니다)</span></div><div class="imp-photos" id="imp-photos-${i}">${thumbs}${add}</div>`;
+}
+
+function impOpenPhoto(i, pi){
+  const p = impEdit && impEdit.items[i] && impEdit.items[i].photos[pi];
+  if(!p) return;
+  if(p.src && p.src.startsWith("data:")){
+    const w = window.open("", "_blank");
+    if(w) w.document.write(`<img src="${p.src}" style="max-width:100%">`);
+  } else {
+    window.open(driveImg(p.url||p.src), "_blank");
+  }
+}
+
+async function impAddPhotos(i, input){
+  if(!impEdit || !isAdmin()) return;
+  const item = impEdit.items[i];
+  const files = Array.from(input.files||[]);
+  input.value = "";
+  if(!files.length) return;
+  const room = IMP_MAX_PHOTOS - (item.photos||[]).length;
+  const stEl = document.getElementById("imp-m-status");
+  if(files.length > room){
+    alert(`한 항목에 사진은 최대 ${IMP_MAX_PHOTOS}장까지입니다. 앞의 ${Math.max(room,0)}장만 추가합니다.`);
+  }
+  stEl.style.color="var(--muted)"; stEl.textContent = "사진 준비 중...";
+  item.photos = item.photos || [];
+  for(const f of files.slice(0, Math.max(room,0))){
+    if(!/^image\//.test(f.type)){ alert(`${f.name}: 이미지 파일이 아닙니다.`); continue; }
+    try{
+      const src = await resizeImageToDataUrl(f, 1600, 0.8);
+      item.photos.push({src, note:""});
+    }catch(e){ alert(`${f.name}: ${e.message}`); }
+  }
+  stEl.textContent = "";
+  impRerenderPhotos(i);
+}
+
+function impRemovePhoto(i, pi){
+  if(!impEdit || !isAdmin()) return;
+  const item = impEdit.items[i];
+  const p = item.photos[pi];
+  if(!p) return;
+  if(!(p.src && p.src.startsWith("data:")) && !confirm("이 사진을 개선 결과에서 뺄까요?\n(저장해야 반영됩니다)")) return;
+  item.photos.splice(pi,1);
+  impRerenderPhotos(i);
+}
+
+// 사진 칸만 다시 그린다 (입력 중인 글자·스크롤을 건드리지 않게)
+function impRerenderPhotos(i){
+  const box = document.getElementById(`imp-photos-${i}`);
+  if(!box){ renderImpItems(); return; }
+  const tmp = document.createElement("div");
+  tmp.innerHTML = impAfterPhotoEditHtml(impEdit.items[i], i);
+  box.previousElementSibling.replaceWith(tmp.firstElementChild);
+  box.replaceWith(tmp.firstElementChild);
 }
 
 function impRefresh(){
@@ -4633,7 +4708,11 @@ async function impSaveFromModal(){
   if(!date){ stEl.style.color="var(--danger)"; stEl.textContent="개선완료일을 입력해주세요."; return; }
   if(!impEdit.fb && !confirm(`"${impEdit.ins.site}" 개선결과를 관리자가 대신 입력합니다.\n저장하면 제출 완료로 처리되고, 사업장에 보낸 제출 링크로는 더 이상 제출할 수 없습니다.\n계속할까요?`)) return;
   const btn = document.getElementById("imp-m-save");
-  btn.disabled = true; stEl.style.color="var(--muted)"; stEl.textContent = "저장 중...";
+  const newPhotos = impEdit.items.reduce((n,r)=>n+(r.photos||[]).filter(p=>p.src&&p.src.startsWith("data:")).length,0);
+  const newChars = impEdit.items.reduce((n,r)=>n+(r.photos||[]).reduce((m,p)=>m+((p.src&&p.src.startsWith("data:"))?p.src.length:0),0),0);
+  if(newChars > 40e6){ stEl.style.color="var(--danger)"; stEl.textContent="새 사진이 너무 많습니다. 몇 장씩 나눠서 저장해주세요."; return; }
+  btn.disabled = true; stEl.style.color="var(--muted)";
+  stEl.textContent = newPhotos ? `저장 중... (새 사진 ${newPhotos}장 업로드 — 장수에 따라 10~30초 걸릴 수 있습니다)` : "저장 중...";
   try{
     const data = await apiPost({
       type:"imp_save",
@@ -4642,7 +4721,8 @@ async function impSaveFromModal(){
       tel: document.getElementById("imp-m-tel").value.trim(),
       date,
       memo: document.getElementById("imp-m-memo").value.trim(),
-      results: impEdit.items.map(r=>({key:r.key, name:r.name, originalNote:r.originalNote, status:r.status, improvementText:String(r.improvementText||"").trim()}))
+      results: impEdit.items.map(r=>({key:r.key, name:r.name, originalNote:r.originalNote, status:r.status, improvementText:String(r.improvementText||"").trim(),
+        photos:(r.photos||[]).map(p=> (p.src && p.src.startsWith("data:")) ? {src:p.src, note:p.note||""} : {url:p.url||p.src, note:p.note||""})}))
     });
     if(!data){ throw new Error("서버 응답을 확인하지 못했습니다. 새로고침 후 저장됐는지 확인해주세요."); }
     if(data.status!=="ok"){ throw new Error(data.msg || "저장하지 못했습니다."); }
