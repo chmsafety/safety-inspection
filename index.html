@@ -980,7 +980,8 @@ tbody tr:hover{background:var(--surface2)}
       <div class="card" style="margin-bottom:1rem">
         <div class="form-section-title">3. 가. 전체 발췌 건수</div>
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem">
-          관계 법령 서류 점검 행은 점검·개선결과 데이터에서 자동 집계됩니다. 사업장 위험/유해 요소 행은 직접 입력하세요.
+          점검·개선결과 데이터에서 자동 집계됩니다 — <b>관계 법령 서류 점검</b> = 25개 점검 항목 중 미흡 항목 수, <b>사업장 위험/유해 요소</b> = 현장점검 미흡사항 수.
+          개선 완료는 사업장 개선결과에서 각 항목을 개선완료로 체크한 건수입니다. 칸을 직접 고치면 그 값이 우선합니다.
         </div>
         <div style="overflow-x:auto">
         <table style="min-width:640px">
@@ -5593,6 +5594,8 @@ function finalCollect(){
   const grades = {A:[],B:[],C:[],D:[]};
   const badCount = {};
   let needSum = 0, doneSum = 0;
+  // 3.가 전체 발췌 건수 — 관계 법령 서류(25개 항목 미흡) / 사업장 위험·유해 요소(현장점검 미흡사항)
+  let lawNeed = 0, lawDone = 0, hazNeed = 0, hazDone = 0;
   const inspectors = [];
 
   list.forEach(ins=>{
@@ -5605,6 +5608,17 @@ function finalCollect(){
     const fb = feedbacks[ins.site];
     needSum += fb ? (fb.totalIssues||0) : ((ins.badCount||0)+(ins.deductCount||0));
     doneSum += fb ? (fb.doneCount||0) : 0;
+    const lawBad = (CHECK_ITEMS||[]).filter(item=>{
+      const v = ins.scores && ins.scores[item.key] && ins.scores[item.key].value;
+      return v==="bad" || v==="미흡";
+    }).length;
+    lawNeed += lawBad;
+    hazNeed += Number(ins.deductCount)||0;
+    const res = (fb && Array.isArray(fb.results)) ? fb.results : [];
+    res.forEach(r=>{
+      if(!r || r.status!=="done") return;
+      if(String(r.key||"").startsWith("deduct")) hazDone++; else lawDone++;
+    });
     if(ins.inspector && inspectors.indexOf(ins.inspector)<0) inspectors.push(ins.inspector);
   });
 
@@ -5612,7 +5626,10 @@ function finalCollect(){
     .sort((a,b)=>badCount[b]-badCount[a])
     .slice(0,4);
 
-  return {from, to, list, grades, needSum, doneSum, inspectors, badTop};
+  // 개선 완료가 개선 필요보다 많아지지 않게 (점검을 다시 해서 항목이 줄어든 경우 등)
+  lawDone = Math.min(lawDone, lawNeed);
+  hazDone = Math.min(hazDone, hazNeed);
+  return {from, to, list, grades, needSum, doneSum, inspectors, badTop, lawNeed, lawDone, hazNeed, hazDone};
 }
 
 function finalCalc(){
@@ -5624,7 +5641,7 @@ function finalCalc(){
   const box = document.getElementById("fin-summary");
   box.innerHTML = n === 0
     ? '<span style="color:var(--danger,#b91c1c)">이 기간에 점검 기록이 없습니다. 기간을 다시 확인하세요.</span>'
-    : "점검 사업장 <b>"+n+"곳</b> · 개선 필요 <b>"+s.needSum+"건</b> · 개선 완료 <b>"+s.doneSum+"건</b>"
+    : "점검 사업장 <b>"+n+"곳</b> · 서류 미흡 <b>"+s.lawNeed+"건</b>(완료 "+s.lawDone+") · 현장 미흡 <b>"+s.hazNeed+"건</b>(완료 "+s.hazDone+")"
       + " · 등급 A "+s.grades.A.length+" / B "+s.grades.B.length+" / C "+s.grades.C.length+" / D "+s.grades.D.length;
 
   // 사용자가 직접 고친 칸은 자동 집계가 덮어쓰지 않는다
@@ -5645,8 +5662,10 @@ function finalCalc(){
   auto("fin-target", n ? "CHM 사업장("+head+" 등 "+n+"개 사업장)" : "CHM 사업장");
   auto("fin-inspectors", s.inspectors.length ? "안전보건팀("+s.inspectors.join(", ")+")" : "");
   auto("fin-baditems", s.badTop.length ? s.badTop.join(", ")+" 등" : "");
-  auto("fin-a1-need", s.needSum);
-  auto("fin-a1-done", s.doneSum);
+  auto("fin-a1-need", s.lawNeed);
+  auto("fin-a1-done", s.lawDone);
+  auto("fin-a2-need", s.hazNeed);
+  auto("fin-a2-done", s.hazDone);
   finalRecalcRow(1); finalRecalcRow(2); finalSumHaz();
 
   const cd = s.grades.C.concat(s.grades.D);
