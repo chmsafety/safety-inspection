@@ -258,6 +258,15 @@ tbody tr:hover{background:var(--surface2)}
 .imp-warn{display:none;font-size:.72rem;font-weight:700;color:#92400e;background:#fff3cd;border:1px solid #fcd34d;border-radius:6px;padding:.3rem .55rem;margin-top:.45rem}
 .imp-chk-badge{display:inline-block;font-size:.6rem;font-weight:800;color:#92400e;background:#fff3cd;border:1px solid #fcd34d;border-radius:4px;padding:.08rem .35rem;margin-top:.2rem;white-space:nowrap}
 
+/* 정기점검 차수 · 수시점검 (2026-11-25) */
+.period-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.5rem .8rem;margin-bottom:.85rem}
+.period-bar .pb-lbl{font-size:.78rem;font-weight:800;color:var(--accent)}
+.period-bar select{padding:.35rem .6rem;border:1px solid var(--border2);border-radius:7px;font-size:.82rem;font-weight:700;font-family:inherit;background:#fff}
+.period-bar .pb-hint{font-size:.7rem;color:var(--muted)}
+.cat-badge{display:inline-block;font-size:.62rem;font-weight:800;padding:.08rem .4rem;border-radius:4px;white-space:nowrap}
+.cat-badge.reg{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.cat-badge.adhoc{background:#fdf4ff;color:#a21caf;border:1px solid #f0abfc}
+
 /* Deduct counter */
 .deduct-counter{display:flex;align-items:center;gap:.5rem;margin-top:.5rem}
 .deduct-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:#fff;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
@@ -381,6 +390,7 @@ tbody tr:hover{background:var(--surface2)}
       <button class="nav-btn active" onclick="goPage('dashboard')">대시보드</button>
       <button class="nav-btn" onclick="goPage('schedule')">점검일정</button>
       <button class="nav-btn" onclick="goPage('improve')">개선현황</button>
+      <button class="nav-btn" onclick="goPage('adhoc')">수시점검</button>
       <button class="nav-btn" onclick="goPage('report')">결과보고서</button>
       <button class="nav-btn nav-btn-input" onclick="goPage('input')">점검 입력</button>
       <button class="nav-btn" id="nav-settings" onclick="goPage('settings')" style="display:none">설정</button>
@@ -396,6 +406,12 @@ tbody tr:hover{background:var(--surface2)}
 
 <main>
 
+<div class="period-bar no-print" id="period-bar">
+  <span class="pb-lbl">📅 정기점검 차수</span>
+  <select id="period-sel" onchange="setPeriod(this.value)"></select>
+  <span class="pb-hint">대시보드·개선현황·결과보고서는 이 차수의 정기점검 기준입니다. 수시점검은 [수시점검] 메뉴에서 관리합니다.</span>
+</div>
+
 <!-- ════ 대시보드 ════ -->
 <div class="page active" id="page-dashboard">
   <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.75rem" class="no-print">
@@ -406,7 +422,7 @@ tbody tr:hover{background:var(--surface2)}
     <div class="hero-inner">
       <div class="hero-top">
         <div>
-          <div class="hero-title">🛡 26년 하반기 점검 현황</div>
+          <div class="hero-title">🛡 <span id="hero-period">26년 하반기</span> 정기점검 현황</div>
           <div class="hero-sub">실시간 점검 모니터링 대시보드</div>
         </div>
         <button class="btn" onclick="goPage('input')" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:.75rem;padding:.4rem .85rem;border-radius:20px">+ 입력</button>
@@ -674,8 +690,12 @@ tbody tr:hover{background:var(--surface2)}
         </div>
         <div class="form-row">
           <div class="fg"><label>점검자 *</label><input type="text" id="inp-inspector" placeholder="성명"></div>
-          <div class="fg"><label>점검 유형</label>
-            <select id="inp-type"><option>정기점검</option><option>수시점검</option><option>특별점검</option></select>
+          <div class="fg"><label>점검 구분</label>
+            <div style="display:flex;gap:.4rem">
+              <select id="inp-type" onchange="onInpTypeChange()" style="flex:1"><option value="정기점검">정기점검</option><option value="수시점검">수시점검</option></select>
+              <select id="inp-period" onchange="this.dataset.touched='1';onInpTypeChange()" style="flex:1"></select>
+            </div>
+            <div id="inp-type-hint" style="font-size:.7rem;color:var(--muted);margin-top:.25rem;line-height:1.4"></div>
           </div>
         </div>
         <div class="fg"><label>종합 의견</label><textarea id="inp-memo" placeholder="전반적인 현장 상태 및 특이사항"></textarea></div>
@@ -933,6 +953,25 @@ tbody tr:hover{background:var(--surface2)}
 </div>
 
 <!-- ════ 결과보고서 ════ -->
+<!-- ════ 수시점검 ════ -->
+<div class="page" id="page-adhoc">
+  <div class="page-hd">
+    <div><h1>수시점검</h1><p>정기점검과 같은 25개 항목으로 수시로 점검하고 기록을 관리합니다. 저장할 때마다 새 기록으로 쌓이고, 정기점검처럼 결과 메일·개선결과 제출 링크·독촉이 나갑니다.</p></div>
+    <div style="display:flex;gap:.4rem"><button class="btn btn-primary btn-sm" onclick="startAdhocInput()">+ 수시점검 입력</button></div>
+  </div>
+  <div class="card" style="margin-bottom:.85rem">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+      <select id="adhoc-year" class="btn btn-outline btn-sm" onchange="renderAdhocPage()"></select>
+      <select id="adhoc-site" class="btn btn-outline btn-sm" onchange="renderAdhocPage()"><option value="">전체 사업장</option></select>
+      <select id="adhoc-fb" class="btn btn-outline btn-sm" onchange="renderAdhocPage()">
+        <option value="">개선결과 전체</option><option value="todo">미제출</option><option value="over">마감초과</option><option value="done">제출</option>
+      </select>
+      <span id="adhoc-sum" style="font-size:.78rem;color:var(--text2);margin-left:auto"></span>
+    </div>
+  </div>
+  <div class="card"><div id="adhoc-list"></div></div>
+</div>
+
 <div class="page" id="page-report">
   <div class="page-hd">
     <div><h1>결과보고서</h1><p>점검 완료 후 자동 생성</p></div>
@@ -1742,6 +1781,85 @@ const SCORE_LABEL = {good:"우수", normal:"보통", bad:"미흡"};
 
 let inspections = JSON.parse(localStorage.getItem("shi_v3")||"[]");
 let currentRptId = null;
+
+// ══ 점검 구분 — 정기점검(반기 차수) / 수시점검 (2026-11-25) ══
+// 서버 점검결과 한 행 = 점검 1회, 점검ID(iid) 로 구분한다.
+//  allInspections : 정기(모든 차수) + 수시 전체
+//  inspections    : 선택한 차수(curPeriod)의 정기점검 — 대시보드·개선현황·결과보고서가 쓰는 기존 목록
+//  fbByIid        : 점검ID → 개선결과
+function _lsJson(k, dflt){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : dflt; }catch(e){ return dflt; } }
+let allInspections = _lsJson("shi_all", null) || inspections.slice();
+let fbByIid = _lsJson("shi_fb_iid", {});
+let _curPeriodChosen = (function(){ try{ return !!sessionStorage.getItem("shi_period"); }catch(e){ return false; } })();
+let curPeriod = (function(){ try{ return sessionStorage.getItem("shi_period")||""; }catch(e){ return ""; } })();
+function insCategory(type){ return /수시|특별/.test(String(type||"")) ? "수시" : "정기"; }
+function insPeriodKey(type, date){
+  const m = String(type||"").match(/(\d{4})\s*년?\s*(상|하)\s*반기/);
+  if(m) return m[1]+"-"+(m[2]==="상"?"H1":"H2");
+  const d = fmtDate(date);
+  if(!d) return "";
+  return d.slice(0,4)+"-"+(Number(d.slice(5,7))<=6?"H1":"H2");
+}
+function periodLabel(key){ return key ? key.slice(0,4)+" "+(key.slice(-2)==="H1"?"상반기":"하반기") : ""; }
+function periodShort(key){ return key ? key.slice(2,4)+"년 "+(key.slice(-2)==="H1"?"상반기":"하반기") : ""; }
+function periodOfToday(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()<6?"H1":"H2"); }
+function insTypeLabel(ins){ if(!ins) return ""; normIns(ins); return ins.cat==="수시" ? "수시점검" : "정기점검 "+periodLabel(ins.period); }
+function catBadge(ins){ normIns(ins); return ins.cat==="수시" ? '<span class="cat-badge adhoc">수시</span>' : '<span class="cat-badge reg">정기 '+periodShort(ins.period)+'</span>'; }
+function normIns(x){
+  if(!x) return x;
+  x.cat = x.cat || insCategory(x.type);
+  x.period = x.period || insPeriodKey(x.type, x.date);
+  x.iid = x.iid || x.createdAt || "";
+  if(!x.id) x.id = Date.parse(x.iid) || Date.now();
+  return x;
+}
+function insById(id){ return allInspections.find(i=>i.id===id) || inspections.find(i=>i.id===id) || null; }
+function fbFor(ins){ return (ins && ins.iid && fbByIid[ins.iid]) || null; }
+function regularPeriods(){
+  const s = {};
+  allInspections.forEach(i=>{ normIns(i); if(i.cat==="정기" && i.period) s[i.period]=1; });
+  s[periodOfToday()] = 1;
+  if(curPeriod) s[curPeriod] = 1;
+  return Object.keys(s).sort().reverse();
+}
+function rebuildViews(){
+  allInspections.forEach(normIns);
+  // 기본 차수: 오늘이 속한 반기에 기록이 있으면 그 반기, 없으면 오늘 이전의 가장 최근 차수
+  if(!curPeriod || !_curPeriodChosen){
+    const today = periodOfToday();
+    const ps = allInspections.filter(i=>i.cat==="정기").map(i=>i.period).filter(p=>p && p<=today).sort();
+    const pick = ps.indexOf(today)>=0 ? today : (ps.length ? ps[ps.length-1] : today);
+    if(!_curPeriodChosen) curPeriod = pick;
+  }
+  allInspections.forEach(i=>{ i.feedbackSent = !!fbFor(i); });
+  inspections = allInspections.filter(i=>i.cat==="정기" && i.period===curPeriod).sort((a,b)=>(b.id||0)-(a.id||0));
+  const fbs = {};
+  inspections.forEach(i=>{ const f = fbFor(i); if(f) fbs[i.site] = f; });
+  try{ localStorage.setItem("shi_feedbacks", JSON.stringify(fbs)); localStorage.setItem("shi_v3", JSON.stringify(inspections)); }catch(e){}
+  renderPeriodBar();
+}
+function renderPeriodBar(){
+  const sel = document.getElementById("period-sel");
+  if(!sel) return;
+  sel.innerHTML = regularPeriods().map(k=>{
+    const n = allInspections.filter(i=>i.cat==="정기" && i.period===k).length;
+    return `<option value="${k}">${periodLabel(k)} (${n}곳)</option>`;
+  }).join("");
+  sel.value = curPeriod;
+  const hp = document.getElementById("hero-period"); if(hp) hp.textContent = periodShort(curPeriod);
+}
+function setPeriod(key){
+  curPeriod = key; _curPeriodChosen = true;
+  try{ sessionStorage.setItem("shi_period", key); }catch(e){}
+  rebuildViews();
+  currentRptId = null;
+  updateDashboard();
+  updateReportSel();
+  const ip = document.getElementById("page-improve");
+  if(ip && ip.classList.contains("active")) updateImprovePage();
+}
+allInspections.forEach(normIns);
+try{ rebuildViews(); }catch(e){ console.error(e); }
 let deductPhotos = []; // base64 사진 배열
 let deductCount = 0;
 
@@ -1836,24 +1954,27 @@ async function syncFromServer(){
     const res = await apiFetch("?mode=list");
     const data = await res.json();
     if(!data || !Array.isArray(data.inspections)) return;
-    const feedbacks = data.feedbacks || {};
-    try { localStorage.setItem("shi_feedbacks", JSON.stringify(feedbacks)); } catch(e) {}
-
-    const localBySite = {};
-    inspections.forEach(ins=>{ localBySite[ins.site] = ins; }); // 로컬 상세정보(사진 등) 보존용 기반
-    // 서버 목록을 기준으로 다시 구성한다 (서버에서 지워진 사업장은 화면/캐시에서도 함께 사라져야 함)
-    inspections = data.inspections.map(srv=>{
-      const local = localBySite[srv.site];
-      return {
-        ...(local||{}),
-        ...srv,
-        id: (local && local.id) || new Date(srv.createdAt||srv.date).getTime() || Date.now(),
-        feedbackSent: !!feedbacks[srv.site]
-      };
-    }).sort((a,b)=>(b.id||0)-(a.id||0));
-    try { localStorage.setItem("shi_v3", JSON.stringify(inspections)); } catch(e) {}
+    fbByIid = data.fbByIid || {};
+    if(!data.fbByIid){
+      // 예전 서버 응답(점검ID 없음) — 사업장 기준으로 맞춘다
+      const f = data.feedbacks || {};
+      data.inspections.forEach(x=>{ const k = x.iid || x.createdAt; if(k && f[x.site]) fbByIid[k] = f[x.site]; });
+    }
+    // 서버 목록을 기준으로 다시 구성한다 (서버에서 지워진 기록은 화면/캐시에서도 함께 사라져야 함)
+    allInspections = data.inspections.map(srv=>normIns({
+      ...srv,
+      iid: srv.iid || srv.createdAt || "",
+      id: Date.parse(srv.iid || srv.createdAt) || new Date(srv.date).getTime() || Date.now()
+    }));
+    try {
+      localStorage.setItem("shi_all", JSON.stringify(allInspections));
+      localStorage.setItem("shi_fb_iid", JSON.stringify(fbByIid));
+    } catch(e) {}
+    rebuildViews();
     updateDashboard();
     updateReportSel();
+    const ap = document.getElementById("page-adhoc");
+    if(ap && ap.classList.contains("active")) renderAdhocPage();
   } catch(e) {
     console.error("서버 동기화 실패 (로컬 데이터로 표시):", e);
   }
@@ -1898,7 +2019,7 @@ function collectDraft(){
     site: document.getElementById("inp-site").value,
     date: document.getElementById("inp-date").value,
     inspector: document.getElementById("inp-inspector").value,
-    type: document.getElementById("inp-type").value,
+    type: inpTypeString(),
     memo: document.getElementById("inp-memo").value,
     mgrName: document.getElementById("inp-mgr-name").value,
     mgrEmail: document.getElementById("inp-mgr-email").value,
@@ -2053,7 +2174,7 @@ async function applyDraft(id){
   document.getElementById("inp-site").value = d.site || "";
   document.getElementById("inp-date").value = d.date || "";
   document.getElementById("inp-inspector").value = d.inspector || "";
-  document.getElementById("inp-type").value = d.type || "정기점검";
+  setInpType(d.type || "정기점검");
   document.getElementById("inp-memo").value = d.memo || "";
   document.getElementById("inp-mgr-name").value = d.mgrName || "";
   document.getElementById("inp-mgr-email").value = d.mgrEmail || "";
@@ -3039,6 +3160,14 @@ async function saveInspection(){
   });
   if(!allSelected){ alert("모든 점검 항목(25개)을 선택해주세요."); return; }
 
+  // 정기점검은 사업장·차수마다 1건 — 같은 차수 기록이 있으면 바꿔 쓴다는 것을 확인받는다
+  const typeStr = inpTypeString();
+  const cat = insCategory(typeStr), period = insPeriodKey(typeStr, date);
+  if(cat==="정기"){
+    const prev = allInspections.find(i=>i.cat==="정기" && i.site===site && i.period===period);
+    if(prev && !confirm(`${site}의 ${periodLabel(period)} 정기점검 기록(점검일 ${fmtDate(prev.date)})이 이미 있습니다.\n저장하면 새 내용으로 바꿔 씁니다. (개선결과는 그대로 이어집니다)\n\n같은 사업장을 추가로 점검한 것이면 [취소] 후 점검 구분을 '수시점검'으로 바꿔 주세요.\n\n바꿔 쓸까요?`)) return;
+  }
+
   const saveBtn = document.getElementById("btn-save-report");
   const saveBtnOriginal = saveBtn.innerHTML;
   saveBtn.disabled = true;
@@ -3051,7 +3180,7 @@ async function saveInspection(){
   const ins = {
     id: Date.now(),
     site, date, inspector,
-    type: document.getElementById("inp-type").value,
+    type: typeStr,
     memo: document.getElementById("inp-memo").value.trim(),
     mgrName: document.getElementById("inp-mgr-name").value.trim(),
     mgrEmail: document.getElementById("inp-mgr-email").value.trim(),
@@ -3065,14 +3194,13 @@ async function saveInspection(){
     createdAt: new Date().toISOString()
   };
 
-  // 로컬 대시보드 저장 (용량 초과 등으로 실패해도 아래 서버 전송은 반드시 진행)
-  inspections = inspections.filter(i=>i.site!==site);
-  inspections.unshift(ins);
-  try {
-    localStorage.setItem("shi_v3", JSON.stringify(inspections));
-  } catch(e) {
-    console.error("로컬 저장 실패(브라우저 저장공간 초과 등):", e);
-  }
+  // 로컬 목록 반영 (용량 초과 등으로 실패해도 아래 서버 전송은 반드시 진행)
+  ins.iid = ins.createdAt;
+  normIns(ins);
+  allInspections = allInspections.filter(i=>!(cat==="정기" && i.cat==="정기" && i.site===site && i.period===period));
+  allInspections.unshift(ins);
+  if(cat==="정기" && period!==curPeriod){ curPeriod = period; _curPeriodChosen = true; try{ sessionStorage.setItem("shi_period", period); }catch(e){} }
+  try { rebuildViews(); } catch(e) { console.error("로컬 저장 실패(브라우저 저장공간 초과 등):", e); }
   currentRptId = ins.id;
   updateDashboard();
   updateReportSel();
@@ -3088,10 +3216,18 @@ async function saveInspection(){
   };
   try {
     // 사진(base64) 포함 시 x-www-form-urlencoded(e.parameter)에서 누락될 수 있어 JSON 원문을 그대로 e.postData.contents로 전송한다.
-    await apiPost(payload);
-    document.getElementById("modal-status").textContent = "✅ Google Sheets 저장 + 이메일 + 카카오톡 발송 완료!";
+    const out = await apiPost(payload);
+    if(out && out.status && out.status!=="ok") throw new Error(out.msg || "저장하지 못했습니다.");
+    if(out && out.iid){
+      // 서버가 정한 점검ID 로 맞춘다 (보고서·개선결과가 이 값으로 이어진다)
+      ins.iid = ins.createdAt = out.iid;
+      ins.id = Date.parse(out.iid) || ins.id;
+      currentRptId = ins.id;
+    }
+    document.getElementById("modal-status").textContent = `✅ ${insTypeLabel(ins)} 저장 + 이메일 + 카카오톡 발송 완료!`;
+    syncFromServer();
   } catch(e) {
-    document.getElementById("modal-status").textContent = "⚠ 네트워크 오류 (로컬 저장 완료)";
+    document.getElementById("modal-status").textContent = (e && e.message && !/fetch/i.test(e.message)) ? "⚠ 저장 실패: " + e.message : "⚠ 네트워크 오류 (로컬 저장 완료)";
   }
   saveBtn.disabled = false;
   saveBtn.innerHTML = saveBtnOriginal;
@@ -3119,7 +3255,62 @@ function resetInput(){
   draftStatus("");
   renderDrafts();
   updateScore();
+  const ip = document.getElementById("inp-period"); if(ip) delete ip.dataset.touched;
+  onInpTypeChange();
 }
+
+// ══ 점검 구분 입력 (정기점검 차수 / 수시점검) ══
+function fillInpPeriod(){
+  const sel = document.getElementById("inp-period");
+  if(!sel) return;
+  const keys = {};
+  const now = new Date(); const y = now.getFullYear();
+  [y-1, y, y+1].forEach(yy=>{ keys[yy+"-H1"]=1; keys[yy+"-H2"]=1; });
+  regularPeriods().forEach(k=>{ keys[k]=1; });
+  const cur = sel.value;
+  sel.innerHTML = Object.keys(keys).sort().reverse().map(k=>`<option value="${k}">${periodLabel(k)}</option>`).join("");
+  if(cur && keys[cur]) sel.value = cur;
+}
+function onInpTypeChange(){
+  const t = document.getElementById("inp-type"), p = document.getElementById("inp-period"), h = document.getElementById("inp-type-hint");
+  if(!t || !p) return;
+  if(!p.options.length) fillInpPeriod();
+  const reg = t.value !== "수시점검";
+  p.style.display = reg ? "" : "none";
+  if(reg && !p.dataset.touched){
+    const k = insPeriodKey("", document.getElementById("inp-date").value) || periodOfToday();
+    if(![...p.options].some(o=>o.value===k)) fillInpPeriod();
+    p.value = k;
+  }
+  if(h) h.textContent = reg
+    ? `정기점검 ${periodLabel(p.value)} — 사업장마다 이 차수에 1건입니다. 같은 사업장·같은 차수로 다시 저장하면 바꿔 씁니다.`
+    : "수시점검 — 저장할 때마다 새 기록으로 쌓입니다. 결과 메일·개선결과 제출 링크는 정기점검과 같이 나갑니다.";
+}
+function inpTypeString(){
+  const t = document.getElementById("inp-type").value;
+  if(t === "수시점검") return "수시점검";
+  const p = document.getElementById("inp-period").value || insPeriodKey("", document.getElementById("inp-date").value) || periodOfToday();
+  return `정기점검(${periodLabel(p)})`;
+}
+function setInpType(str){
+  const cat = insCategory(str);
+  document.getElementById("inp-type").value = cat==="수시" ? "수시점검" : "정기점검";
+  const p = document.getElementById("inp-period");
+  if(cat==="정기"){
+    if(!p.options.length) fillInpPeriod();
+    const m = String(str||"").match(/(\d{4})\s*년?\s*(상|하)\s*반기/);
+    if(m){ const k = m[1]+"-"+(m[2]==="상"?"H1":"H2"); if(![...p.options].some(o=>o.value===k)) fillInpPeriod(); p.value = k; p.dataset.touched = "1"; }
+    else delete p.dataset.touched;
+  }
+  onInpTypeChange();
+}
+(function(){
+  try{
+    fillInpPeriod(); onInpTypeChange();
+    const d = document.getElementById("inp-date");
+    if(d) d.addEventListener("change", onInpTypeChange);
+  }catch(e){ console.error(e); }
+})();
 
 
 
@@ -3592,7 +3783,7 @@ function schColor(name){
 // 실제 점검 기록과 맞춰 본다. 예정일 ±30일 안에 그 사업장 점검이 저장돼 있으면 완료로 표시한다.
 function schDoneInfo(it){
   let best=null, bd=1e9;
-  (inspections||[]).forEach(ins=>{
+  (allInspections||[]).forEach(ins=>{
     if(!ins || String(ins.site||"").trim() !== it.site) return;
     const d=Math.abs(schDiffDays(fmtDate(ins.date), it.date));
     if(d<bd){ bd=d; best=ins; }
@@ -4231,8 +4422,11 @@ function goPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("page-"+name).classList.add("active");
-  const idx=["dashboard","schedule","improve","report","input","settings"].indexOf(name);
+  const idx=["dashboard","schedule","improve","adhoc","report","input","settings"].indexOf(name);
   document.querySelectorAll(".nav-btn")[idx].classList.add("active");
+  const pb = document.getElementById("period-bar");
+  if(pb) pb.style.display = ["dashboard","improve","report"].indexOf(name)>=0 ? "" : "none";
+  if(name==="adhoc") renderAdhocPage();
   // 세부내용은 별도 메뉴를 없애고 대시보드 아래로 합쳤다(updateDashboard 끝에서 함께 그린다).
   if(name==="dashboard") updateDashboard();
   if(name==="schedule") openSchedulePage();
@@ -4475,7 +4669,7 @@ function updateImprovePage(){
         const statusHtml = r.submitted
           ? `<span style="font-size:.62rem;font-weight:700;color:var(--ok);background:var(--ok-bg);padding:.15rem .45rem;border-radius:4px;white-space:nowrap">제출완료</span>`
           : r.overdue
-            ? `<button class="btn btn-outline btn-sm" style="font-size:.6rem;padding:.15rem .5rem;color:var(--danger);border-color:var(--danger);white-space:nowrap" onclick="event.stopPropagation();sendReminderForSite('${r.ins.site}')">마감${r.daysOverdue}일경과 · 알림발송</button>`
+            ? `<button class="btn btn-outline btn-sm" style="font-size:.6rem;padding:.15rem .5rem;color:var(--danger);border-color:var(--danger);white-space:nowrap" onclick="event.stopPropagation();sendReminderForSite('${r.ins.site}','${r.ins.iid||""}')">마감${r.daysOverdue}일경과 · 알림발송</button>`
             : `<span style="font-size:.62rem;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:.15rem .45rem;border-radius:4px;white-space:nowrap">미제출</span>`;
         return `<tr style="cursor:pointer" onclick="loadRptById(${r.ins.id})" title="클릭하면 보고서 보기 / PDF 다운로드">
           <td style="font-weight:600">${r.ins.site}</td>
@@ -4536,10 +4730,9 @@ function impIssuesFromInspection(ins){
 }
 
 function openImpModal(insId){
-  const ins = inspections.find(x=>x.id===insId);
+  const ins = insById(insId);
   if(!ins) return;
-  const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
-  const fb = feedbacks[ins.site] || null;
+  const fb = fbFor(ins);
   if(!fb && !isAdmin()) return;
   const base = (fb && Array.isArray(fb.results) && fb.results.length)
     ? fb.results.map(r=>({key:r.key||"", name:r.name||"", originalNote:r.originalNote||"",
@@ -4557,7 +4750,7 @@ function openImpModal(insId){
   impEdit = {ins, fb, items: base};
 
   const ro = !isAdmin();
-  document.getElementById("imp-m-title").textContent = `${ins.site} 개선결과 ${fb ? (ro?"보기":"보기·수정") : "대신 입력"}`;
+  document.getElementById("imp-m-title").textContent = `${ins.site} · ${insTypeLabel(ins)} 개선결과 ${fb ? (ro?"보기":"보기·수정") : "대신 입력"}`;
   document.getElementById("imp-m-sub").textContent = `점검일 ${fmtDate(ins.date)} · 미흡 ${base.length}건`
     + (fb ? ` · 제출 ${fmtDate(fb.date)}` : " · 사업장 미제출 (저장하면 제출 완료로 처리되고, 사업장 링크는 더 이상 제출할 수 없습니다)")
     + (fb && fb.editedBy ? ` · 최근 수정 ${fb.editedBy} ${fb.editedAt||""}` : "");
@@ -4718,6 +4911,7 @@ async function impSaveFromModal(){
     const data = await apiPost({
       type:"imp_save",
       site: impEdit.ins.site,
+      iid: impEdit.ins.iid || "",
       manager: document.getElementById("imp-m-manager").value.trim(),
       tel: document.getElementById("imp-m-tel").value.trim(),
       date,
@@ -4727,13 +4921,13 @@ async function impSaveFromModal(){
     });
     if(!data){ throw new Error("서버 응답을 확인하지 못했습니다. 새로고침 후 저장됐는지 확인해주세요."); }
     if(data.status!=="ok"){ throw new Error(data.msg || "저장하지 못했습니다."); }
-    const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
-    feedbacks[impEdit.ins.site] = data.feedback;
-    try{ localStorage.setItem("shi_feedbacks", JSON.stringify(feedbacks)); }catch(e){}
-    const ins = inspections.find(x=>x.site===impEdit.ins.site); if(ins) ins.feedbackSent = true;
+    if(impEdit.ins.iid) fbByIid[impEdit.ins.iid] = data.feedback;
+    try{ localStorage.setItem("shi_fb_iid", JSON.stringify(fbByIid)); }catch(e){}
+    rebuildViews();
     closeModal("imp-modal");
     updateDashboard();
     updateImprovePage();
+    const ap = document.getElementById("page-adhoc"); if(ap && ap.classList.contains("active")) renderAdhocPage();
     alert(`저장했습니다. (개선완료 ${data.feedback.doneCount}/${data.feedback.totalIssues}건)`);
   }catch(e){
     stEl.style.color="var(--danger)";
@@ -4744,12 +4938,13 @@ async function impSaveFromModal(){
 }
 
 // 마감일이 지난 특정 사업장 한 곳에만 독촉 알림(SMS/이메일/카카오)을 발송한다.
-async function sendReminderForSite(site){
-  if(!confirm(`"${site}" 사업장에 마감초과 독촉 알림(SMS·이메일·카카오톡)을 발송합니다.\n실제 문자/이메일이 발송되며 비용이 발생할 수 있습니다.\n계속하시겠습니까?`)){
+async function sendReminderForSite(site, iid){
+  const _ins = iid ? allInspections.find(i=>i.iid===iid) : null;
+  if(!confirm(`"${site}"${_ins ? " ("+insTypeLabel(_ins)+")" : ""} 사업장에 마감초과 독촉 알림(SMS·이메일·카카오톡)을 발송합니다.\n실제 문자/이메일이 발송되며 비용이 발생할 수 있습니다.\n계속하시겠습니까?`)){
     return;
   }
   try{
-    const res = await apiFetch("?mode=send_overdue_reminders&site=" + encodeURIComponent(site));
+    const res = await apiFetch("?mode=send_overdue_reminders&site=" + encodeURIComponent(site) + (iid ? "&iid=" + encodeURIComponent(iid) : ""));
     const data = await res.json();
     if(data.sentCount>0){
       const r = data.results[0];
@@ -4759,6 +4954,7 @@ async function sendReminderForSite(site){
     }
     await syncFromServer();
     updateImprovePage();
+    const ap = document.getElementById("page-adhoc"); if(ap && ap.classList.contains("active")) renderAdhocPage();
   }catch(e){
     alert("알림 발송 중 오류가 발생했습니다: " + e.message);
   }
@@ -4787,7 +4983,7 @@ async function sendOverdueRemindersManual(){
       return;
     }
     const lines = (data.results||[]).map(r=>
-      `- ${r.site} (${r.daysOverdue}일 경과) : ${r.smsSent?"SMS ✓":"SMS ✗"} / ${r.emailSent?"이메일 ✓":"이메일 ✗"}`
+      `- ${r.site}${r.label?" "+r.label:""} (${r.daysOverdue}일 경과) : ${r.smsSent?"SMS ✓":"SMS ✗"} / ${r.emailSent?"이메일 ✓":"이메일 ✗"}`
     ).join("\n");
     alert(`총 ${data.sentCount}개 사업장에 알림을 발송했습니다.\n\n${lines}`);
     updateImprovePage();
@@ -4799,11 +4995,102 @@ async function sendOverdueRemindersManual(){
   }
 }
 
+// ══ 수시점검 목록 ══
+function startAdhocInput(){
+  goPage("input");
+  if(!document.getElementById("inp-site").value) resetInput();
+  setInpType("수시점검");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function renderAdhocPage(){
+  const box = document.getElementById("adhoc-list");
+  if(!box) return;
+  const all = allInspections.filter(i=>i.cat==="수시");
+  const today = new Date(); today.setHours(0,0,0,0);
+  // 필터 목록
+  const ySel = document.getElementById("adhoc-year"), sSel = document.getElementById("adhoc-site"), fSel = document.getElementById("adhoc-fb");
+  const years = [...new Set(all.map(i=>fmtDate(i.date).slice(0,4)).filter(Boolean))].sort().reverse();
+  const yv = ySel.value, sv = sSel.value;
+  ySel.innerHTML = '<option value="">전체 기간</option>' + years.map(y=>`<option value="${y}">${y}년</option>`).join("");
+  if(years.indexOf(yv)>=0) ySel.value = yv;
+  const sites = [...new Set(all.map(i=>i.site))].sort((a,b)=>a.localeCompare(b,"ko"));
+  sSel.innerHTML = '<option value="">전체 사업장</option>' + sites.map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+  if(sites.indexOf(sv)>=0) sSel.value = sv;
+
+  const rows = all.map(ins=>{
+    const fb = fbFor(ins);
+    const deadline = addDaysLocal(fmtDate(ins.date), 21);
+    const overdue = !fb && deadline && today > deadline;
+    return {ins, fb, deadline, overdue, daysOverdue: overdue ? Math.round((today-deadline)/864e5) : 0};
+  }).filter(r=>{
+    if(ySel.value && fmtDate(r.ins.date).slice(0,4)!==ySel.value) return false;
+    if(sSel.value && r.ins.site!==sSel.value) return false;
+    if(fSel.value==="todo" && r.fb) return false;
+    if(fSel.value==="over" && !r.overdue) return false;
+    if(fSel.value==="done" && !r.fb) return false;
+    return true;
+  }).sort((a,b)=>String(fmtDate(b.ins.date)).localeCompare(String(fmtDate(a.ins.date))) || (b.ins.id-a.ins.id));
+
+  const n = rows.length;
+  const avg = n ? Math.round(rows.reduce((s,r)=>s+(r.ins.finalScore||0),0)/n) : 0;
+  const todo = rows.filter(r=>!r.fb).length;
+  document.getElementById("adhoc-sum").innerHTML = n
+    ? `수시점검 <b>${n}건</b> · 사업장 <b>${new Set(rows.map(r=>r.ins.site)).size}곳</b> · 평균 <b>${avg}점</b> · 개선결과 미제출 <b style="color:${todo?"var(--danger)":"inherit"}">${todo}건</b>`
+    : "";
+  if(!n){
+    box.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">${all.length ? "조건에 맞는 수시점검이 없습니다" : "아직 수시점검 기록이 없습니다.<br><br><button class='btn btn-primary btn-sm' onclick='startAdhocInput()'>+ 수시점검 입력</button>"}</div>`;
+    return;
+  }
+  const admin = isAdmin();
+  box.innerHTML = `<div style="overflow-x:auto"><table style="min-width:880px">
+    <thead><tr><th>점검일</th><th>사업장</th><th>점검자</th><th style="text-align:center">점수</th>
+      <th style="text-align:center">서류 미흡</th><th style="text-align:center">현장 미흡</th>
+      <th>개선결과</th><th style="text-align:center">보기</th></tr></thead>
+    <tbody>${rows.map(r=>{
+      const ins = r.ins;
+      const [g,c] = gradeInfo(ins.finalScore||0);
+      const fb = r.fb;
+      let fbHtml;
+      if(fb){
+        const pct = fb.totalIssues ? Math.round((fb.doneCount||0)/fb.totalIssues*100) : 100;
+        fbHtml = `<span style="font-size:.66rem;font-weight:700;color:var(--ok);background:var(--ok-bg);padding:.1rem .4rem;border-radius:4px">제출 ${fb.doneCount||0}/${fb.totalIssues||0} (${pct}%)</span>`
+          + (impNeedCheckCount(fb) ? `<br><span class="imp-chk-badge">⚠ 체크 확인 ${impNeedCheckCount(fb)}건</span>` : "");
+      } else if(((ins.badCount||0)+(ins.deductCount||0))===0){
+        fbHtml = `<span style="font-size:.66rem;color:var(--muted)">미흡 없음</span>`;
+      } else if(r.overdue){
+        fbHtml = admin
+          ? `<button class="btn btn-outline btn-sm" style="font-size:.6rem;padding:.15rem .5rem;color:var(--danger);border-color:var(--danger);white-space:nowrap" onclick="sendReminderForSite('${ins.site}','${ins.iid}')">마감${r.daysOverdue}일경과 · 알림발송</button>`
+          : `<span style="font-size:.66rem;font-weight:700;color:var(--danger)">마감 ${r.daysOverdue}일 경과</span>`;
+      } else {
+        fbHtml = `<span style="font-size:.66rem;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:.1rem .4rem;border-radius:4px">미제출</span> <span style="font-size:.62rem;color:var(--muted)">마감 ${ymdLocal(r.deadline)}</span>`;
+      }
+      const impBtn = fb
+        ? `<button class="btn btn-outline btn-sm" style="font-size:.6rem;padding:.15rem .45rem" onclick="openImpModal(${ins.id})">${admin?"📝 개선":"🔍 개선"}</button>`
+        : (admin && ((ins.badCount||0)+(ins.deductCount||0))>0 ? `<button class="btn btn-outline btn-sm" style="font-size:.6rem;padding:.15rem .45rem" onclick="openImpModal(${ins.id})">✏ 대신 입력</button>` : "");
+      return `<tr>
+        <td style="font-size:.74rem;white-space:nowrap">${fmtDate(ins.date)}</td>
+        <td style="font-weight:600">${escapeHtml(ins.site)}</td>
+        <td style="font-size:.74rem">${escapeHtml(ins.inspector||"")}</td>
+        <td style="text-align:center;white-space:nowrap"><span style="background:${c};color:#fff;font-size:.6rem;font-weight:800;padding:.08rem .35rem;border-radius:4px">${g}</span> <b style="color:${c}">${ins.finalScore}</b></td>
+        <td style="text-align:center;font-family:'IBM Plex Mono',monospace;color:${ins.badCount?"var(--danger)":"var(--muted)"}">${ins.badCount||0}</td>
+        <td style="text-align:center;font-family:'IBM Plex Mono',monospace;color:${ins.deductCount?"var(--danger)":"var(--muted)"}">${ins.deductCount||0}</td>
+        <td>${fbHtml}</td>
+        <td style="text-align:center;white-space:nowrap">
+          <button class="btn btn-outline btn-sm" style="font-size:.6rem;padding:.15rem .45rem" onclick="loadRptById(${ins.id})">📄 보고서</button>
+          ${impBtn}
+        </td>
+      </tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+
 // ══ 보고서 ══
 function updateReportSel(){
   const sel = document.getElementById("report-sel");
-  sel.innerHTML = '<option value="">— 사업장 선택 —</option>' +
-    inspections.map(ins=>`<option value="${ins.id}">${ins.site} (${fmtDate(ins.date)}) ${ins.finalScore}점</option>`).join("");
+  const opt = ins=>`<option value="${ins.id}">${ins.site} (${fmtDate(ins.date)}) ${ins.finalScore}점</option>`;
+  const adhoc = allInspections.filter(i=>i.cat==="수시").sort((a,b)=>String(fmtDate(b.date)).localeCompare(String(fmtDate(a.date))));
+  sel.innerHTML = '<option value="">— 사업장 선택 —</option>'
+    + `<optgroup label="정기점검 ${periodLabel(curPeriod)}">` + inspections.map(opt).join("") + '</optgroup>'
+    + (adhoc.length ? '<optgroup label="수시점검">' + adhoc.map(opt).join("") + '</optgroup>' : "");
   if(currentRptId){ sel.value=currentRptId; renderReports(currentRptId); }
 }
 
@@ -4819,7 +5106,7 @@ function loadRptById(id){
 }
 
 function renderReports(id){
-  const ins = inspections.find(i=>i.id===id);
+  const ins = insById(id);
   if(!ins) return;
   document.getElementById("fb-btn").style.display = ins.feedbackSent?"none":"block";
   document.getElementById("dl-single-btn").style.display = "block";
@@ -4870,7 +5157,7 @@ function renderExecRpt(ins){
         <div>
           <div style="font-size:.7rem;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem">안전보건점검 결과보고서 (임원용)</div>
           <div style="font-size:1.3rem;font-weight:900">${ins.site}</div>
-          <div style="font-size:.78rem;opacity:.8;margin-top:.3rem">${ins.type} · ${fmtDate(ins.date)} · 점검자: ${ins.inspector}</div>
+          <div style="font-size:.78rem;opacity:.8;margin-top:.3rem">${insTypeLabel(ins)} · ${fmtDate(ins.date)} · 점검자: ${ins.inspector}</div>
         </div>
         <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:10px;padding:.85rem 1.2rem">
           <div style="font-size:.65rem;opacity:.8;margin-bottom:.2rem">종합등급</div>
@@ -4959,7 +5246,7 @@ function renderSiteRpt(ins){
         <div style="border-bottom:2px solid var(--accent);padding-bottom:.75rem;margin-bottom:1rem">
           <div style="font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem">안전보건점검 결과 통보</div>
           <div style="font-size:1.1rem;font-weight:800">${ins.site} 귀중</div>
-          <div style="font-size:.75rem;color:var(--text2);margin-top:.2rem">점검일: ${fmtDate(ins.date)} · 점검자: ${ins.inspector} · ${ins.type}</div>
+          <div style="font-size:.75rem;color:var(--text2);margin-top:.2rem">점검일: ${fmtDate(ins.date)} · 점검자: ${ins.inspector} · ${insTypeLabel(ins)}</div>
         </div>
         <p style="font-size:.82rem;line-height:1.9;color:var(--text2);margin-bottom:1rem">
           상기 일자에 실시한 안전보건점검 결과를 아래와 같이 안내드리니, 해당 사항에 대한 개선 조치 후 결과를 회신하여 주시기 바랍니다.
@@ -5030,7 +5317,7 @@ function buildReportHtml(ins, feedbacks) {
   ];
   const SCORE_LABEL_L = {good:"우수",normal:"보통",bad:"미흡"};
   const [grade,col] = ins.finalScore>=90?["A","#15803d"]:ins.finalScore>=80?["B","#1e40af"]:ins.finalScore>=70?["C","#b45309"]:["D","#b91c1c"];
-  const fb = feedbacks ? feedbacks[ins.site] : null;
+  const fb = fbFor(ins);   // 점검 1건(점검ID)의 개선결과 — 정기 차수·수시 구분
   const statusLabel = {done:"✅ 개선완료", inprogress:"🔄 진행중", pending:"⏳ 미완료"};
   const statusColor = {done:"#15803d", inprogress:"#b45309", pending:"#b91c1c"};
 
@@ -5111,7 +5398,7 @@ function buildReportHtml(ins, feedbacks) {
   <div>
     <div style="font-size:10px;opacity:.7;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">안전보건점검 결과보고서</div>
     <div style="font-size:17px;font-weight:900">${ins.site}</div>
-    <div style="font-size:11px;opacity:.8;margin-top:3px">${ins.type} · ${fmtDate(ins.date)} · 점검자: ${ins.inspector}</div>
+    <div style="font-size:11px;opacity:.8;margin-top:3px">${insTypeLabel(ins)} · ${fmtDate(ins.date)} · 점검자: ${ins.inspector}</div>
   </div>
   <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 14px">
     <div style="font-size:9px;opacity:.8;margin-bottom:2px">종합등급</div>
@@ -5178,11 +5465,11 @@ ${fbSection}
 // ══ 단일 PDF 다운로드 ══
 async function downloadSinglePdf(){
   if(!currentRptId){ alert("보고서를 선택하세요."); return; }
-  const ins = inspections.find(i=>i.id===currentRptId);
+  const ins = insById(currentRptId);
   if(!ins) return;
   const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
   const html = buildReportHtml(ins, feedbacks);
-  openPrintWindow(html, `안전보건점검_${ins.site}_${fmtDate(ins.date)}.pdf`);
+  openPrintWindow(html, `안전보건점검_${ins.site}_${ins.cat==="수시"?"수시_":""}${fmtDate(ins.date)}.pdf`);
 }
 
 // ══ 전체 합본 PDF ══
@@ -5584,7 +5871,7 @@ function finalCollect(){
 
   const feedbacks = JSON.parse(localStorage.getItem("shi_feedbacks")||"{}");
   const bySite = {};
-  inspections.forEach(ins=>{
+  allInspections.filter(i=>i.cat==="정기").forEach(ins=>{
     const d = fmtDate(ins.date);
     if(!d || d < from || d > to) return;
     if(!bySite[ins.site] || d > fmtDate(bySite[ins.site].date)) bySite[ins.site] = ins;
@@ -5605,7 +5892,7 @@ function finalCollect(){
         badCount[item.name] = (badCount[item.name]||0)+1;
       }
     });
-    const fb = feedbacks[ins.site];
+    const fb = fbFor(ins);
     needSum += fb ? (fb.totalIssues||0) : ((ins.badCount||0)+(ins.deductCount||0));
     doneSum += fb ? (fb.doneCount||0) : 0;
     const lawBad = (CHECK_ITEMS||[]).filter(item=>{

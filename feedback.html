@@ -148,7 +148,7 @@ main{max-width:720px;margin:0 auto;padding:1.5rem}
     <div class="logo-icon">🛡</div>
     안전보건점검 개선결과 제출
   </div>
-  <div class="sub">점검 지적사항 개선결과를 입력해주세요</div>
+  <div class="sub" id="fb-sub">점검 지적사항 개선결과를 입력해주세요</div>
 </header>
 
 <main>
@@ -289,6 +289,13 @@ async function openWithToken(){
     }
 
     verifiedSite = data.site;
+    // 어느 점검의 개선결과인지 표시 (정기점검 2026 하반기 / 수시점검) — 2026-11-25
+    if(data.typeLabel){
+      const sub = document.getElementById("fb-sub");
+      const _m = String(data.date||"").match(/^(\d{4}-\d{2}-\d{2})$/); const _dt = new Date(data.date);
+      const d = _m ? _m[1] : (isNaN(_dt) ? "" : `${_dt.getFullYear()}-${String(_dt.getMonth()+1).padStart(2,"0")}-${String(_dt.getDate()).padStart(2,"0")}`);
+      if(sub) sub.textContent = `${data.typeLabel}${d ? " · 점검일 " + d : ""} — 지적사항 개선결과를 입력해주세요`;
+    }
     alreadySubmitted = !!data.submitted;
 
     document.getElementById("code-screen").style.display = "none";
